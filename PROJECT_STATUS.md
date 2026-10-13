@@ -26,6 +26,7 @@ Executed validation on 2026-10-13:
 - Mobile Playwright suite: **3 passed**, covering wrong credentials, signup/sign-in/sign-out and protected navigation, zero-data views without overflow, manifest/icon responses, active service worker and offline fallback without private cache entries.
 - Migrations applied on fresh local startup; public connection settings generated without a service-role key.
 - Local services were stopped and restarted; mandatory PostgreSQL/Auth/REST readiness checks passed, a committed synthetic marker survived, and all restart fixtures were removed afterward.
+- The critical mobile authentication/navigation flow passed again after restart. Next.js-generated agent guidance is committed; generated type declarations are ignored and regenerated before standalone type checking.
 - Installation and startup instructions saved to cloud configuration draft. Draft persistence is confirmed; environment publication and restoration in a new task are not claimed.
 
 Diagnosed environment limitations:
