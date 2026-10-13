@@ -21,7 +21,8 @@
     "setup:local": "node scripts/configure-local.mjs",
     "check": "npm run lint && npm run typecheck && npm test && npm run build",
     "format": "prettier --write src scripts tests docs *.md *.ts *.mjs *.json .github/workflows/*.yml",
-    "format:check": "prettier --check src scripts tests docs *.md *.ts *.mjs *.json .github/workflows/*.yml"
+    "format:check": "prettier --check src scripts tests docs *.md *.ts *.mjs *.json .github/workflows/*.yml",
+    "preview:start": "node scripts/start-preview.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

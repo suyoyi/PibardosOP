@@ -1,7 +1,25 @@
 import type { NextConfig } from "next";
 
+const codespaceName = process.env.CODESPACE_NAME;
+const forwardingDomain =
+  process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN ?? "app.github.dev";
+const codespaceHost =
+  codespaceName &&
+  /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(codespaceName) &&
+  /^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(
+    forwardingDomain,
+  )
+    ? `${codespaceName}-3000.${forwardingDomain}`
+    : undefined;
+
 const config: NextConfig = {
   poweredByHeader: false,
+  allowedDevOrigins: codespaceHost ? [codespaceHost] : undefined,
+  experimental: codespaceHost
+    ? {
+        serverActions: { allowedOrigins: [codespaceHost] },
+      }
+    : undefined,
   async headers() {
     return [
       {

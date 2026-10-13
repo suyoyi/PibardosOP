@@ -2,6 +2,20 @@
 
 A Spanish mobile-first personal workspace for One Piece Card Game. Phase 1 provides the application shell, real authentication, empty-data views, secure database foundation and PWA basics. The full deck/match/practice MVP is delivered in subsequent phases; see `PROJECT_STATUS.md` and `docs/ARCHITECTURE.md`.
 
+## Try the app in your browser with GitHub Codespaces
+
+[Create a Codespace for Pibardos OP](https://codespaces.new/suyoyi/PibardosOP?ref=main)
+
+Sign in to GitHub, create a Codespace from `main`, and wait for its post-start command. The repository's devcontainer installs Node 24 and Docker-in-Docker, restores pinned dependencies, starts local Supabase, prepares public connection settings and runs a production preview. No Vercel deployment or external Supabase account is required for this development preview.
+
+Open **Ports → 3000 → Open in Browser** when the terminal reports that Pibardos OP is ready. Create an account from the Spanish access page; local email confirmation is disabled. The first startup downloads images and builds the app, so it can take a few minutes. Keep the forwarded port private, which is Codespaces' default. Supabase database/API ports are not forwarded.
+
+The current phase supports account access and navigation through real empty-data views. Deck importing/editing, match entry and practice are subsequent phases. Data belongs to this Codespace; do not delete it if you need to keep its local accounts/data. Codespaces usage is subject to your GitHub account's available quota and settings.
+
+To retry a failed startup or resume the preview, run `npm run preview:start` in the Codespace terminal. The launcher preserves existing `.env.local` and injected public bindings, checks actual service readiness, and reuses a healthy existing app rather than launching duplicates. It builds only when it needs to start the preview server. Preview logs are in `/tmp/pibardos-preview-3000.log`. For code development, stop the preview process before switching to `npm run dev`; the production preview does not hot-reload edits.
+
+Next.js trusts only this Codespace's exact forwarded hostname for development assets and Server Actions; there is no wildcard exception for other Codespaces. HTTPS forwarding is managed by GitHub. The devcontainer configuration and launcher are validated locally; provisioning in your GitHub account still requires you to create the Codespace.
+
 ## Local development
 
 Requirements: Node 22.12+ (validated with Node 24), npm, Docker with a running daemon. Dependencies are pinned in `package-lock.json`.

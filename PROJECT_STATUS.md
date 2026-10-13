@@ -45,3 +45,14 @@ Product limitations:
 ## Next phases
 
 Implement cards/import, deck editing/version comparisons, competitive tracking, practice and collection in that order. Full MVP and production deployment are not complete.
+
+## Browser access — Codespaces preparation
+
+- Added a pinned Node 24 devcontainer with official Docker-in-Docker, automatic install/start hooks and only port 3000 forwarded. Other database/API ports are not auto-forwarded.
+- Added `preview:start`: starts and verifies local Supabase, preserves configuration, builds a production preview, checks the actual login form and app health, and avoids duplicate app processes. This enables the existing PWA worker without publishing the application.
+- Configured exact-host Codespaces origin allowances for Next.js assets and Server Actions, preserving default protection elsewhere.
+- Official image/feature source metadata was checked; the Docker feature registry manifest is available. This cloud's network policy blocks the MCR data redirect, so a complete devcontainer image build was not performed here. GitHub Codespaces provisioning is not claimed verified.
+- Updated browser-access instructions and the launch link. The user must create the Codespace using their own GitHub account; this chat has no Codespaces-creation tool.
+- Executed validation: devcontainer CLI accepted the configuration; launcher syntax and formatting checks passed; lint and strict types passed; **30 unit/integration tests** passed, including five exact-origin configuration tests.
+- The preview launcher started local Supabase and a production app, verified real health/login responses, and reused the healthy server on a second invocation.
+- **4 mobile E2E tests passed** with Codespaces origin metadata, including native HTTP replay of a real Server Action: an untrusted Origin was rejected before account creation; the exact allowed Codespace Origin created an account whose session opened the private dashboard. Dedicated accounts were removed afterward.
