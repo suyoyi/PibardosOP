@@ -1,0 +1,119 @@
+@import "tailwindcss";
+@theme inline {
+  --color-background: #10141c;
+  --color-foreground: #f1f3f7;
+  --color-muted: #a3adbd;
+  --color-accent: #f5b66b;
+  --color-border: #2b3443;
+}
+:root {
+  color-scheme: dark;
+}
+body {
+  margin: 0;
+  background: #10141c;
+  color: #f1f3f7;
+  font-family: Arial, Helvetica, sans-serif;
+}
+::selection {
+  background: #f5b66b;
+  color: #10141c;
+}
+:focus-visible {
+  outline: 3px solid #f5b66b;
+  outline-offset: 4px;
+}
+.panel {
+  border: 1px solid #2b3443;
+  border-radius: 1rem;
+  background: linear-gradient(145deg, #1a202c, #151b25);
+}
+.eyebrow {
+  color: #a3adbd;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  font-weight: 700;
+}
+.brand-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #f5b66b55;
+  border-radius: 12px;
+  color: #f5b66b;
+  background: #f5b66b0a;
+}
+.field-label {
+  display: block;
+  margin-bottom: 0.6rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.field {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid #364152;
+  border-radius: 0.6rem;
+  padding: 0.75rem 1rem;
+  background: #10141c;
+  font-size: 1rem;
+  color: #f1f3f7;
+}
+.field::placeholder {
+  color: #8995a7;
+}
+.button-primary,
+.button-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.6rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.button-primary {
+  background: #f5b66b;
+  color: #161a22;
+}
+.button-primary:hover {
+  background: #f9c88d;
+}
+.button-primary:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+.button-secondary {
+  border: 1px solid #364152;
+  color: #f1f3f7;
+}
+.button-secondary:hover {
+  background: #ffffff0c;
+}
+.skip-link {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  transform: translateY(-200%);
+  padding: 1rem;
+  background: #f5b66b;
+  color: #10141c;
+  z-index: 100;
+  border-radius: 0.5rem;
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
