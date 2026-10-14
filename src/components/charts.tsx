@@ -19,6 +19,75 @@ export type ResultChartRow = {
   decisiveGames: number;
   winRate: number | null;
 };
+export function DeckCostChart({
+  rows,
+}: {
+  rows: { cost: string; quantity: number }[];
+}) {
+  return (
+    <div className="mt-5 min-w-0" aria-label="Curva de coste">
+      <h3 className="text-sm font-semibold">Curva de coste</h3>
+      <p className="mt-1 text-xs text-muted">
+        Coste DON!! · cantidad de cartas del mazo principal
+      </p>
+      {rows.length ? (
+        <>
+          <div className="mt-4 h-48 min-w-0" aria-hidden="true">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={rows} margin={{ left: -25, right: 5, top: 10 }}>
+                <CartesianGrid stroke="#2b3443" vertical={false} />
+                <XAxis
+                  dataKey="cost"
+                  tick={{ fill: "#a3adbd", fontSize: 11 }}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  tick={{ fill: "#a3adbd", fontSize: 11 }}
+                />
+                <Tooltip
+                  cursor={{ fill: "#f5b66b0a" }}
+                  contentStyle={{
+                    background: "#151b25",
+                    border: "1px solid #364152",
+                    color: "#f1f3f7",
+                  }}
+                />
+                <Bar
+                  dataKey="quantity"
+                  name="Cartas"
+                  fill="#f5b66b"
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={40}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <ul
+            className="mt-3 flex flex-wrap gap-2 text-xs text-muted"
+            aria-label="Cantidades por coste"
+          >
+            {rows.map((row) => (
+              <li
+                key={row.cost}
+                className="rounded-md border border-border px-2 py-1"
+              >
+                {row.cost === "Sin dato"
+                  ? "Sin dato de coste"
+                  : `Coste ${row.cost}`}
+                : <strong className="text-foreground">{row.quantity}</strong>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <p className="mt-5 text-sm leading-6 text-muted">
+          Este mazo aún no tiene cartas principales. Añádelas en el editor para
+          ver su curva.
+        </p>
+      )}
+    </div>
+  );
+}
 export function ResultsChart({
   title,
   rows,

@@ -72,6 +72,12 @@ Server-side public metadata responses are reused for one hour by default to redu
 
 BerryWallet is retired from UI, import resolution and image requests. Existing BerryWallet facts, prices and deck references remain readable, with historical quotes labeled and refresh removed. Its key is unnecessary and unused by current app routes.
 
+## Home leader dashboard
+
+**Inicio** shows your overall saved record and a visual selector of leaders from nonarchived decks. Alternate printings of the same canonical leader share one selector entry. Choose a leader to see its wins/losses/draws, decisive sample size, six most recent games, monthly results and first/second breakdown. Draws are excluded from win rate; no decisive games show an absent percentage rather than zero. Small samples are explicitly labeled.
+
+Use **Mazo para la curva** to choose between lists with the same leader. The curve weights each main-deck printing by its saved quantity, includes zero cost and a separate missing-cost bucket, and excludes the leader and DON. The current version and main/DON counts are visible; **Registrar partida** opens that exact selected version. Leader results span all versions actually played with that canonical leader, including archived lists. Changing a deck's current leader does not move historical results to the new leader. Empty accounts/drafts offer working next actions without fake data.
+
 ## Using the competitive workflows
 
 1. Add your leader, opponent leaders and missing main-deck cards in **Cartas** using facts from your physical cards. For alternate printings/reprints choose their original canonical identity. Manual data remains explicitly unverified, and no copyrighted image files are bundled or stored permanently.
