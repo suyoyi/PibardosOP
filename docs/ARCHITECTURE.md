@@ -8,10 +8,10 @@ The repository was an empty Git checkout on branch `work`, with no commits, sour
 
 - Next.js App Router, strict TypeScript, React and Tailwind. Server Components load private data; mutations use validated Server Actions or database functions. Small accessible UI primitives precede introducing a component library.
 - Supabase PostgreSQL is authoritative. Supabase Auth uses cookie-based SSR and verified sessions. Public URL and publishable/anonymous key may be exposed; service-role keys must never reach browsers. No service-role key is needed for normal application operations.
-- Domain code belongs in `src/domain`, provider contracts in `src/providers`, database/auth adapters in `src/lib/supabase`. UI is Spanish; identifiers and technical documentation are English.
+- Domain code belongs in `src/domain`, provider contracts in `src/domain/cards.ts`, manual data adapters in `src/lib/data.ts`, database/auth adapters in `src/lib/supabase`. UI is Spanish; identifiers and technical documentation are English.
 - The catalog starts empty. Manual entry is the initial provider fallback. No external dataset or artwork is assumed licensed, available or accurate. A future adapter needs a documented terms/license/rate-limit review.
 - Card rows represent printings. `canonical_card_id` identifies shared rules identity across reprints; physical inventory references a printing. Version snapshots preserve leader, format, complete quantities and notes. Matches reference snapshots, never a mutable deck.
-- Draft decks may be incomplete. The domain validator will report standard rules and dated format restrictions in phase 2/3. An empty restrictions table must never imply verified tournament legality.
+- Draft decks may be incomplete. The domain validator reports standard rules and dated format restrictions; active construction also requires known card colors. An empty restrictions table must never imply verified tournament legality.
 - PWA foundation includes a manifest, local original icons and a conservative service worker. It does not cache authenticated responses or implement offline writes.
 
 ## Data flow
@@ -32,19 +32,19 @@ flowchart LR
 
 ## Proposed database schema
 
-| Entity                 | Ownership / integrity                                                                                                                            |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| cards                  | Authenticated read-only catalog; internal UUID, printed number, canonical printing reference, nullable type-specific details and source metadata |
-| card_restrictions      | Canonical identity, format, effective interval and provenance; read-only to users                                                                |
-| decks                  | Owner, leader, tags, format/status; current version must belong to the same deck                                                                 |
-| deck_versions          | Parent-owned immutable leader/format snapshots; unique sequence per deck                                                                         |
-| deck_cards             | Composite version/card key, positive quantity, separate main/DON roles; snapshot insertion through RPC                                           |
-| matches                | Owner; exact owned version and leader opponent; win/loss/draw and play order                                                                     |
-| tournaments            | Owner, selected deck version, dates and optional manual placement; archival preserves results                                                    |
-| tournament_rounds      | Parent-owned, unique round; match and event owners must agree                                                                                    |
-| collection_items       | Owner and physical printing; tradeable <= owned; language, finish and location                                                                   |
-| collection_allocations | Parent-owned inventory reservation; total allocation <= owned minus tradeable; cannot allocate across owners                                     |
-| import_jobs            | Owner, source, raw input, status and structured errors; no discarded unknown lines                                                               |
+| Entity                 | Ownership / integrity                                                                                                                           |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| cards                  | Shared rows read-only; manual rows owner-only and immutable; internal UUID, printed number, canonical identity, nullable details and provenance |
+| card_restrictions      | Canonical identity, format, effective interval and provenance; read-only to users                                                               |
+| decks                  | Owner, leader, tags, format/status; current version must belong to the same deck                                                                |
+| deck_versions          | Parent-owned immutable leader/format snapshots; unique sequence per deck                                                                        |
+| deck_cards             | Composite version/card key, positive quantity, separate main/DON roles; snapshot insertion through RPC                                          |
+| matches                | Owner; exact owned version and leader opponent; win/loss/draw and play order                                                                    |
+| tournaments            | Owner, selected deck version, dates and optional manual placement; archival preserves results                                                   |
+| tournament_rounds      | Parent-owned, unique round; match and event owners must agree                                                                                   |
+| collection_items       | Owner and physical printing; tradeable <= owned; language, finish and location                                                                  |
+| collection_allocations | Parent-owned inventory reservation; total allocation <= owned minus tradeable; cannot allocate across owners                                    |
+| import_jobs            | Owner, source, raw input, status and structured errors; no discarded unknown lines                                                              |
 
 RLS protects every private table. Composite ownership foreign keys protect cross-entity relationships. Explicit privileges protect the catalog and snapshots. Deck-version saving uses one transaction and a row lock to serialize version numbers.
 
@@ -67,3 +67,13 @@ Each phase requires executed build, type check, lint and relevant tests, mobile 
 - Restrictions and data licensing require verified sources; legal status stays unverified without them.
 - Vercel deployment requires a connected account/project. No deployment is claimed by a local build.
 - Account export/deletion, production email, rate limiting and private feature flows remain release gates for subsequent phases; do not expose unfinished actions as functioning features.
+
+## Competitive workflow decisions
+
+- Manual cards are private rows in the printing catalog. Authenticated insert policy fixes provenance to manual and forbids image URLs; updates/deletes are not granted. Historical snapshots consequently retain the same facts. Canonical IDs join reprints; the validator also bridges identical printed codes when a future shared dataset overlaps manual roots.
+- Import syntax normalization is independent of React and of provider persistence. Every preview stores its own raw text/error report. Browser CRLF is normalized to LF before auditing and confirmation; unknown/malformed lines prevent saving until explicitly corrected. No external card website is called.
+- `save_deck` combines parent creation/metadata, complete immutable version insertion and import confirmation in one transaction. Parent row locks serialize versions; an expected-version token prevents stale edits, while metadata-only changes do not make a redundant snapshot. A new version includes a structured change summary at insertion time; immutable rows are never patched later.
+- Match IDs are fixed per form submission. `save_match` atomically commits a match and optional round; retrying the same ID updates rather than duplicates. Unique event/round numbers and owner/version/format guards roll back conflicting submissions. Archive blocks new rounds while preserving history and permitting corrections of existing games.
+- Statistics derive from fully paginated persisted rows and expose accessible data tables alongside Recharts. Win rate excludes draws, all percentages disclose decisive sample counts, and five decisive games is a context threshold rather than a claim of statistical significance. Match entry explicitly uses UTC; history and monthly charts use Europe/Madrid.
+- Construction validation is independent of UI. Drafts may have explained count/color/copy errors, but wrong roles/types and unknown cards are never persisted through the application. No verified complete restriction dataset is installed, so active status never certifies tournament legality.
+- Local startup replays pending additive migrations without resetting existing data. Fresh application SQL is tested in a disposable PostgreSQL database with minimal Supabase Auth fixtures; separate integration/E2E flows exercise the real local Supabase Auth/API. This does not claim hosted Supabase, Codespaces provisioning or Windows browser validation.

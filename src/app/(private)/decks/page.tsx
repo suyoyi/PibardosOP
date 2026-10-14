@@ -1,35 +1,39 @@
+import Link from "next/link";
 import { requireUser } from "@/lib/supabase/server";
+import { getDeckWorkspace } from "@/lib/data";
 import { PageHeading, EmptyState } from "@/components/ui";
-export default async function DecksPage() {
-  const { supabase } = await requireUser();
-  const { data, error } = await supabase
-    .from("decks")
-    .select("id,name,status,description")
-    .order("updated_at", { ascending: false });
-  if (error) throw new Error("No se pudieron consultar los mazos.");
+import { SavedNotice } from "@/components/forms";
+import { DeckList } from "@/components/deck-list";
+export default async function DecksPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ saved?: string }>;
+}) {
+  const { supabase } = await requireUser(),
+    w = await getDeckWorkspace(supabase);
   return (
     <>
       <PageHeading
         eyebrow="PREPARA TU ESTRATEGIA"
         title="Mazos"
-        description="Tu biblioteca personal de listas."
+        description="Importa listas, ajusta cantidades y conserva cada versión de tu estrategia."
       />
-      {data.length ? (
-        <ul className="grid gap-4">
-          {data.map((deck) => (
-            <li key={deck.id} className="panel p-5">
-              <h2 className="font-semibold">{deck.name}</h2>
-              <p className="mt-2 text-sm text-muted">
-                {deck.description || "Sin descripción"}
-              </p>
-            </li>
-          ))}
-        </ul>
+      <SavedNotice saved={(await searchParams).saved} />
+      <div className="mb-6 flex flex-wrap gap-3">
+        <Link href="/decks/new" className="button-primary">
+          Crear o importar mazo
+        </Link>
+        <Link href="/decks/imports" className="button-secondary">
+          Historial de importaciones
+        </Link>
+      </div>
+      {w.decks.length ? (
+        <DeckList decks={w.decks} catalog={w.catalog} versions={w.versions} />
       ) : (
         <EmptyState title="Una biblioteca por construir">
           <p>
-            No tienes mazos todavía. La importación y creación de listas llega
-            en la fase 2.
+            Crea tu primer mazo, selecciona un líder y revisa la lista antes de
+            guardarla.
           </p>
         </EmptyState>
       )}

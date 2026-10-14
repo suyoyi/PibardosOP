@@ -53,6 +53,8 @@ body {
 }
 .field {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   min-height: 48px;
   border: 1px solid #364152;
   border-radius: 0.6rem;
@@ -93,6 +95,10 @@ body {
 }
 .button-secondary:hover {
   background: #ffffff0c;
+}
+.button-secondary:disabled {
+  cursor: default;
+  opacity: 0.5;
 }
 .skip-link {
   position: fixed;

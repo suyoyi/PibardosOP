@@ -70,6 +70,14 @@ if (!ready)
   throw new Error(
     "Local PostgreSQL, Auth and REST API readiness checks failed.",
   );
+// Apply pending version-controlled local migrations even when containers already
+// exist. This is additive migration replay, never a data reset.
+const migration = spawnSync(
+  process.execPath,
+  ["scripts/supabase.mjs", "migration", "up", "--local"],
+  { stdio: "inherit" },
+);
+if (migration.status !== 0) process.exit(migration.status ?? 1);
 console.log(
   "Verified PostgreSQL query, Auth health and PostgREST OpenAPI response.",
 );

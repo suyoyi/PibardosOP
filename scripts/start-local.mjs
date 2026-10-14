@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { ensureDependencies } from "./dependencies.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 process.chdir(root);
@@ -27,9 +28,9 @@ if (spawnSync("docker", ["info"], { stdio: "ignore" }).status !== 0) {
     "Open Docker Desktop with Linux containers enabled, then run npm run local:start again.",
   );
 }
-if (!existsSync("node_modules/next/dist/bin/next")) {
+ensureDependencies(root, () => {
   run(["ci", "--cache", path.join(os.tmpdir(), "pibardos-npm-cache")]);
-}
+});
 console.log("Starting and verifying local Supabase…");
 run(["run", "db:start"], true);
 const hasUrl = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);

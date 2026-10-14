@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { Client } from "pg";
 
-export async function connectLocalDatabase() {
+export async function connectLocalDatabase(testDatabase?: string) {
   const status = JSON.parse(
     execFileSync(
       process.execPath,
@@ -17,7 +17,13 @@ export async function connectLocalDatabase() {
     throw new Error(
       "Tests require a running local Supabase database. Run npm run db:start.",
     );
-  const client = new Client({ connectionString });
+  const destination = new URL(connectionString);
+  if (testDatabase) {
+    if (!/^pibardos_migrations_[a-z0-9]+$/.test(testDatabase))
+      throw new Error("Only disposable migration-test databases are allowed.");
+    destination.pathname = `/${testDatabase}`;
+  }
+  const client = new Client({ connectionString: destination.toString() });
   await client.connect();
   return client;
 }

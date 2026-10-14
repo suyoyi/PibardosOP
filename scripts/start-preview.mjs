@@ -2,6 +2,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { existsSync, openSync, closeSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { ensureDependencies } from "./dependencies.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 process.chdir(root);
@@ -36,9 +37,9 @@ if (!dockerReady)
     "Docker is unavailable. Rebuild the Codespace with the repository's devcontainer configuration.",
   );
 
-if (!existsSync("node_modules/.bin/next")) {
+ensureDependencies(root, () => {
   run(["ci", "--cache", "/tmp/pibardos-npm-cache"]);
-}
+});
 console.log("Starting local database and authentication…");
 // CLI status can contain local keys; keep its stdout out of terminal logs.
 run(["run", "db:start"], true);

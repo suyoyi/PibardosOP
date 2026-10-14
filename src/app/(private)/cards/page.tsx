@@ -1,41 +1,36 @@
+import Link from "next/link";
 import { requireUser } from "@/lib/supabase/server";
+import { ManualCatalogProvider } from "@/lib/data";
 import { PageHeading, EmptyState } from "@/components/ui";
-export default async function CardsPage() {
-  const { supabase } = await requireUser();
-  const { data, error } = await supabase
-    .from("cards")
-    .select("id,card_number,name")
-    .order("card_number")
-    .limit(100);
-  if (error) throw new Error("No se pudo consultar el catálogo.");
+import { CardCatalog } from "@/components/card-catalog";
+import { SavedNotice } from "@/components/forms";
+export default async function CardsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ saved?: string }>;
+}) {
+  const { supabase } = await requireUser(),
+    catalog = await new ManualCatalogProvider(supabase).search({});
   return (
     <>
       <PageHeading
         eyebrow="CONOCE TUS OPCIONES"
         title="Cartas"
-        description="El catálogo utiliza datos con procedencia verificada."
+        description="Catálogo manual privado. Los datos que introduzcas no se presentan como información oficial verificada."
       />
-      {data.length ? (
-        <>
-          <p className="mb-4 text-sm text-muted">
-            Primeras {data.length} cartas del catálogo. Búsqueda y filtros en la
-            fase 2.
-          </p>
-          <ul className="grid gap-3 sm:grid-cols-2">
-            {data.map((card) => (
-              <li key={card.id} className="panel p-4">
-                <span className="text-xs text-accent">{card.card_number}</span>
-                <h2 className="mt-1 font-semibold">{card.name}</h2>
-              </li>
-            ))}
-          </ul>
-        </>
+      <SavedNotice saved={(await searchParams).saved} />
+      <div className="mb-6">
+        <Link href="/cards/new" className="button-primary">
+          Añadir carta manual
+        </Link>
+      </div>
+      {catalog.length ? (
+        <CardCatalog catalog={catalog} />
       ) : (
         <EmptyState title="El catálogo está vacío">
           <p>
-            No se han añadido cartas. En la fase 2 podrás introducir datos
-            manualmente; cualquier proveedor externo requerirá verificar su
-            licencia y condiciones.
+            Añade tu líder y las cartas de tu lista para importarla. Las
+            entradas desconocidas nunca se descartan al importar.
           </p>
         </EmptyState>
       )}

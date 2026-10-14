@@ -1,48 +1,48 @@
+import Link from "next/link";
 import { requireUser } from "@/lib/supabase/server";
+import { getCompetitiveWorkspace } from "@/lib/data";
 import { PageHeading, EmptyState } from "@/components/ui";
-export default async function MatchesPage() {
-  const { supabase } = await requireUser();
-  const { data, error } = await supabase
-    .from("matches")
-    .select("id,result,played_at")
-    .order("played_at", { ascending: false })
-    .limit(50);
-  if (error) throw new Error("No se pudieron cargar las partidas.");
-  const labels: Record<string, string> = {
-    win: "Victoria",
-    loss: "Derrota",
-    draw: "Empate",
-  };
+import { SavedNotice } from "@/components/forms";
+import { MatchHistory } from "@/components/match-history";
+export default async function MatchesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ saved?: string }>;
+}) {
+  const { supabase } = await requireUser(),
+    w = await getCompetitiveWorkspace(supabase);
   return (
     <>
       <PageHeading
         eyebrow="CADA PARTIDA CUENTA"
         title="Partidas"
-        description="Cada resultado estará asociado a la versión exacta del mazo utilizado."
+        description="Historial guardado con tu versión de mazo, líder rival, salida y resultado."
       />
-      {data.length ? (
-        <>
-          <p className="mb-4 text-sm text-muted">
-            Últimas {data.length} partidas.
-          </p>
-          <ul className="grid gap-3">
-            {data.map((match) => (
-              <li key={match.id} className="panel flex justify-between p-4">
-                <span>{labels[match.result]}</span>
-                <time dateTime={match.played_at} className="text-sm text-muted">
-                  {new Intl.DateTimeFormat("es-ES", {
-                    dateStyle: "medium",
-                    timeZone: "Europe/Madrid",
-                  }).format(new Date(match.played_at))}
-                </time>
-              </li>
-            ))}
-          </ul>
-        </>
+      <SavedNotice saved={(await searchParams).saved} />
+      <div className="mb-6 flex flex-wrap gap-3">
+        <Link href="/matches/new" className="button-primary">
+          Registrar partida
+        </Link>
+        <Link href="/tournaments" className="button-secondary">
+          Torneos
+        </Link>
+        <Link href="/statistics" className="button-secondary">
+          Ver gráficas
+        </Link>
+      </div>
+      {w.matches.length ? (
+        <MatchHistory
+          matches={w.matches}
+          decks={w.decks}
+          versions={w.versions}
+          catalog={w.catalog}
+          tournaments={w.tournaments}
+        />
       ) : (
         <EmptyState title="Todavía no hay resultados">
           <p>
-            El registro rápido de partidas y los torneos llegan en la fase 4.
+            Registra tu primera partida: mazo y versión, líder rival, primero o
+            segundo y victoria, derrota o empate.
           </p>
         </EmptyState>
       )}

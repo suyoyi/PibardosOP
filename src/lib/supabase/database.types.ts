@@ -103,6 +103,7 @@ export type Database = {
           source_updated_at: string | null;
           traits: string[];
           updated_at: string;
+          user_id: string | null;
         };
         ComputedFields: never;
         Insert: {
@@ -128,6 +129,7 @@ export type Database = {
           source_updated_at?: string | null;
           traits?: string[];
           updated_at?: string;
+          user_id?: string | null;
         };
         Update: {
           attribute?: string | null;
@@ -152,6 +154,7 @@ export type Database = {
           source_updated_at?: string | null;
           traits?: string[];
           updated_at?: string;
+          user_id?: string | null;
         };
         Relationships: [
           {
@@ -611,6 +614,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      save_deck: { Args: { p_input: Json }; Returns: string };
       save_deck_version: {
         Args: {
           p_cards: Json;
@@ -620,6 +624,7 @@ export type Database = {
         };
         Returns: string;
       };
+      save_match: { Args: { p_input: Json }; Returns: string };
     };
     Enums: {
       card_color: "red" | "green" | "blue" | "purple" | "black" | "yellow";

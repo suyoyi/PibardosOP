@@ -1,5 +1,6 @@
 import { PageHeading, SectionLink, EmptyState } from "@/components/ui";
 import { requireUser } from "@/lib/supabase/server";
+import Link from "next/link";
 
 export default async function Dashboard() {
   const { supabase } = await requireUser();
@@ -31,6 +32,17 @@ export default async function Dashboard() {
           <p className="mt-3 text-4xl font-semibold">{matches.count ?? 0}</p>
         </div>
       </section>
+      <div className="mb-6 flex flex-wrap gap-3">
+        <Link href="/matches/new" className="button-primary">
+          Registrar partida
+        </Link>
+        <Link href="/decks/new" className="button-secondary">
+          Importar mazo
+        </Link>
+        <Link href="/tournaments" className="button-secondary">
+          Torneos
+        </Link>
+      </div>
       <div className="mb-8 grid gap-4 lg:grid-cols-2">
         <SectionLink
           href="/decks"
@@ -46,8 +58,8 @@ export default async function Dashboard() {
       {(matches.count ?? 0) === 0 ? (
         <EmptyState title="Tu historia empieza aquí">
           <p>
-            Todavía no hay partidas registradas. El seguimiento de partidas se
-            incorporará en la fase 4.
+            Todavía no hay partidas registradas. Guarda un mazo y registra tu
+            primera partida para empezar a ver tu evolución.
           </p>
         </EmptyState>
       ) : (

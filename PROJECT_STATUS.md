@@ -35,7 +35,7 @@ Diagnosed environment limitations:
 - Injected proxy breaks BusyBox's local Auth health probe (403). A direct probe without the proxy and gateway Auth health succeed. The opt-in `PIBARDOS_HTTP_READINESS=true` uses mandatory real service checks instead; Docker still labels its own Auth probe unhealthy. Functional authentication passed in the browser.
 - Playwright CDN is blocked by the original cloud network policy; installed Chromium is used successfully. No custom network additions are needed for this setup.
 
-Product limitations:
+Product limitations at phase 1 completion (later sections supersede implemented features):
 
 - Foundation screens read real data but deck creation/import/editing, full version comparison UI, match/tournament entry, detailed analytics, simulator and collection UI are subsequent phases. No disabled action pretends to implement them.
 - Catalog intentionally empty; no external provider, artwork or current restriction data is asserted verified.
@@ -44,7 +44,29 @@ Product limitations:
 
 ## Next phases
 
-Implement cards/import, deck editing/version comparisons, competitive tracking, practice and collection in that order. Full MVP and production deployment are not complete.
+Phases 2–4 are implemented below. Next: phase 5 practice simulation, then phase 6 collection and explicitly designed offline behavior. Account recovery/export/deletion and hosted production configuration remain release gates. Full MVP and production deployment are not complete.
+
+## Phases 2 and 3 — cards, import and deck management complete locally
+
+- Added provider-agnostic `CardProvider` and a documented manual-catalog adapter. No external dataset/license/API is assumed. User-supplied cards are private, immutable and explicitly unverified; shared catalog rows remain read-only. Manual artwork is not downloaded or stored.
+- Catalog search/detail and color, type, set, cost, power, counter and attribute filters; artwork placeholders and compact/grid views.
+- Extensible decklist syntax handlers, Unicode/code/newline normalization, recognized/unknown/malformed/duplicate preview, explicit confirmation, raw-input audit history and text export/download. Unknown lines block saving until corrected; browser CRLF is normalized to the same audited text.
+- Create, rename, edit leader/quantities/metadata, duplicate, archive/restore and delete unreferenced decks. Incomplete construction can be saved explicitly as a draft; active decks require valid construction.
+- Independent domain validation covers main/leader/type/color/canonical printing limits, separate DON and effective dated restrictions. Full tournament legality stays unverified without a verified complete restriction dataset.
+- Atomic save RPC creates metadata/snapshot/import confirmation together, avoids redundant list versions and rejects stale-version edits. Existing match/tournament references prevent destructive deck deletion. Version history/comparison includes leader, format, quantity changes and cost curves.
+- Executed production build, strict types and lint. Real PostgreSQL tests exercised private card isolation, forged references, rollback, version preservation, no-op metadata edits, independent duplication/deletion and stale edits. A mobile Chromium flow passed for manual card creation, unknown correction, duplicate aggregation, confirmation, export, editing, comparison and duplication.
+- Catalog/restriction sources are still manual/unverified. Printed-code text export cannot retain alternate-art selection; database snapshots retain exact printing IDs. Production deployment remains pending.
+
+## Phase 4 — competitive tracking complete locally
+
+- Fast match entry records exact deck version, opponent leader, win/loss/draw and first/second, with optional timestamp, opponent name, type, event and notes. History supports filters, pagination, corrections and confirmed deletion.
+- Tournament create/edit, exact version selection, manual placement, numbered round recording, summary, archive/restore and retained history. Atomic match/round RPC rolls back conflicts and prevents retry duplicates. Database guards freeze event version/format after games exist and block cross-owner/card/version links. Archived events permit corrections of existing games but no new rounds.
+- Recharts show persisted results by deck, exact version, opponent leader, play order and Madrid calendar month; accessible data tables expose every percentage's denominator. Draws are excluded; zero decisive games show no percentage. A five-game context threshold flags small samples rather than implying statistical significance. Deck/format filters apply to all summaries and graphs.
+- Builder uses React Hook Form for structured values, independent domain validation and server Zod validation. Manual/shared roots with the same printed code and canonical-linked reprints share copy limits. Unknown colors do not produce a verified construction claim. Every import preview retains a separate raw/error audit, including unknown entries later corrected.
+- Final executed verification: `npm run check` passed lint with zero warnings, strict types, **71 unit/PostgreSQL integration tests across 9 files**, and production build. All **6 mobile Chromium E2E tests** passed: CSRF/auth/PWA regressions, manual catalog/import/versions/duplication, and fifty-card active import → exact-version games → tournament rounds/corrections → archive → sample-aware charts → confirmed deletion with recomputed results.
+- All application SQL migrations replayed successfully in a new disposable PostgreSQL database with minimal Supabase Auth fixtures. The replay exercised card/deck/match writes, structured snapshot summaries and account-data cascading removal. Separate integration and browser tests used the real local Supabase services; test accounts and temporary databases were cleaned up.
+- Startup now restores locked dependencies when their fingerprint changes and applies pending local migrations without reset. Updated Windows-compatible local launcher was exercised on Linux with browser opening disabled: frozen reinstall, PostgreSQL/Auth/REST verification, migration replay, production build and actual health/login responses succeeded. Windows execution, hosted deployment and new Codespaces provisioning remain unverified.
+- Remaining product limitations: no licensed external card dataset or verified complete current restrictions, no bundled franchise artwork, no practice simulator/collection UI/offline writes yet, and account recovery/export/deletion UI still pending. Manual card facts remain private and immutable. Match entry uses explicit UTC; history and monthly graphs use Madrid time. No full MVP or production deployment is claimed.
 
 ## Browser access — Codespaces preparation
 

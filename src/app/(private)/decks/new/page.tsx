@@ -1,0 +1,33 @@
+import { randomUUID } from "node:crypto";
+import Link from "next/link";
+import { requireUser } from "@/lib/supabase/server";
+import { getDeckWorkspace } from "@/lib/data";
+import { PageHeading } from "@/components/ui";
+import { DeckBuilder } from "@/components/deck-builder";
+export default async function NewDeckPage() {
+  const { supabase } = await requireUser(),
+    { catalog, restrictions } = await getDeckWorkspace(supabase);
+  return (
+    <>
+      <PageHeading
+        eyebrow="PREPARA TU ESTRATEGIA"
+        title="Crear mazo"
+        description="Importa, revisa y confirma una lista, o constrúyela carta a carta."
+      />
+      {!catalog.length && (
+        <p className="mb-6 text-sm text-muted">
+          Primero{" "}
+          <Link className="text-accent underline" href="/cards/new">
+            añade tu líder y tus cartas
+          </Link>{" "}
+          al catálogo manual.
+        </p>
+      )}
+      <DeckBuilder
+        id={randomUUID()}
+        catalog={catalog}
+        restrictions={restrictions}
+      />
+    </>
+  );
+}
