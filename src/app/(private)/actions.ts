@@ -19,6 +19,8 @@ import {
   validationMessage,
   type ActionState,
 } from "@/domain/forms";
+import { BerryWalletProvider, berryClient } from "@/lib/berrywallet";
+import { BerryWalletError } from "@/domain/berrywallet";
 import type { Json } from "@/lib/supabase/database.types";
 
 function databaseError(error: {
@@ -109,13 +111,60 @@ export type PreviewState = {
   report?: ImportReport;
   jobId?: string;
   raw?: string;
+  providerNotice?: string;
 };
-export async function previewImport(raw: string): Promise<PreviewState> {
+export async function previewImport(
+  raw: string,
+  resolveMissing = false,
+): Promise<PreviewState> {
   const { supabase } = await requireUser();
   if (typeof raw !== "string" || raw.length > 100000 || !raw.trim())
     return { error: "Pega una lista de hasta 100.000 caracteres." };
   raw = normalizeDeckText(raw);
-  const report = parseDecklist(raw, await getCatalog(supabase));
+  let report = parseDecklist(raw, await getCatalog(supabase));
+  let providerNotice: string | undefined;
+  if (resolveMissing === true) {
+    const numbers = [
+      ...new Set(
+        report.unknown
+          .map((p) => p.card_number)
+          .filter((n): n is string => Boolean(n)),
+      ),
+    ];
+    const client = berryClient(),
+      provider = new BerryWalletProvider(supabase, "en", undefined, client);
+    const notices: string[] = [];
+    // A code cannot identify an artwork. Do not choose between multiple results.
+    for (const number of numbers.slice(0, 15)) {
+      try {
+        const matches = await client.search(number);
+        const exact = matches.data.filter((c) => c.card_number === number);
+        if (exact.length !== 1 || matches.total > matches.data.length) {
+          notices.push(
+            `${number}: sin una coincidencia única. Selecciona la impresión en Cartas o añádela manualmente.`,
+          );
+          continue;
+        }
+        await provider.importCard(exact[0].external_id);
+      } catch (e) {
+        notices.push(
+          e instanceof BerryWalletError
+            ? e.message
+            : "No se pudo consultar el proveedor; conserva la lista y reintenta.",
+        );
+        break;
+      }
+    }
+    if (numbers.length > 15)
+      notices.push(
+        "Se consultan hasta 15 códigos por revisión. Repite para continuar sin agotar la cuota.",
+      );
+    report = parseDecklist(raw, await getCatalog(supabase));
+    providerNotice = notices.length
+      ? notices.join(" ")
+      : "Cartas consultadas. Revisa la impresión y las cantidades antes de confirmar; el mazo todavía no se ha guardado.";
+    revalidatePath("/", "layout");
+  }
   const id = randomUUID();
   const { error } = await supabase.from("import_jobs").insert({
     id,
@@ -126,10 +175,13 @@ export async function previewImport(raw: string): Promise<PreviewState> {
       ...report.unknown,
       ...report.malformed,
       ...report.duplicates,
+      ...(providerNotice
+        ? [{ code: "PROVIDER_NOTICE", message: providerNotice }]
+        : []),
     ] as unknown as Json[],
   });
   if (error) return databaseError(error);
-  return { report, jobId: id, raw };
+  return { report, jobId: id, raw, providerNotice };
 }
 
 export async function saveDeck(

@@ -25,7 +25,7 @@ it("replays every application migration in a fresh disposable PostgreSQL databas
           "select relrowsecurity from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and relkind='r'",
         )
       ).rows;
-      expect(tables).toHaveLength(11);
+      expect(tables).toHaveLength(12);
       expect(tables.every((t) => t.relrowsecurity)).toBe(true);
       const owner = randomUUID(),
         leader = randomUUID(),

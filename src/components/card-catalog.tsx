@@ -18,10 +18,14 @@ export function CardArtwork({
   small?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
-  return card.image_url && !failed ? (
+  const imageUrl =
+    card.source === "berrywallet"
+      ? `/api/cards/${card.id}/image`
+      : card.image_url;
+  return imageUrl && !failed ? (
     <Image
       unoptimized
-      src={card.image_url}
+      src={imageUrl}
       alt={`Ilustración de ${card.name}`}
       width={small ? 60 : 180}
       height={small ? 84 : 252}

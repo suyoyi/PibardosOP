@@ -137,9 +137,9 @@ export function DeckBuilder({
               },
             ],
     );
-  const review = () =>
+  const review = (resolveMissing = false) =>
     startPreview(async () => {
-      const next = await previewImport(raw);
+      const next = await previewImport(raw, resolveMissing);
       setPreview(next);
       setConfirmed(false);
       if (next.report) {
@@ -186,12 +186,27 @@ export function DeckBuilder({
         </Field>
         <button
           type="button"
-          onClick={review}
+          onClick={() => review()}
           disabled={previewPending || !raw.trim()}
           className="button-secondary"
         >
           {previewPending ? "Revisando…" : "Revisar importación"}
         </button>
+        {Boolean(report?.unknown.length) && (
+          <button
+            type="button"
+            className="button-secondary"
+            disabled={previewPending}
+            onClick={() => review(true)}
+          >
+            Resolver desconocidas con BerryWallet
+          </button>
+        )}
+        {preview.providerNotice && (
+          <p role="status" className="text-sm text-amber-100">
+            {preview.providerNotice}
+          </p>
+        )}
         {preview.error && (
           <p role="alert" className="text-red-200">
             {preview.error}

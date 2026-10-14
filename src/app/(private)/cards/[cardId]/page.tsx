@@ -5,16 +5,25 @@ import { uuid } from "@/domain/forms";
 import { typeLabels, colorLabels } from "@/domain/cards";
 import { CardArtwork } from "@/components/card-catalog";
 import { PageHeading } from "@/components/ui";
+import { CardPrices } from "@/components/card-prices";
+import { SavedNotice } from "@/components/forms";
 export default async function CardPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ cardId: string }>;
+  searchParams: Promise<{ saved?: string }>;
 }) {
   const { cardId } = await params;
   if (!uuid.safeParse(cardId).success) notFound();
   const { supabase } = await requireUser(),
     card = await new ManualCatalogProvider(supabase).getCard(cardId);
   if (!card) notFound();
+  const { data: provider, error: providerError } = await supabase
+    .from("card_provider_items")
+    .select("*")
+    .eq("card_id", card.id)
+    .maybeSingle();
   return (
     <>
       <PageHeading
@@ -22,6 +31,7 @@ export default async function CardPage({
         title={card.name}
         description={`${typeLabels[card.card_type]} · ${card.source === "manual" ? "Datos manuales sin verificar" : card.source}`}
       />
+      <SavedNotice saved={(await searchParams).saved} />
       <div className="panel grid gap-6 p-6 sm:grid-cols-2">
         <CardArtwork card={card} />
         <dl className="grid gap-4">
@@ -48,6 +58,20 @@ export default async function CardPage({
           </p>
         )}
       </div>
+      {providerError && (
+        <p role="alert" className="mt-6 text-sm text-red-200">
+          No se pudieron leer los precios guardados. Revisa la conexión y las
+          migraciones.
+        </p>
+      )}
+      {provider && (
+        <CardPrices
+          prices={provider.prices}
+          fetchedAt={provider.fetched_at}
+          externalId={provider.external_id}
+          language={card.language}
+        />
+      )}
     </>
   );
 }

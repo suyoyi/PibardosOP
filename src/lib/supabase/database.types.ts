@@ -34,6 +34,42 @@ export type Database = {
   };
   public: {
     Tables: {
+      card_provider_items: {
+        Row: {
+          card_id: string;
+          external_id: string;
+          fetched_at: string;
+          image_path: string;
+          prices: NonNullable<Json>;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          card_id: string;
+          external_id: string;
+          fetched_at?: string;
+          image_path: string;
+          prices?: NonNullable<Json>;
+          user_id?: string;
+        };
+        Update: {
+          card_id?: string;
+          external_id?: string;
+          fetched_at?: string;
+          image_path?: string;
+          prices?: NonNullable<Json>;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "card_provider_items_card_id_user_id_fkey";
+            columns: ["card_id", "user_id"];
+            isOneToOne: false;
+            referencedRelation: "cards";
+            referencedColumns: ["id", "user_id"];
+          },
+        ];
+      };
       card_restrictions: {
         Row: {
           canonical_card_id: string;
@@ -97,6 +133,7 @@ export type Database = {
           name: string;
           power: number | null;
           printing_code: string;
+          provider_card_id: string | null;
           rarity: string | null;
           set_code: string | null;
           source: string;
@@ -123,6 +160,7 @@ export type Database = {
           name: string;
           power?: number | null;
           printing_code?: string;
+          provider_card_id?: string | null;
           rarity?: string | null;
           set_code?: string | null;
           source: string;
@@ -148,6 +186,7 @@ export type Database = {
           name?: string;
           power?: number | null;
           printing_code?: string;
+          provider_card_id?: string | null;
           rarity?: string | null;
           set_code?: string | null;
           source?: string;
@@ -614,6 +653,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      cache_berrywallet_card: { Args: { p_card: Json }; Returns: string };
       save_deck: { Args: { p_input: Json }; Returns: string };
       save_deck_version: {
         Args: {

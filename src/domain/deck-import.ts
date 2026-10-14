@@ -10,6 +10,7 @@ export type ImportProblem = {
   line: number;
   raw: string;
   code: string;
+  card_number?: string;
   message: string;
 };
 export type ImportReport = {
@@ -108,6 +109,7 @@ export function parseDecklist(
         report.unknown.push({
           ...problem,
           code: "UNKNOWN_CARD",
+          card_number: number,
           message: `${number} no está en tu catálogo. Añádela manualmente o corrige el código.`,
         });
         return;

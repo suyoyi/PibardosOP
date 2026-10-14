@@ -1,6 +1,6 @@
 # Pibardos OP
 
-A Spanish mobile-first personal workspace for One Piece Card Game. The app includes secure authentication, private manual cards, confirmed deck imports, a versioned deck builder, match history, tournaments and charts of saved results. Practice and collection/offline UI are subsequent phases; see `PROJECT_STATUS.md` and `docs/ARCHITECTURE.md`.
+A Spanish mobile-first personal workspace for One Piece Card Game. The app includes secure authentication, private manual cards, an optional BerryWallet adapter, confirmed deck imports, a versioned deck builder, match history, tournaments and charts of saved results. Practice and collection/offline UI are subsequent phases; see `PROJECT_STATUS.md` and `docs/ARCHITECTURE.md`.
 
 ## Try the app in your browser with GitHub Codespaces
 
@@ -56,6 +56,16 @@ Integration tests require local Supabase and fail if unavailable; they are never
 
 `npm run db:reset` **deletes local development data** and replays migrations; only use it on disposable databases. Production migrations are applied with the Supabase CLI to a reviewed linked project, never with the local reset command. After changing `.env.local`, restart Next.js and rebuild before E2E.
 
+## Optional BerryWallet connection
+
+Configure `BERRYWALLET_API_KEY` in the server's secret settings, or add your own key to ignored `.env.local` for local development. Restart/rebuild Next.js after a credential change. Never share the key in chat, commit it, or use a `NEXT_PUBLIC_` prefix. The adapter supports this cloud's network-secret HTTP proxy without changing local Supabase requests.
+
+In **Cartas**, explicitly search BerryWallet and add the desired printing, or load one collection with an explicit language. Imported cards become private catalog entries usable by decks and opponent selection. Missing/invalid facts are reported; manual entry remains available. In the import preview, **Resolver desconocidas con BerryWallet** optionally resolves up to 15 codes; ambiguous printings require selection in Cartas. Every preview and provider notice is retained; saving still requires confirmation.
+
+Card detail shows separately cached CardMarket EUR and TCGPlayer USD quotes, the consultation date, and a refresh action with a 15-minute reuse interval. Original card facts stay immutable to preserve deck history. Authenticated artwork passes through a server proxy without exposing credentials or storing image files. Unavailable images use the existing placeholder.
+
+The documented free quota is 100 requests/hour and 1,000/day shared across games; searches, details and images consume provider requests. This integration uses basic prices included in responses, never the paid `/op/prices` endpoint or automatic subscriptions. See [provider review, limits and live verification](docs/BERRYWALLET.md). **The current environment's live requests return HTTP 401; actual card/image/quote responses remain unverified until the credential is accepted.** Controlled fixtures verify the application flows without querying a live card website.
+
 ## Using the competitive workflows
 
 1. Add your leader, opponent leaders and missing main-deck cards in **Cartas** using facts from your physical cards. For alternate printings/reprints choose their original canonical identity. Manual data remains explicitly unverified, and no copyrighted images are bundled or downloaded.
@@ -76,7 +86,7 @@ To update an existing local checkout, stop its web-server terminal first, run `g
 
 Installation requires HTTPS (loopback is allowed during testing). The service worker caches only original public icons and the offline notice. Private responses and credentials are never cached. Offline reads/writes, synchronization and conflict resolution are not implemented. Browser/OS install prompts vary; the manifest and service worker are the foundation, not a guarantee of an install prompt on every device.
 
-Production release gates still include account recovery/export/deletion workflows, the practice simulator, collection workflows, externally verified restriction data and licensed providers. The full MVP and a production deployment are not claimed complete.
+Production release gates still include account recovery/export/deletion workflows, the practice simulator, collection workflows, externally verified restriction data and accepted provider credentials and live response verification. The full MVP and a production deployment are not claimed complete.
 
 ## Security and data
 

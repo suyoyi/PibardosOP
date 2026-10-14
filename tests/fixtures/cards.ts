@@ -24,6 +24,7 @@ export function syntheticCard(
     language: "en",
     printing_code: "standard",
     image_url: null,
+    provider_card_id: null,
     source: "synthetic-test",
     source_updated_at: null,
     created_at: "2026-01-01T00:00:00Z",
