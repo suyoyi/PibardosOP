@@ -74,7 +74,7 @@ export function ManualCardForm({ catalog }: { catalog: Card[] }) {
         />
       </Field>
       <Field label="Idioma">
-        <select name="language" className="field">
+        <select name="language" className="field" defaultValue="en">
           <option value="es">Español</option>
           <option value="en">Inglés</option>
           <option value="ja">Japonés</option>

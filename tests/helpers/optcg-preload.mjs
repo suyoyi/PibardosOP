@@ -10,7 +10,7 @@ const leader = optcgRecord({
   life: "5",
   card_cost: null,
   counter_amount: null,
-  card_image: null,
+  card_image: "https://optcgapi.com/media/static/Card_Images/OP97-001.jpg",
 });
 const base = optcgRecord(),
   alternate = optcgRecord({
@@ -37,7 +37,8 @@ globalThis.fetch = async (input, init) => {
     return original(input, init);
   if (url.pathname.startsWith("/media/static/Card_Images/"))
     return new Response(png, { headers: { "Content-Type": "image/png" } });
-  if (url.pathname === "/api/sets/OP-97/") return Response.json(records);
+  if (["/api/sets/OP-97/", "/api/sets/OP-01/"].includes(url.pathname))
+    return Response.json(records);
   const match = url.pathname.match(/^\/api\/sets\/card\/(OP97-\d{3})\/$/);
   if (match) {
     const found = records.filter((c) => c.card_set_id === match[1]);
@@ -63,6 +64,11 @@ globalThis.fetch = async (input, init) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return Response.json([base]);
   }
+  if (
+    url.pathname === "/api/sets/filtered/" &&
+    url.searchParams.get("card_type") === "Leader"
+  )
+    return Response.json([leader]);
   if (url.pathname === "/api/sets/filtered/")
     return Response.json(
       records.filter((c) =>

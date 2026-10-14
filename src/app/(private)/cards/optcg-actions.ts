@@ -43,6 +43,40 @@ export async function searchOptcg(
     return failure(e);
   }
 }
+export async function browseOptcg(
+  mode: unknown,
+  family: unknown = "sets",
+  collection: unknown = "OP01",
+): Promise<{
+  error?: string;
+  cards?: OptcgCard[];
+  issues?: string[];
+  received?: number;
+}> {
+  await requireUser();
+  const f = familySchema.safeParse(family),
+    m = z.enum(["leader", "cards"]).safeParse(mode);
+  if (!f.success || !m.success)
+    return { error: "Selección de catálogo no válida." };
+  try {
+    const api = optcgClient();
+    if (m.data === "leader") return await api.leaders(f.data);
+    if (f.data === "don") return await api.cards("DON!!", "don");
+    const code = optcgSetSchema.safeParse(collection);
+    if (!code.success)
+      return {
+        error: "Selecciona una colección válida, por ejemplo OP01 o ST01.",
+      };
+    if (f.data === "promos") return await api.promoCollection(code.data);
+    if (f.data === "decks" && !code.data.startsWith("ST"))
+      return {
+        error: "Para mazos iniciales, usa una colección ST, por ejemplo ST01.",
+      };
+    return await api.set(code.data);
+  } catch (e) {
+    return failure(e);
+  }
+}
 const selectionSchema = z
   .object({
     external_id: optcgIdSchema,

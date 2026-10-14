@@ -134,7 +134,7 @@ export function DeckBuilder({
               },
             ],
     );
-  const selectCard = (card: Card) => {
+  const adjustCard = (card: Card, delta: number) => {
     setCatalog((current) => [
       ...new Map([...current, card].map((c) => [c.id, c])).values(),
     ]);
@@ -143,9 +143,10 @@ export function DeckBuilder({
       changeQuantity(
         card,
         (getValues("entries").find((e) => e.card_id === card.id)?.quantity ??
-          0) + 1,
+          0) + delta,
       );
   };
+  const selectCard = (card: Card) => adjustCard(card, 1);
   const review = (resolveMissing = false) =>
     startPreview(async () => {
       const next = await previewImport(raw, resolveMissing);
@@ -178,6 +179,11 @@ export function DeckBuilder({
         filters={filters}
         onFilters={setFilters}
         onSelect={selectCard}
+        onAdjust={adjustCard}
+        entries={entries}
+        leaderId={leaderId}
+        mainCount={result.mainCount}
+        donCount={result.donCount}
       />
       <section className="panel grid gap-4 p-5" aria-label="Importar lista">
         <h2 className="text-lg font-semibold">Importar lista de texto</h2>
@@ -317,7 +323,11 @@ export function DeckBuilder({
           >
             <option value="">Seleccionar líder</option>
             {catalog
-              .filter((c) => c.card_type === "leader")
+              .filter(
+                (c) =>
+                  c.card_type === "leader" &&
+                  (c.language === "en" || c.id === leaderId),
+              )
               .map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.card_number} · {c.name}

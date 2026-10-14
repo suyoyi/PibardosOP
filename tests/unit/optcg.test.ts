@@ -207,3 +207,27 @@ it("imports the explicitly identified base even when an alternate was the first 
     parseDecklist("4 OP97-010", [base, alternate]).entries[0].card.id,
   ).toBe(base.id);
 });
+
+it("retrieves leaders through the documented type filter and never queries DON for a leader", async () => {
+  const transport = vi.fn<OptcgTransport>(async () => Response.json([])),
+    api = new OptcgClient(transport);
+  await api.leaders("sets");
+  await api.leaders("decks");
+  await api.leaders("promos");
+  expect(transport.mock.calls.map((c) => c[0])).toEqual([
+    "https://optcgapi.com/api/sets/filtered/?card_type=Leader",
+    "https://optcgapi.com/api/decks/filtered/?card_type=Leader",
+    "https://optcgapi.com/api/promos/filtered/?card_type=Leader",
+  ]);
+  await api.leaders("don");
+  expect(transport).toHaveBeenCalledTimes(3);
+});
+
+it("normalizes promo collection aliases for the documented set_id filter", async () => {
+  const transport = vi.fn<OptcgTransport>(async () => Response.json([])),
+    api = new OptcgClient(transport);
+  await api.promoCollection("OP-01");
+  expect(transport.mock.calls[0][0]).toBe(
+    "https://optcgapi.com/api/promos/filtered/?set_id=OP01",
+  );
+});

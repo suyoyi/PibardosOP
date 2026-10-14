@@ -14,35 +14,65 @@ import { Field } from "./forms";
 export function CardArtwork({
   card,
   small = false,
+  full = false,
 }: {
   card: Card;
   small?: boolean;
+  full?: boolean;
 }) {
-  const [failed, setFailed] = useState(false);
   const imageUrl = ["berrywallet", "optcgapi"].includes(card.source)
     ? `/api/cards/${card.id}/image`
     : card.image_url;
-  return imageUrl && !failed ? (
+  return (
+    <CardPicture
+      src={imageUrl}
+      name={card.name}
+      number={card.card_number}
+      small={small}
+      full={full}
+    />
+  );
+}
+export function CardPicture({
+  src,
+  name,
+  number,
+  small = false,
+  full = false,
+}: {
+  src: string | null;
+  name: string;
+  number: string;
+  small?: boolean;
+  full?: boolean;
+}) {
+  const [failed, setFailed] = useState(false);
+  return src && !failed ? (
     <Image
       unoptimized
-      src={imageUrl}
-      alt={`Ilustración de ${card.name}`}
+      src={src}
+      alt={`Ilustración de ${name}`}
       width={small ? 60 : 180}
       height={small ? 84 : 252}
       loading="lazy"
       onError={() => setFailed(true)}
       className={
-        small
-          ? "h-20 w-14 shrink-0 rounded-md object-contain"
-          : "mx-auto h-44 w-full rounded-lg object-contain"
+        full
+          ? "h-full w-full object-contain"
+          : small
+            ? "h-20 w-14 shrink-0 rounded-md object-contain"
+            : "mx-auto h-44 w-full rounded-lg object-contain"
       }
     />
   ) : (
     <div
-      aria-label={`Sin ilustración de ${card.name}`}
-      className={`flex items-center justify-center rounded-lg border border-border bg-background p-2 text-center text-xs text-muted ${small ? "h-20 w-14 shrink-0" : "h-44"}`}
+      aria-label={`Sin ilustración de ${name}`}
+      className={`flex items-center justify-center rounded-lg border border-border bg-background p-2 text-center text-xs text-muted ${full ? "h-full w-full" : small ? "h-20 w-14 shrink-0" : "h-44"}`}
     >
-      {card.card_number}
+      <span>
+        {number}
+        <span className="mt-2 block text-[10px]">Sin imagen disponible</span>
+      </span>
     </div>
   );
 }
@@ -50,24 +80,28 @@ export function CatalogControls({
   catalog,
   filters,
   onChange,
+  hideSearch = false,
 }: {
   catalog: readonly CatalogFilterCard[];
   filters: CardFilters;
   onChange: (filters: CardFilters) => void;
+  hideSearch?: boolean;
 }) {
   const update = (key: keyof CardFilters, value: string) =>
     onChange({ ...filters, [key]: value });
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      <Field label="Buscar carta">
-        <input
-          className="field"
-          value={filters.search ?? ""}
-          onChange={(e) => update("search", e.target.value)}
-          placeholder="Código o nombre"
-          maxLength={120}
-        />
-      </Field>
+      {!hideSearch && (
+        <Field label="Buscar carta">
+          <input
+            className="field"
+            value={filters.search ?? ""}
+            onChange={(e) => update("search", e.target.value)}
+            placeholder="Código o nombre"
+            maxLength={120}
+          />
+        </Field>
+      )}
       <Field label="Color">
         <select
           className="field"

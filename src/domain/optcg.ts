@@ -383,6 +383,14 @@ export class OptcgClient {
       family,
     );
   }
+  async leaders(family: OptcgFamily = "sets") {
+    if (family === "don") return { cards: [], issues: [], received: 0 };
+    return this.records(`/api/${family}/filtered/?card_type=Leader`, family);
+  }
+  async promoCollection(code: string) {
+    const set = parse(optcgSetSchema, code).replaceAll("-", "");
+    return this.records(`/api/promos/filtered/?set_id=${set}`, "promos");
+  }
   async set(code: string) {
     const normalized = parse(optcgSetSchema, code).replace(
         /^(OP|ST|EB|PRB)-?(\d+)$/,

@@ -54,6 +54,9 @@ test("mobile empty-catalog deck builder searches automatically, selects leader a
         exact: true,
       }),
     ).toBeVisible();
+    await search
+      .getByRole("button", { name: "Mostrar filtros", exact: true })
+      .click();
     await search.getByLabel("Coste", { exact: true }).selectOption("3");
     await search.getByLabel("Color", { exact: true }).selectOption("blue");
     await expect(
@@ -84,6 +87,7 @@ test("mobile empty-catalog deck builder searches automatically, selects leader a
       search.getByRole("status").filter({ hasText: "Buscando cartas" }),
     ).toBeVisible();
     await page.waitForTimeout(650);
+    await search.getByRole("button", { name: "Líderes", exact: true }).click();
     await search.getByLabel("Buscar carta").fill("OP97-001");
     await expect(chooseLeader).toBeVisible();
     await expect(
@@ -92,6 +96,9 @@ test("mobile empty-catalog deck builder searches automatically, selects leader a
         exact: true,
       }),
     ).toHaveCount(0);
+    await search
+      .getByRole("button", { name: "Cartas del mazo", exact: true })
+      .click();
     await search.getByLabel("Buscar carta").fill("Unavailable");
     const unavailable = search.getByRole("button", {
       name: "Añadir OP97-066 · Synthetic unavailable card",
