@@ -86,7 +86,7 @@ describe("PostgreSQL ownership and snapshot integrity", () => {
       )
     ).rows[0].id;
     await db.query(
-      "insert into public.tournament_rounds(tournament_id,round_number,match_id,result) values($1,1,$2,'draw')",
+      "insert into public.tournament_rounds(tournament_id,round_number,match_id,result) values($1,1,$2,'loss')",
       [tournament, match],
     );
     inventory = (
@@ -388,7 +388,7 @@ describe("PostgreSQL ownership and snapshot integrity", () => {
         )
       ).rows[0].result,
     ).toBe("win");
-    await db.query("update public.matches set result='draw' where id=$1", [
+    await db.query("update public.matches set result='loss' where id=$1", [
       match,
     ]);
     expect(
@@ -398,7 +398,7 @@ describe("PostgreSQL ownership and snapshot integrity", () => {
           [match],
         )
       ).rows[0].result,
-    ).toBe("draw");
+    ).toBe("loss");
     await db.query(
       "update public.tournaments set archived_at=now() where id=$1",
       [tournament],

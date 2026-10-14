@@ -17,10 +17,6 @@ test("mobile empty-catalog deck builder searches automatically, selects leader a
       .click();
     await expect(page).toHaveURL("/");
     await page.goto("/decks/new");
-    await page.getByLabel("Nombre del mazo").fill("Direct builder draft");
-    await page
-      .getByLabel("Descripción", { exact: true })
-      .fill("Keep these unsaved notes");
     const search = page.getByRole("region", {
       name: "Buscar cartas para el mazo",
     });
@@ -45,7 +41,9 @@ test("mobile empty-catalog deck builder searches automatically, selects leader a
       await db.end();
     }
     await chooseLeader.click();
-    await expect(page.getByLabel("Líder del mazo")).not.toHaveValue("");
+    await expect(
+      page.getByRole("button", { name: "2. Cartas", exact: true }),
+    ).toHaveAttribute("aria-current", "step");
     await expect(page).toHaveURL(/\/decks\/new$/);
     await search.getByLabel("Buscar carta").fill("OP97-010");
     await expect(
@@ -54,16 +52,9 @@ test("mobile empty-catalog deck builder searches automatically, selects leader a
         exact: true,
       }),
     ).toBeVisible();
-    await search
-      .getByRole("button", { name: "Mostrar filtros", exact: true })
-      .click();
     await search.getByLabel("Coste", { exact: true }).selectOption("3");
-    await search.getByLabel("Color", { exact: true }).selectOption("blue");
     await expect(
-      search.getByRole("button", {
-        name: "Añadir OP97-010 · Synthetic OPTCG character",
-        exact: true,
-      }),
+      search.getByRole("option", { name: "Azul", exact: true }),
     ).toHaveCount(0);
     await search.getByLabel("Color", { exact: true }).selectOption("red");
     const add = search.getByRole("button", {
@@ -87,7 +78,7 @@ test("mobile empty-catalog deck builder searches automatically, selects leader a
       search.getByRole("status").filter({ hasText: "Buscando cartas" }),
     ).toBeVisible();
     await page.waitForTimeout(650);
-    await search.getByRole("button", { name: "Líderes", exact: true }).click();
+    await page.getByRole("button", { name: "1. Líder", exact: true }).click();
     await search.getByLabel("Buscar carta").fill("OP97-001");
     await expect(chooseLeader).toBeVisible();
     await expect(
@@ -96,9 +87,7 @@ test("mobile empty-catalog deck builder searches automatically, selects leader a
         exact: true,
       }),
     ).toHaveCount(0);
-    await search
-      .getByRole("button", { name: "Cartas del mazo", exact: true })
-      .click();
+    await chooseLeader.click();
     await search.getByLabel("Buscar carta").fill("Unavailable");
     const unavailable = search.getByRole("button", {
       name: "Añadir OP97-066 · Synthetic unavailable card",
@@ -110,17 +99,11 @@ test("mobile empty-catalog deck builder searches automatically, selects leader a
       search.getByRole("alert").filter({ hasText: "no está disponible" }),
     ).toBeVisible();
     await search.getByLabel("Buscar carta").fill("OP97-010");
-    await search.getByLabel("Grupo del proveedor").selectOption("promos");
+    await search.getByLabel("Expansión").selectOption("promos");
     await expect(
       search.getByRole("alert").filter({ hasText: "no está disponible" }),
     ).toBeVisible();
     await expect(add).toBeVisible();
-    await expect(page.getByLabel("Nombre del mazo")).toHaveValue(
-      "Direct builder draft",
-    );
-    await expect(page.getByLabel("Descripción", { exact: true })).toHaveValue(
-      "Keep these unsaved notes",
-    );
     await expect(page.getByLabel("Cantidad OP97-010")).toHaveValue("2");
     db = await connectLocalDatabase();
     try {
@@ -148,6 +131,28 @@ test("mobile empty-catalog deck builder searches automatically, selects leader a
         () => document.documentElement.scrollWidth <= window.innerWidth,
       ),
     ).toBe(true);
+    await page.getByRole("button", { name: "Continuar al nombre" }).click();
+    await page.getByLabel("Nombre del mazo").fill("Direct builder draft");
+    await page
+      .getByText("Opciones del mazo y nota de versión", { exact: true })
+      .click();
+    await page
+      .getByLabel("Descripción", { exact: true })
+      .fill("Keep these unsaved notes");
+    await page
+      .getByRole("button", { name: "Volver a las cartas", exact: true })
+      .click();
+    await expect(page.getByLabel("Cantidad OP97-010")).toHaveValue("2");
+    await page.getByRole("button", { name: "Continuar al nombre" }).click();
+    await expect(page.getByLabel("Nombre del mazo")).toHaveValue(
+      "Direct builder draft",
+    );
+    await page
+      .getByText("Opciones del mazo y nota de versión", { exact: true })
+      .click();
+    await expect(page.getByLabel("Descripción", { exact: true })).toHaveValue(
+      "Keep these unsaved notes",
+    );
     await page
       .getByRole("button", { name: "Guardar mazo", exact: true })
       .click();

@@ -20,7 +20,7 @@ const percent = (value: number | null) =>
   value === null
     ? "—"
     : `${(value * 100).toLocaleString("es-ES", { maximumFractionDigits: 1 })}%`;
-const resultLabels = { win: "Victoria", loss: "Derrota", draw: "Empate" };
+const resultLabels = { win: "Victoria", loss: "Derrota", draw: "Revisar" };
 const dateFormat = new Intl.DateTimeFormat("es-ES", {
   timeZone: "Europe/Madrid",
   day: "numeric",
@@ -51,11 +51,10 @@ function ResultSummary({
         </div>
         <Trophy size={22} className="shrink-0 text-accent" aria-hidden="true" />
       </div>
-      <dl className="mt-6 grid grid-cols-3 gap-3 text-center">
+      <dl className="mt-6 grid grid-cols-2 gap-3 text-center">
         {[
           ["Victorias", summary.wins, "text-[#91d9b0]"],
           ["Derrotas", summary.losses, "text-[#f4a5b1]"],
-          ["Empates", summary.draws, "text-[#9bb8fa]"],
         ].map(([name, count, color]) => (
           <div key={name}>
             <dt className="text-xs text-muted">{name}</dt>
@@ -76,8 +75,14 @@ function ResultSummary({
           victorias + derrotas
         </p>
       </div>
+      {summary.draws > 0 && (
+        <p className="mt-4 text-xs text-amber-100">
+          {summary.draws} registros antiguos pendientes de revisar; no cuentan
+          como victoria o derrota.
+        </p>
+      )}
       <p className="mt-4 text-xs leading-5 text-muted">
-        Los empates no entran en el porcentaje.
+        El porcentaje se calcula con victorias y derrotas.
         {summary.totalGames === 0
           ? " Registra tu primera partida para empezar."
           : summary.decisiveGames < 5
@@ -130,7 +135,7 @@ function RecentGames({ games }: { games: DashboardData["recent"] }) {
       ) : (
         <p className="text-sm leading-6 text-muted">
           Todavía no hay partidas con este líder. Registra una victoria, derrota
-          o empate y aparecerá aquí.
+          y aparecerá aquí.
         </p>
       )}
     </section>
@@ -260,8 +265,8 @@ function LeaderPanel({ leader }: { leader: DashboardLeader }) {
           >
             <h3 className="font-semibold">Evolución mensual</h3>
             <p className="mt-3 text-sm leading-6 text-muted">
-              Aquí verás victorias, derrotas y empates por mes cuando registres
-              partidas con este líder.
+              Aquí verás victorias y derrotas por mes cuando registres partidas
+              con este líder.
             </p>
             <Link href="/matches/new" className="home-text-link mt-4">
               Registrar mi primera partida{" "}
@@ -325,9 +330,9 @@ export function HomeDashboard({ data }: { data: DashboardData }) {
           </p>
         </div>
         <div>
-          <p className="text-xs text-muted">Registro global V / D / E</p>
+          <p className="text-xs text-muted">Registro global V / D</p>
           <p className="mt-1 text-xl font-semibold">
-            {data.overall.wins} / {data.overall.losses} / {data.overall.draws}
+            {data.overall.wins} / {data.overall.losses}
           </p>
         </div>
         <div>

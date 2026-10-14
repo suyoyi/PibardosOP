@@ -52,7 +52,7 @@ export default async function StatisticsPage({
       <PageHeading
         eyebrow="OBSERVA TU EVOLUCIÓN"
         title="Estadísticas"
-        description="Gráficas de tus partidas guardadas. Los empates se muestran por separado y se excluyen del porcentaje de victorias."
+        description="Gráficas de tus partidas guardadas. El porcentaje se calcula como victorias entre victorias más derrotas."
       />
       <form className="panel mb-6 grid gap-4 p-5 sm:grid-cols-3">
         <label>
@@ -81,12 +81,11 @@ export default async function StatisticsPage({
       </form>
       <section
         aria-label="Resultados"
-        className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4"
+        className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-3"
       >
         {[
           ["Victorias", s.wins],
           ["Derrotas", s.losses],
-          ["Empates", s.draws],
           [
             "Victorias %",
             s.winRate === null
@@ -110,7 +109,7 @@ export default async function StatisticsPage({
             <h2 className="font-semibold">Rendimiento por mazo</h2>
             <p className="mt-2 text-sm text-muted">
               Ordenamos primero los mazos con al menos{" "}
-              {analytics.minimumDecisiveGames} partidas sin empate. Una muestra
+              {analytics.minimumDecisiveGames} victorias o derrotas. Una muestra
               pequeña no demuestra cuál es mejor.
             </p>
             <ul className="mt-4 grid gap-3 text-sm">

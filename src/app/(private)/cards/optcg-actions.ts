@@ -14,6 +14,7 @@ import {
 import {
   cardNumberPattern,
   normalizeCardNumber,
+  normalizeCardSearch,
   type Card,
 } from "@/domain/cards";
 import type { ActionState } from "@/domain/forms";
@@ -202,5 +203,97 @@ export async function refreshOptcgPrices(
     };
   } catch (e) {
     return failure(e);
+  }
+}
+
+export async function getBuilderExpansions() {
+  await requireUser();
+  return optcgClient().expansions();
+}
+const builderSearchSchema = z.object({
+  mode: z.enum(["leader", "cards", "don"]),
+  search: z.string().trim().max(120).default(""),
+  expansion: z.union([optcgSetSchema, z.literal(""), z.literal("promos")]),
+  color: z.union([
+    z.enum(["red", "green", "blue", "purple", "black", "yellow"]),
+    z.literal(""),
+  ]),
+  cost: z.string().regex(/^(?:\d{1,3})?$/),
+  leaderColors: z
+    .array(z.enum(["red", "green", "blue", "purple", "black", "yellow"]))
+    .max(6),
+});
+export async function searchBuilderCards(input: unknown) {
+  await requireUser();
+  const parsed = builderSearchSchema.safeParse(input);
+  if (!parsed.success)
+    return { cards: [], issues: [], error: "Revisa los filtros de búsqueda." };
+  const p = parsed.data,
+    api = optcgClient(),
+    cards: OptcgCard[] = [],
+    issues: string[] = [];
+  try {
+    if (p.mode === "don") return await api.cards("DON!!", "don");
+    const query = normalizeCardSearch(p.search);
+    if (cardNumberPattern.test(query))
+      return await api.cards(
+        query,
+        p.expansion === "promos" ? "promos" : undefined,
+      );
+    if (p.mode === "cards" && !p.leaderColors.length)
+      return {
+        cards,
+        issues,
+        error:
+          "El líder necesita colores conocidos para buscar cartas compatibles.",
+      };
+    const families =
+      p.expansion === "promos"
+        ? (["promos"] as const)
+        : p.expansion
+          ? ([p.expansion.startsWith("ST") ? "decks" : "sets"] as const)
+          : (["sets", "decks", "promos"] as const);
+    const colors = p.color
+      ? [p.color]
+      : p.mode === "cards"
+        ? p.leaderColors
+        : [""];
+    searchGroups: for (const family of families)
+      for (const color of colors) {
+        try {
+          const response = await api.filtered(family, {
+            search: query.length >= 2 ? query : undefined,
+            set:
+              p.expansion && p.expansion !== "promos" ? p.expansion : undefined,
+            color,
+            cost: p.cost,
+            leader: p.mode === "leader",
+          });
+          cards.push(...response.cards);
+          issues.push(...response.issues);
+        } catch (error) {
+          issues.push(`${family}: ${failure(error).error}`);
+          if (
+            !(error instanceof OptcgError) ||
+            ["NETWORK", "RATE_LIMIT"].includes(error.code) ||
+            error.status >= 500
+          )
+            break searchGroups;
+        }
+      }
+    return {
+      cards: [
+        ...new Map(cards.map((card) => [card.external_id, card])).values(),
+      ],
+      issues,
+      ...(cards.length === 0 && issues.length
+        ? {
+            error:
+              "No se pudo completar la búsqueda. Cambia la expansión o reintenta más tarde.",
+          }
+        : {}),
+    };
+  } catch (error) {
+    return { cards, issues, ...failure(error) };
   }
 }

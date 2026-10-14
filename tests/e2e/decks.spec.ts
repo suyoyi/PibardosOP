@@ -29,10 +29,7 @@ test("mobile manual catalog, unknown correction, confirmed import, editing and i
       await expect(page).toHaveURL(/\/cards\?saved=1/);
     }
     await page.goto("/decks/new");
-    await page.getByLabel("Nombre del mazo").fill("Synthetic imported deck");
-    await page
-      .getByLabel("Líder del mazo")
-      .selectOption({ label: "OP98-001 · Synthetic mobile leader" });
+    await page.getByText("Importar lista de texto", { exact: true }).click();
     await page
       .getByLabel("Lista de texto")
       .fill("1 OP98-001\n2 OP98-002\nOP98-002 x2\n4 OP98-999");
@@ -40,20 +37,20 @@ test("mobile manual catalog, unknown correction, confirmed import, editing and i
     await expect(
       page.getByRole("alert").filter({ hasText: "OP98-999 no está" }),
     ).toBeVisible();
-    await page
-      .getByRole("button", { name: "Guardar mazo", exact: true })
-      .click();
     await expect(
-      page.getByRole("alert").filter({ hasText: "Confirma la revisión" }),
-    ).toBeVisible();
-    await expect(page.getByLabel("Nombre del mazo")).toHaveValue(
-      "Synthetic imported deck",
-    );
+      page.getByRole("button", { name: "Guardar mazo", exact: true }),
+    ).toHaveCount(0);
+    await expect(page.getByLabel("Lista de texto")).toHaveValue(/OP98-999/);
     await page
       .getByLabel("Lista de texto")
       .fill("1 OP98-001\n2 OP98-002\nOP98-002 x2");
     await page.getByRole("button", { name: "Revisar importación" }).click();
     await expect(page.getByText(/Duplicadas agrupadas:/)).toBeVisible();
+    await page.getByRole("button", { name: "Continuar al nombre" }).click();
+    await page.getByLabel("Nombre del mazo").fill("Synthetic imported deck");
+    await page
+      .getByText("Opciones del mazo y nota de versión", { exact: true })
+      .click();
     await page.getByLabel(/He revisado las cantidades/).check();
     await page
       .getByLabel("Nota de la versión")

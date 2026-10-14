@@ -43,7 +43,9 @@ export function filterCards<T extends CatalogFilterCard>(
   cards: readonly T[],
   filters: CardFilters,
 ): T[] {
-  const query = (filters.search ?? "").trim().toLocaleLowerCase("es");
+  const query = normalizeCardSearch(filters.search ?? "").toLocaleLowerCase(
+    "es",
+  );
   return cards.filter(
     (card) =>
       (!query ||
@@ -52,7 +54,9 @@ export function filterCards<T extends CatalogFilterCard>(
           .includes(query)) &&
       (!filters.color || card.colors.includes(filters.color as CardColor)) &&
       (!filters.type || card.card_type === filters.type) &&
-      (!filters.set || card.set_code === filters.set) &&
+      (!filters.set ||
+        card.set_code?.replaceAll("-", "").toUpperCase() ===
+          filters.set.replaceAll("-", "").toUpperCase()) &&
       (!filters.cost || card.cost === Number(filters.cost)) &&
       (!filters.power || card.power === Number(filters.power)) &&
       (!filters.counter || card.counter === Number(filters.counter)) &&
@@ -75,6 +79,11 @@ export function normalizeCardNumber(value: string) {
     .replace(/[–—−]/g, "-")
     .replace(/\s+/g, "")
     .trim();
+}
+export function normalizeCardSearch(value: string) {
+  const code = normalizeCardNumber(value);
+  const match = code.match(/^((?:OP|ST|EB|PRB)\d{2,3}|P)-(\d{1,3})$/);
+  return match ? `${match[1]}-${match[2].padStart(3, "0")}` : value.trim();
 }
 export const cardNumberPattern =
   /^(?:(?:OP|ST|EB|PRB)\d{2,3}-\d{3}|P-\d{3}|DON!!)$/;

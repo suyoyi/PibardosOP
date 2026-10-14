@@ -98,6 +98,12 @@ export function ResultsChart({
   return (
     <section className="panel min-w-0 p-5" aria-label={title}>
       <h2 className="mb-5 text-lg font-semibold">{title}</h2>
+      {rows.some((row) => row.draws > 0) && (
+        <p className="mb-4 text-xs text-amber-100">
+          Hay registros antiguos pendientes de revisar. Las barras y porcentajes
+          solo usan victorias y derrotas.
+        </p>
+      )}
       {rows.length ? (
         <>
           <div className="h-64 min-w-0" aria-hidden="true">
@@ -140,26 +146,19 @@ export function ResultsChart({
                   stackId="result"
                   fill="#f4a5b1"
                 />
-                <Bar
-                  dataKey="draws"
-                  name="Empates"
-                  stackId="result"
-                  fill="#9bb8fa"
-                />
               </BarChart>
             </ResponsiveContainer>
           </div>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-left text-sm">
               <caption className="sr-only">
-                Datos de {title}; porcentaje excluye empates
+                Datos de {title}; porcentaje sobre victorias y derrotas
               </caption>
               <thead>
                 <tr className="text-muted">
                   <th className="py-3 pr-3">Grupo</th>
                   <th className="px-2">V</th>
                   <th className="px-2">D</th>
-                  <th className="px-2">E</th>
                   <th className="px-2">Partidas</th>
                   <th className="px-2">Victorias %</th>
                 </tr>
@@ -175,7 +174,6 @@ export function ResultsChart({
                     </th>
                     <td className="px-2">{row.wins}</td>
                     <td className="px-2">{row.losses}</td>
-                    <td className="px-2">{row.draws}</td>
                     <td className="px-2">{row.totalGames}</td>
                     <td className="whitespace-nowrap px-2">
                       {row.winRate === null

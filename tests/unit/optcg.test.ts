@@ -231,3 +231,62 @@ it("normalizes promo collection aliases for the documented set_id filter", async
     "https://optcgapi.com/api/promos/filtered/?set_id=OP01",
   );
 });
+
+describe("named expansion and guided filters", () => {
+  it("reads actual set/starter names, retains hybrid codes and reports malformed metadata", async () => {
+    const transport: OptcgTransport = async (url) =>
+      Response.json(
+        url.includes("allSets")
+          ? [
+              { set_id: "OP-17", set_name: "Synthetic named expansion" },
+              { set_id: "OP14-EB04", set_name: "Synthetic combined expansion" },
+              { set_id: "bad", set_name: "Unusable" },
+            ]
+          : [
+              {
+                structure_deck_id: "ST-01",
+                structure_deck_name: "Synthetic starter name",
+              },
+            ],
+      );
+    const result = await new OptcgClient(transport).expansions();
+    expect(result.expansions).toEqual([
+      { id: "OP-17", name: "Synthetic named expansion", family: "sets" },
+      { id: "OP14-EB04", name: "Synthetic combined expansion", family: "sets" },
+      { id: "ST-01", name: "Synthetic starter name", family: "decks" },
+    ]);
+    expect(result.issues).toHaveLength(1);
+  });
+  it("keeps successfully fetched expansion names when another group fails", async () => {
+    const result = await new OptcgClient(async (url) =>
+      url.includes("allSets")
+        ? Response.json([{ set_id: "OP-01", set_name: "Synthetic set" }])
+        : new Response(null, { status: 429 }),
+    ).expansions();
+    expect(result.expansions).toHaveLength(1);
+    expect(result.issues).toHaveLength(1);
+  });
+  it("uses documented color/set/cost/name parameters and normalizes short code searches", async () => {
+    const paths: string[] = [];
+    const api = new OptcgClient(async (url) => {
+      paths.push(url);
+      return Response.json([]);
+    });
+    await api.filtered("sets", {
+      search: "Luffy",
+      set: "OP-17",
+      color: "red",
+      cost: "0",
+    });
+    const url = new URL(paths[0]);
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      card_name: "Luffy",
+      set_id: "OP-17",
+      color: "red",
+      card_cost: "0",
+    });
+    await api.search("op17-99");
+    expect(paths[1]).toBe("https://optcgapi.com/api/sets/card/OP17-099/");
+    await expect(api.filtered("sets", { color: "invalid" })).rejects.toThrow();
+  });
+});

@@ -47,14 +47,19 @@ test("mobile fifty-card import, exact-version match history, tournament rounds a
       ),
     ].join("\n");
     await page.goto("/decks/new");
-    await page
-      .getByLabel("Nombre del mazo")
-      .fill("Synthetic competitive mobile");
+    await page.getByText("Importar lista de texto", { exact: true }).click();
     await page.getByLabel("Lista de texto").fill(raw);
     await page.getByRole("button", { name: "Revisar importación" }).click();
     await expect(
       page.getByRole("heading", { name: "Mazo principal: 50 / 50" }),
     ).toBeVisible();
+    await page.getByRole("button", { name: "Continuar al nombre" }).click();
+    await page
+      .getByLabel("Nombre del mazo")
+      .fill("Synthetic competitive mobile");
+    await page
+      .getByText("Opciones del mazo y nota de versión", { exact: true })
+      .click();
     await page.getByLabel("Estado", { exact: true }).selectOption("active");
     await page.getByLabel(/He revisado las cantidades/).check();
     await page
@@ -205,17 +210,17 @@ test("mobile fifty-card import, exact-version match history, tournament rounds a
     await page
       .getByRole("link", { name: "Editar partida", exact: true })
       .click();
-    await page.getByLabel("Empate", { exact: true }).check();
+    await page.getByLabel("Victoria", { exact: true }).check();
     await page
       .getByRole("button", { name: "Guardar cambios de partida", exact: true })
       .click();
     await expect(
-      page.getByRole("heading", { name: "Ronda 1 · Empate", exact: true }),
+      page.getByRole("heading", { name: "Ronda 1 · Victoria", exact: true }),
     ).toBeVisible();
     await page.goto("/statistics");
     await expect(
       page.getByText(
-        "3 partidas · 2 victorias o derrotas para el porcentaje.",
+        "3 partidas · 3 victorias o derrotas para el porcentaje.",
         { exact: false },
       ),
     ).toBeVisible();
@@ -223,7 +228,7 @@ test("mobile fifty-card import, exact-version match history, tournament rounds a
       page
         .getByRole("region", { name: "Resultados por mazo", exact: true })
         .getByRole("cell")
-        .filter({ hasText: "50%" }),
+        .filter({ hasText: "66,7%" }),
     ).toBeVisible();
     await page.goto("/matches");
     const loss = page
@@ -252,7 +257,7 @@ test("mobile fifty-card import, exact-version match history, tournament rounds a
     await page.goto("/statistics");
     await expect(
       page.getByText(
-        "2 partidas · 1 victorias o derrotas para el porcentaje.",
+        "2 partidas · 2 victorias o derrotas para el porcentaje.",
         { exact: false },
       ),
     ).toBeVisible();
@@ -275,7 +280,7 @@ test("mobile fifty-card import, exact-version match history, tournament rounds a
       ).rows;
       expect(saved).toEqual([
         { result: "win", went_first: true, version_number: 1 },
-        { result: "draw", went_first: false, version_number: 1 },
+        { result: "win", went_first: false, version_number: 1 },
       ]);
       expect(
         (

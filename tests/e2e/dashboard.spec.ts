@@ -144,7 +144,7 @@ test("home switches saved leaders, preserves snapshot history and shows exact cu
       for (const [version, result, wentFirst, time] of [
         [first.version, "win", true, "2026-09-01T12:00:00Z"],
         [second.version, "loss", false, "2026-10-02T12:00:00Z"],
-        [beta.version, "draw", false, "2026-10-03T12:00:00Z"],
+        [beta.version, "loss", false, "2026-10-03T12:00:00Z"],
         [changed.version, "win", true, "2026-08-01T12:00:00Z"],
         [archive.version, "loss", false, "2026-10-01T12:00:00Z"],
       ])
@@ -238,8 +238,8 @@ test("home switches saved leaders, preserves snapshot history and shows exact cu
       })
       .click();
     await expect(results).toContainText("1 partida guardada");
-    await expect(results).toContainText("n = 0");
-    await expect(results).not.toContainText("50%");
+    await expect(results).toContainText("n = 1");
+    await expect(results).toContainText("0%");
     await expect(
       page.getByRole("region", { name: "Últimas partidas", exact: true }),
     ).not.toContainText("Synthetic changed leader deck · v1");

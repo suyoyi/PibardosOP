@@ -27,7 +27,11 @@ export default async function TournamentPage({
     record = tournamentSummary(matches, rounds),
     version = w.versions.find((v) => v.id === t.deck_version_id),
     deck = w.decks.find((d) => d.id === version?.deck_id);
-  const labels = { win: "Victoria", loss: "Derrota", draw: "Empate" };
+  const labels = {
+    win: "Victoria",
+    loss: "Derrota",
+    draw: "Resultado antiguo: revisar",
+  };
   return (
     <>
       <PageHeading
@@ -53,15 +57,14 @@ export default async function TournamentPage({
         <section className="panel grid gap-3 p-5">
           <h2 className="font-semibold">Resumen del torneo</h2>
           <p>
-            {record.wins} V · {record.losses} D · {record.draws} E ·{" "}
-            {record.totalGames} partidas
+            {record.wins} V · {record.losses} D · {record.totalGames} partidas
           </p>
           <p className="text-sm text-muted">
             {record.winRate === null
               ? "Sin porcentaje de victoria"
               : `${(record.winRate * 100).toLocaleString("es-ES", { maximumFractionDigits: 1 })}% de victorias`}{" "}
-            · n={record.decisiveGames} sin empates · {record.recordedRounds}{" "}
-            rondas registradas
+            · n={record.decisiveGames} victorias o derrotas ·{" "}
+            {record.recordedRounds} rondas registradas
           </p>
           <p className="text-sm">Puesto final: {t.placement ?? "Pendiente"}</p>
           {version && deck && (

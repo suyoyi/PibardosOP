@@ -92,9 +92,6 @@ test("visual English-only leader and card galleries show previews, independent v
     await expect(
       gallery.getByRole("heading", { name: "Busca tus cartas" }),
     ).toBeVisible();
-    await expect(
-      gallery.getByRole("button", { name: "Cartas del mazo", exact: true }),
-    ).toHaveAttribute("aria-pressed", "true");
     const base = gallery.getByRole("button", {
         name: "Añadir OP97-010 · Synthetic OPTCG character",
         exact: true,
@@ -128,6 +125,24 @@ test("visual English-only leader and card galleries show previews, independent v
         { exact: true },
       ),
     ).toBeVisible();
+    await base.click();
+    await base.click();
+    await expect(base).toBeDisabled();
+    await expect(alt).toBeDisabled();
+    await expect(
+      gallery.getByRole("status", {
+        name: "Contador del mazo: 4 de 50 cartas",
+      }),
+    ).toBeVisible();
+    const reduceBase = gallery.getByRole("button", {
+      name: "Quitar OP97-010 · Synthetic OPTCG character",
+      exact: true,
+    });
+    await reduceBase.click();
+    await reduceBase.click();
+    await expect(
+      gallery.getByRole("button", { name: /Synthetic incompatible blue card/ }),
+    ).toHaveCount(0);
     await gallery
       .getByRole("button", {
         name: "Quitar OP97-010 · Synthetic OPTCG character",
@@ -145,7 +160,7 @@ test("visual English-only leader and card galleries show previews, independent v
         exact: true,
       }),
     ).toBeDisabled();
-    await gallery.getByRole("button", { name: "Líderes", exact: true }).click();
+    await page.getByRole("button", { name: "1. Líder", exact: true }).click();
     await expect(
       gallery.getByRole("button", {
         name: "Elegir líder OP97-001 · Synthetic OPTCG leader",
@@ -160,6 +175,13 @@ test("visual English-only leader and card galleries show previews, independent v
         ),
       ).toBe(true);
     }
+    await gallery
+      .getByRole("button", {
+        name: "Elegir líder OP97-001 · Synthetic OPTCG leader",
+        exact: true,
+      })
+      .click();
+    await page.getByRole("button", { name: "Continuar al nombre" }).click();
     await page.getByLabel("Nombre del mazo").fill("Visual variant draft");
     await page
       .getByRole("button", { name: "Guardar mazo", exact: true })

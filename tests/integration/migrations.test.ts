@@ -17,7 +17,7 @@ it("replays every application migration in a fresh disposable PostgreSQL databas
         "create schema auth; create table auth.users(id uuid primary key); create function auth.uid() returns uuid language sql as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$; grant usage on schema auth to authenticated, anon; grant execute on function auth.uid() to authenticated, anon;",
       );
       for (const file of readdirSync("supabase/migrations")
-        .filter((f) => f.endsWith(".sql"))
+        .filter((f) => f.endsWith(".sql") && !f.endsWith("_match_results.sql"))
         .sort())
         await fresh.query(readFileSync(`supabase/migrations/${file}`, "utf8"));
       const tables = (
@@ -76,7 +76,7 @@ it("replays every application migration in a fresh disposable PostgreSQL databas
           id: randomUUID(),
           deck_version_id: snapshot.id,
           opponent_leader_id: leader,
-          result: "win",
+          result: "draw",
           went_first: true,
           played_at: "2026-01-01T12:00:00Z",
           format: "standard",
@@ -86,6 +86,48 @@ it("replays every application migration in a fresh disposable PostgreSQL databas
           notes: "",
         },
       ]);
+      await fresh.query("commit");
+      // Apply the new outcome guard to a real pre-migration historical row.
+      await fresh.query("reset role");
+      await fresh.query(
+        readFileSync(
+          "supabase/migrations/20261014000400_match_results.sql",
+          "utf8",
+        ),
+      );
+      await fresh.query("begin");
+      await fresh.query("select set_config('request.jwt.claim.sub',$1,true)", [
+        owner,
+      ]);
+      await fresh.query("set local role authenticated");
+      const legacy = (
+        await fresh.query("select id,result from matches where user_id=$1", [
+          owner,
+        ])
+      ).rows[0];
+      expect(legacy.result).toBe("draw");
+      await fresh.query(
+        "update matches set notes='Historical record retained' where id=$1",
+        [legacy.id],
+      );
+      await fresh.query("savepoint unsupported");
+      await expect(
+        fresh.query(
+          "insert into matches(deck_version_id,opponent_leader_id,result,went_first,format,match_type) values($1,$2,'draw',true,'standard','friendly')",
+          [snapshot.id, leader],
+        ),
+      ).rejects.toThrow("Only win or loss");
+      await fresh.query("rollback to savepoint unsupported");
+      await fresh.query("update matches set result='loss' where id=$1", [
+        legacy.id,
+      ]);
+      expect(
+        (
+          await fresh.query("select result from matches where id=$1", [
+            legacy.id,
+          ])
+        ).rows[0].result,
+      ).toBe("loss");
       await fresh.query("commit");
       // Account cascade must remove private cards, decks, snapshots and games together.
       await fresh.query("reset role");

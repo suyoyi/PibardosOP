@@ -1,23 +1,29 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
-import { Check, Minus, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import { Check, Minus, Plus, Search, X } from "lucide-react";
 import {
-  searchOptcg,
-  browseOptcg,
+  searchBuilderCards,
+  getBuilderExpansions,
   getOptcgBuilderCard,
 } from "@/app/(private)/cards/optcg-actions";
 import {
   filterCards,
   type Card,
   type CardFilters,
-  type CatalogFilterCard,
+  colorLabels,
+  type CardColor,
 } from "@/domain/cards";
 import type { DeckEntry } from "@/domain/deck-import";
-import type { OptcgCard, OptcgFamily } from "@/domain/optcg";
-import { CardArtwork, CardPicture, CatalogControls } from "./card-catalog";
+import type { OptcgCard, OptcgExpansion } from "@/domain/optcg";
+import { CardArtwork, CardPicture } from "./card-catalog";
 import { Field } from "./forms";
-type SearchResult = Awaited<ReturnType<typeof searchOptcg>>;
+import {
+  compatibleWithLeader,
+  builderMaximumQuantity,
+  builderCopyCount,
+} from "@/domain/deck-builder";
+type SearchResult = { cards: OptcgCard[]; issues: string[]; error?: string };
 type Candidate =
   { kind: "saved"; card: Card } | { kind: "remote"; card: OptcgCard };
 export function DeckCardSearch({
@@ -30,6 +36,7 @@ export function DeckCardSearch({
   leaderId,
   mainCount,
   donCount,
+  mode: controlledMode,
 }: {
   catalog: Card[];
   filters: CardFilters;
@@ -40,39 +47,78 @@ export function DeckCardSearch({
   leaderId: string;
   mainCount: number;
   donCount: number;
+  mode?: "leader" | "cards";
 }) {
-  const [mode, setMode] = useState<"leader" | "cards">(
-      leaderId ? "cards" : "leader",
-    ),
-    [family, setFamily] = useState<OptcgFamily>("sets"),
-    [collection, setCollection] = useState("OP01"),
-    [showFilters, setShowFilters] = useState(false),
-    [remote, setRemote] = useState<{ key: string; result: SearchResult }>(),
-    [pending, startSearch] = useTransition(),
-    [adding, startAdd] = useTransition(),
-    [message, setMessage] = useState<{ error?: string; success?: string }>({}),
-    [pageState, setPageState] = useState<{ key: string; page: number }>();
-  const query = (filters.search ?? "").trim(),
-    key =
-      query.length >= 2
-        ? `${family}:${query}`
-        : `browse:${mode}:${family}:${collection}`;
+  const [internalMode, setMode] = useState<"leader" | "cards">(
+    leaderId ? "cards" : "leader",
+  );
+  const [showDon, setShowDon] = useState(false);
+  const [expansions, setExpansions] = useState<OptcgExpansion[]>([]);
+  const [expansionNotice, setExpansionNotice] = useState("");
+  const [remote, setRemote] = useState<{ key: string; result: SearchResult }>();
+  const [pending, startSearch] = useTransition();
+  const [adding, startAdd] = useTransition();
+  const [message, setMessage] = useState<{ error?: string; success?: string }>(
+    {},
+  );
+  const [pageState, setPageState] = useState<{ key: string; page: number }>();
+  const mode = controlledMode ?? internalMode;
+  const leader = catalog.find((card) => card.id === leaderId);
+  const leaderColorsKey = JSON.stringify(leader?.colors ?? []);
+  const query = (filters.search ?? "").trim();
+  const expansion = filters.set ?? "",
+    color = filters.color ?? "",
+    cost = filters.cost ?? "";
+  const searchMode = mode === "cards" && showDon ? "don" : mode;
+  const key = JSON.stringify([
+    query,
+    searchMode,
+    expansion,
+    color,
+    cost,
+    leaderColorsKey,
+  ]);
+  useEffect(() => {
+    let cancelled = false;
+    getBuilderExpansions()
+      .then((data) => {
+        if (!cancelled) {
+          setExpansions(data.expansions);
+          setExpansionNotice(data.issues.join(" "));
+        }
+      })
+      .catch(() => {
+        if (!cancelled)
+          setExpansionNotice(
+            "No se pudieron cargar las expansiones. Puedes buscar por nombre o código.",
+          );
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   useEffect(() => {
     let cancelled = false;
     const timer = setTimeout(
       () =>
         startSearch(async () => {
           try {
-            const result =
-              query.length >= 2
-                ? await searchOptcg(query, family)
-                : await browseOptcg(mode, family, collection);
+            const result = await searchBuilderCards({
+              mode: searchMode,
+              search: query,
+              expansion,
+              color,
+              cost,
+              leaderColors: JSON.parse(leaderColorsKey),
+            });
             if (!cancelled) setRemote({ key, result });
           } catch {
             if (!cancelled)
               setRemote({
                 key,
                 result: {
+                  cards: [],
+                  issues: [],
                   error:
                     "No se pudo completar la búsqueda. Tus cambios permanecen en el editor.",
                 },
@@ -85,23 +131,30 @@ export function DeckCardSearch({
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [query, family, mode, collection, key]);
+  }, [query, searchMode, expansion, color, cost, leaderColorsKey, key]);
   const result = remote?.key === key ? remote.result : undefined,
     received = result?.cards ?? [];
-  const english = catalog.filter((c) => c.language === "en"),
-    options: CatalogFilterCard[] = [...english, ...received];
+  const english = catalog.filter((card) => card.language === "en");
   const effective = {
     ...filters,
-    type: mode === "leader" ? "leader" : filters.type,
+    set: expansion === "promos" ? undefined : expansion,
+    type:
+      searchMode === "leader"
+        ? "leader"
+        : searchMode === "don"
+          ? "don"
+          : undefined,
   };
-  const saved = filterCards(english, effective).filter(
-      (c) => mode === "leader" || c.card_type !== "leader",
-    ),
-    savedIds = new Set(english.map((c) => c.provider_card_id).filter(Boolean));
+  const usable = (card: Card | OptcgCard) =>
+    searchMode !== "cards" ||
+    (["character", "event", "stage"].includes(card.card_type) &&
+      compatibleWithLeader(card, leader));
+  const saved = filterCards(english, effective).filter(usable),
+    savedIds = new Set(
+      english.map((card) => card.provider_card_id).filter(Boolean),
+    );
   const available = filterCards(received, effective).filter(
-    (c) =>
-      (mode === "leader" || c.card_type !== "leader") &&
-      !savedIds.has(c.external_id),
+    (card) => usable(card) && !savedIds.has(card.external_id),
   );
   const candidates: Candidate[] = [
     ...saved.map((card) => ({ kind: "saved" as const, card })),
@@ -121,13 +174,15 @@ export function DeckCardSearch({
   );
   const switchMode = (next: "leader" | "cards") => {
     setMode(next);
-    onFilters({ ...filters, type: undefined, search: "" });
+    onFilters({ search: "" });
+    setShowDon(false);
     setMessage({});
   };
   const accept = (card: Card, delta: number) => {
     if (card.card_type === "leader") {
+      setShowDon(false);
       onSelect(card);
-      switchMode("cards");
+      if (!controlledMode) switchMode("cards");
       setMessage({
         success: "Líder seleccionado. Añade ahora las cartas de tu mazo.",
       });
@@ -172,50 +227,45 @@ export function DeckCardSearch({
       className="visual-picker panel overflow-clip"
       aria-label="Buscar cartas para el mazo"
     >
-      <div
-        className={`visual-picker-header ${showFilters ? "visual-picker-header-open" : ""}`}
-      >
+      <div className="visual-picker-header visual-picker-header-open">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="eyebrow">CONSTRUCTOR · CARTAS EN INGLÉS</p>
             <h2 className="mt-1 text-xl font-bold">
-              {mode === "leader" ? "Elige tu líder" : "Busca tus cartas"}
+              {mode === "leader"
+                ? "Elige tu líder"
+                : showDon
+                  ? "DON!! separado"
+                  : "Busca tus cartas"}
             </h2>
           </div>
-          <button
-            type="button"
-            className="picker-icon-button"
-            aria-label="Mostrar filtros"
-            aria-expanded={showFilters}
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            <SlidersHorizontal size={20} />
-          </button>
         </div>
-        <div
-          className="mt-4 flex gap-2"
-          role="group"
-          aria-label="Tipo de búsqueda"
-        >
-          <button
-            type="button"
-            className={`picker-tab ${mode === "leader" ? "picker-tab-active" : ""}`}
-            aria-pressed={mode === "leader"}
-            disabled={adding}
-            onClick={() => switchMode("leader")}
+        {!controlledMode && (
+          <div
+            className="mt-4 flex gap-2"
+            role="group"
+            aria-label="Tipo de búsqueda"
           >
-            Líderes
-          </button>
-          <button
-            type="button"
-            className={`picker-tab ${mode === "cards" ? "picker-tab-active" : ""}`}
-            aria-pressed={mode === "cards"}
-            disabled={adding}
-            onClick={() => switchMode("cards")}
-          >
-            Cartas del mazo
-          </button>
-        </div>
+            <button
+              type="button"
+              className={`picker-tab ${mode === "leader" ? "picker-tab-active" : ""}`}
+              aria-pressed={mode === "leader"}
+              disabled={adding}
+              onClick={() => switchMode("leader")}
+            >
+              Líderes
+            </button>
+            <button
+              type="button"
+              className={`picker-tab ${mode === "cards" ? "picker-tab-active" : ""}`}
+              aria-pressed={mode === "cards"}
+              disabled={adding}
+              onClick={() => switchMode("cards")}
+            >
+              Cartas del mazo
+            </button>
+          </div>
+        )}
         <div className="mt-4 flex items-center gap-2">
           <div className="relative min-w-0 flex-1">
             <Search
@@ -263,51 +313,128 @@ export function DeckCardSearch({
             DON!! separado: {donCount}/10
           </p>
         )}
-        {showFilters && (
-          <div className="mt-4 grid gap-4 rounded-xl border border-border p-3">
-            <CatalogControls
-              catalog={options}
-              filters={filters}
-              onChange={onFilters}
-              hideSearch
-            />
-            <Field label="Grupo del proveedor">
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="col-span-2 min-w-0 sm:col-span-1">
+            <Field label="Expansión">
               <select
                 className="field"
-                value={family}
-                onChange={(e) => {
-                  setFamily(e.target.value as OptcgFamily);
-                  setCollection(e.target.value === "decks" ? "ST01" : "OP01");
-                }}
+                value={expansion}
+                disabled={mode === "cards" && showDon}
+                onChange={(event) =>
+                  onFilters({ ...filters, set: event.target.value })
+                }
               >
-                <option value="sets">
-                  Sets (ST y P se detectan por código)
-                </option>
-                <option value="decks">Mazos iniciales</option>
-                <option value="promos">Promos y reimpresiones</option>
-                <option value="don">DON!!</option>
+                <option value="">Todas las expansiones</option>
+                {expansions.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name} · {item.id.replaceAll("-", "")}
+                  </option>
+                ))}
+                {[
+                  ...new Set(
+                    english
+                      .map((card) => card.set_code)
+                      .filter((value): value is string => Boolean(value)),
+                  ),
+                ]
+                  .filter(
+                    (value) =>
+                      !expansions.some(
+                        (item) =>
+                          item.id.replaceAll("-", "") ===
+                          value.replaceAll("-", ""),
+                      ) && value !== expansion,
+                  )
+                  .map((value) => (
+                    <option key={value} value={value}>
+                      {value} · nombre no disponible
+                    </option>
+                  ))}
+                <option value="promos">Promocionales</option>
+                {expansion &&
+                  expansion !== "promos" &&
+                  !expansions.some((item) => item.id === expansion) && (
+                    <option value={expansion}>
+                      {expansion} · nombre no disponible
+                    </option>
+                  )}
               </select>
             </Field>
-            <Field
-              label="Colección para explorar"
-              hint="Al dejar la búsqueda vacía se muestran los líderes disponibles o esta colección."
+          </div>
+          <Field label="Color">
+            <select
+              className="field"
+              value={color}
+              disabled={mode === "cards" && showDon}
+              onChange={(event) =>
+                onFilters({ ...filters, color: event.target.value })
+              }
             >
-              <input
-                className="field"
-                value={collection}
-                maxLength={10}
-                placeholder="OP01 o ST01"
-                onChange={(e) => setCollection(e.target.value.toUpperCase())}
-              />
-            </Field>
+              <option value="">
+                {mode === "cards" ? "Colores del líder" : "Todos los colores"}
+              </option>
+              {(mode === "cards"
+                ? (leader?.colors ?? [])
+                : (Object.keys(colorLabels) as CardColor[])
+              ).map((value) => (
+                <option key={value} value={value}>
+                  {colorLabels[value]}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Coste">
+            <select
+              className="field"
+              value={cost}
+              disabled={mode === "leader" || showDon}
+              onChange={(event) =>
+                onFilters({ ...filters, cost: event.target.value })
+              }
+            >
+              <option value="">Todos los costes</option>
+              {[
+                ...new Set([
+                  ...Array.from({ length: 21 }, (_, index) => String(index)),
+                  ...received.flatMap((card) =>
+                    card.cost === null ? [] : [String(card.cost)],
+                  ),
+                ]),
+              ]
+                .sort((a, b) => Number(a) - Number(b))
+                .map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+            </select>
+          </Field>
+        </div>
+        {mode === "cards" && (
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs text-muted">
+              Solo cartas compatibles con tu líder · máximo 4 por identidad
+            </p>
             <button
               type="button"
-              className="button-secondary"
-              onClick={() => setShowFilters(false)}
+              className="home-text-link"
+              aria-pressed={showDon}
+              disabled={adding}
+              onClick={() => {
+                setShowDon(!showDon);
+                onFilters({});
+              }}
             >
-              Aplicar filtros
+              {showDon
+                ? "Volver a cartas principales"
+                : "Añadir DON!! separado"}
             </button>
           </div>
+        )}
+        {expansionNotice && (
+          <p role="status" className="mt-3 text-xs text-amber-100">
+            {expansionNotice}
+          </p>
         )}
         <div className="mt-3 flex items-center justify-between gap-2 text-xs text-muted">
           <span>
@@ -370,6 +497,10 @@ export function DeckCardSearch({
                   : 0,
                 selected = Boolean(savedCard && savedCard.id === leaderId),
                 isLeader = c.card_type === "leader",
+                copies = builderCopyCount(c, entries, catalog),
+                canAdd =
+                  isLeader ||
+                  builderMaximumQuantity(c, entries, catalog) > quantity,
                 name = `${c.card_number} · ${c.name}`,
                 src =
                   item.kind === "remote" && item.card.image_url
@@ -392,7 +523,7 @@ export function DeckCardSearch({
                           : `Añadir tocando imagen ${name}`
                       }
                       aria-pressed={isLeader ? selected : undefined}
-                      disabled={adding}
+                      disabled={adding || !canAdd}
                       onClick={() => choose(item, 1)}
                     >
                       {savedCard ? (
@@ -435,7 +566,7 @@ export function DeckCardSearch({
                           <button
                             type="button"
                             aria-label={`Añadir ${name}`}
-                            disabled={adding || quantity >= 50}
+                            disabled={adding || !canAdd}
                             onClick={() => choose(item, 1)}
                           >
                             <Plus size={20} />
@@ -446,7 +577,11 @@ export function DeckCardSearch({
                   </div>
                   <div className="picker-caption">
                     <span>{c.card_number}</span>
-                    <span className="text-[9px] text-muted">EN</span>
+                    <span className="text-[9px] text-muted">
+                      {!isLeader && copies >= (c.card_type === "don" ? 10 : 4)
+                        ? "Límite"
+                        : "EN"}
+                    </span>
                   </div>
                   <p
                     className="mt-1 line-clamp-2 px-1 text-[10px] leading-4 text-muted"

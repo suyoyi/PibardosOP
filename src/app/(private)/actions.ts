@@ -225,6 +225,7 @@ export async function saveDeck(
       "DON_TYPE",
       "QUANTITY",
       "DUPLICATE_PRINTING",
+      "COPY_LIMIT",
     ].includes(issue.code),
   );
   if (

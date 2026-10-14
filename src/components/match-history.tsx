@@ -8,7 +8,7 @@ import { Field } from "./forms";
 export const resultLabels = {
   win: "Victoria",
   loss: "Derrota",
-  draw: "Empate",
+  draw: "Resultado antiguo: revisar",
 };
 export function MatchHistory({
   matches,
@@ -85,11 +85,13 @@ export function MatchHistory({
             onChange={(e) => change(setResult, e.target.value)}
           >
             <option value="">Todos los resultados</option>
-            {Object.entries(resultLabels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
+            {Object.entries(resultLabels)
+              .filter(([value]) => value !== "draw")
+              .map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
           </select>
         </Field>
         <Field label="Filtrar por salida">

@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   cardNumberPattern,
   normalizeCardNumber,
+  normalizeCardSearch,
   type Card,
   type CardColor,
 } from "./cards";
@@ -15,7 +16,12 @@ export const optcgSetSchema = z
   .string()
   .trim()
   .toUpperCase()
-  .regex(/^(?:OP|ST|EB|PRB)-?\d{2,3}$/);
+  .regex(/^(?:OP|ST|EB|PRB)-?\d{2,3}(?:-EB-?\d{2,3})?$/);
+export type OptcgExpansion = {
+  id: string;
+  name: string;
+  family: "sets" | "decks";
+};
 export type OptcgQuote = {
   metric: "market_price" | "inventory_price";
   amount: number;
@@ -375,13 +381,93 @@ export class OptcgClient {
     );
   }
   async search(query: string, family: OptcgFamily = "sets") {
-    const q = parse(z.string().trim().min(2).max(120), query);
+    const q = normalizeCardSearch(
+      parse(z.string().trim().min(2).max(120), query),
+    );
     if (cardNumberPattern.test(normalizeCardNumber(q)))
       return this.cards(q, family === "sets" ? undefined : family);
     return this.records(
       `/api/${family}/filtered/?card_name=${encodeURIComponent(q)}`,
       family,
     );
+  }
+  async expansions() {
+    const rows: OptcgExpansion[] = [];
+    const issues: string[] = [];
+    for (const family of ["sets", "decks"] as const) {
+      try {
+        const response = await this.request(
+          `https://optcgapi.com/api/${family === "sets" ? "allSets" : "allDecks"}/`,
+        );
+        const values = parse(
+          z.array(z.record(z.string(), z.unknown())).max(500),
+          JSON.parse(new TextDecoder().decode(await body(response))),
+        );
+        for (const value of values) {
+          try {
+            const id = parse(
+              optcgSetSchema,
+              value[family === "sets" ? "set_id" : "structure_deck_id"],
+            );
+            const name = parse(
+              z.string().trim().min(1).max(200),
+              value[family === "sets" ? "set_name" : "structure_deck_name"],
+            );
+            if (!rows.some((row) => row.id === id))
+              rows.push({ id, name, family });
+          } catch {
+            issues.push(
+              "Una expansión recibida no tiene un código o nombre válido.",
+            );
+          }
+        }
+      } catch (error) {
+        issues.push(
+          family === "sets"
+            ? "No se pudieron cargar los nombres de expansiones. Puedes seguir buscando cartas."
+            : "No se pudieron cargar los nombres de mazos iniciales.",
+        );
+        if (
+          error instanceof OptcgError &&
+          ["NETWORK", "RATE_LIMIT"].includes(error.code)
+        )
+          break;
+      }
+    }
+    return { expansions: rows, issues };
+  }
+  async filtered(
+    family: Exclude<OptcgFamily, "don">,
+    filters: {
+      search?: string;
+      set?: string;
+      color?: string;
+      cost?: string;
+      leader?: boolean;
+    },
+  ) {
+    const params = new URLSearchParams();
+    if (filters.search)
+      params.set(
+        "card_name",
+        parse(z.string().trim().max(120), filters.search),
+      );
+    if (filters.set) params.set("set_id", parse(optcgSetSchema, filters.set));
+    if (filters.color)
+      params.set(
+        "color",
+        parse(
+          z.enum(["red", "green", "blue", "purple", "black", "yellow"]),
+          filters.color,
+        ),
+      );
+    if (filters.cost)
+      params.set(
+        "card_cost",
+        parse(z.string().regex(/^\d{1,3}$/), filters.cost),
+      );
+    if (filters.leader) params.set("card_type", "Leader");
+    return this.records(`/api/${family}/filtered/?${params}`, family);
   }
   async leaders(family: OptcgFamily = "sets") {
     if (family === "don") return { cards: [], issues: [], received: 0 };

@@ -64,7 +64,7 @@ export const matchSchema = z
     id: uuid,
     deck_version_id: uuid,
     opponent_leader_id: uuid,
-    result: z.enum(["win", "loss", "draw"]),
+    result: z.enum(["win", "loss"]),
     went_first: z
       .enum(["true", "false"])
       .transform((value) => value === "true"),

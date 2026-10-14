@@ -44,8 +44,8 @@ export default async function TournamentsPage({
                     · {t.location || "Sin lugar"}
                   </p>
                   <p className="mt-3 text-sm">
-                    {record.wins} V · {record.losses} D · {record.draws} E ·{" "}
-                    {record.totalGames} partidas
+                    {record.wins} V · {record.losses} D · {record.totalGames}{" "}
+                    partidas
                     {t.placement ? ` · Puesto ${t.placement}` : ""}
                   </p>
                 </Link>

@@ -70,7 +70,7 @@ test("mobile OPTCG search, selected printing, artwork, quote reuse, collection s
       page.getByRole("status").filter({ hasText: "menos de 15 minutos" }),
     ).toBeVisible();
     await page.goto("/decks/new");
-    await page.getByLabel("Nombre del mazo").fill("Synthetic OPTCG import");
+    await page.getByText("Importar lista de texto", { exact: true }).click();
     await page
       .getByLabel("Lista de texto")
       .fill("1 OP97-001\n4 OP97-010\n4 OP97-099");
@@ -93,6 +93,8 @@ test("mobile OPTCG search, selected printing, artwork, quote reuse, collection s
     await expect(
       page.getByRole("heading", { name: "Mazo principal: 4 / 50" }),
     ).toBeVisible();
+    await page.getByRole("button", { name: "Continuar al nombre" }).click();
+    await page.getByLabel("Nombre del mazo").fill("Synthetic OPTCG import");
     await page.getByLabel(/He revisado las cantidades/).check();
     await page
       .getByRole("button", { name: "Guardar mazo", exact: true })
@@ -112,7 +114,7 @@ test("mobile OPTCG search, selected printing, artwork, quote reuse, collection s
       .getByRole("button", { name: "Cargar colección", exact: true })
       .click();
     await expect(
-      page.getByRole("status").filter({ hasText: "3 fichas" }),
+      page.getByRole("status").filter({ hasText: "4 fichas" }),
     ).toBeVisible();
     expect(
       await page.evaluate(
@@ -130,7 +132,7 @@ test("mobile OPTCG search, selected printing, artwork, quote reuse, collection s
           [user],
         )
       ).rows;
-      expect(cards).toHaveLength(3);
+      expect(cards).toHaveLength(4);
       expect(cards.every((c) => c.source === "optcgapi")).toBe(true);
       const entries = (
         await db.query(

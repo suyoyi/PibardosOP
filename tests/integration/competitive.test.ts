@@ -113,6 +113,16 @@ describe("atomic match, event and ownership workflows", () => {
       ).rows,
     ).toEqual([{ round_number: 1, result: "win" }]);
   });
+  it("rejects new unsupported results through the owned match RPC and direct writes", async () => {
+    await rejected("select save_match($1)", [
+      input({ id: randomUUID(), result: "draw", round_number: 2 }),
+    ]);
+    await rejected("update matches set result='draw' where id=$1", [game]);
+    expect(
+      (await db.query("select result from matches where id=$1", [game])).rows[0]
+        .result,
+    ).toBe("win");
+  });
   it("updates result and play order without duplicating the round", async () => {
     await db.query("select save_match($1)", [
       input({
@@ -214,11 +224,11 @@ describe("atomic match, event and ownership workflows", () => {
     await rejected("select save_match($1)", [
       input({ id: randomUUID(), round_number: 2 }),
     ]);
-    await db.query("select save_match($1)", [input({ result: "draw" })]);
+    await db.query("select save_match($1)", [input({ result: "win" })]);
     expect(
       (await db.query("select result from matches where id=$1", [game])).rows[0]
         .result,
-    ).toBe("draw");
+    ).toBe("win");
     expect(
       (
         await db.query(
@@ -226,7 +236,7 @@ describe("atomic match, event and ownership workflows", () => {
           [game],
         )
       ).rows[0].result,
-    ).toBe("draw");
+    ).toBe("win");
   });
   it("removes the linked round on match deletion and preserves other games", async () => {
     const free = randomUUID();

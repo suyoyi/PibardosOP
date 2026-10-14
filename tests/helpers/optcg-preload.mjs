@@ -18,7 +18,13 @@ const base = optcgRecord(),
     card_name: "Synthetic OPTCG character parallel",
     card_image: "https://optcgapi.com/media/static/Card_Images/OP97-010_p1.jpg",
   });
-const records = [leader, base, alternate];
+const incompatible = optcgRecord({
+  card_set_id: "OP97-011",
+  card_image_id: "OP97-011",
+  card_name: "Synthetic incompatible blue card",
+  card_color: "Blue",
+});
+const records = [leader, base, alternate, incompatible];
 const png = Uint8Array.from(
   Buffer.from(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=",
@@ -35,6 +41,17 @@ globalThis.fetch = async (input, init) => {
   const url = new URL(value);
   if (!["optcgapi.com", "www.optcgapi.com"].includes(url.hostname))
     return original(input, init);
+  if (url.pathname === "/api/allSets/")
+    return Response.json([
+      { set_id: "OP-97", set_name: "Synthetic expansion" },
+      { set_id: "OP-01", set_name: "Synthetic first expansion" },
+    ]);
+  if (url.pathname === "/api/allDecks/")
+    return Response.json([
+      { structure_deck_id: "ST-97", structure_deck_name: "Synthetic starter" },
+    ]);
+  if (["/api/decks/filtered/", "/api/promos/filtered/"].includes(url.pathname))
+    return Response.json([]);
   if (url.pathname.startsWith("/media/static/Card_Images/"))
     return new Response(png, { headers: { "Content-Type": "image/png" } });
   if (["/api/sets/OP-97/", "/api/sets/OP-01/"].includes(url.pathname))

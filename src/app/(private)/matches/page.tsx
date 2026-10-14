@@ -42,7 +42,7 @@ export default async function MatchesPage({
         <EmptyState title="Todavía no hay resultados">
           <p>
             Registra tu primera partida: mazo y versión, líder rival, primero o
-            segundo y victoria, derrota o empate.
+            segundo y victoria o derrota.
           </p>
         </EmptyState>
       )}
