@@ -18,10 +18,9 @@ export function CardArtwork({
   small?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
-  const imageUrl =
-    card.source === "berrywallet"
-      ? `/api/cards/${card.id}/image`
-      : card.image_url;
+  const imageUrl = ["berrywallet", "optcgapi"].includes(card.source)
+    ? `/api/cards/${card.id}/image`
+    : card.image_url;
   return imageUrl && !failed ? (
     <Image
       unoptimized

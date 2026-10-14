@@ -545,6 +545,48 @@ export type Database = {
           },
         ];
       };
+      optcg_card_items: {
+        Row: {
+          card_id: string;
+          external_id: string;
+          family: string;
+          fetched_at: string;
+          image_url: string | null;
+          prices: NonNullable<Json>;
+          source_date: string | null;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          card_id: string;
+          external_id: string;
+          family: string;
+          fetched_at?: string;
+          image_url?: string | null;
+          prices?: NonNullable<Json>;
+          source_date?: string | null;
+          user_id?: string;
+        };
+        Update: {
+          card_id?: string;
+          external_id?: string;
+          family?: string;
+          fetched_at?: string;
+          image_url?: string | null;
+          prices?: NonNullable<Json>;
+          source_date?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "optcg_card_items_card_id_user_id_fkey";
+            columns: ["card_id", "user_id"];
+            isOneToOne: false;
+            referencedRelation: "cards";
+            referencedColumns: ["id", "user_id"];
+          },
+        ];
+      };
       tournament_rounds: {
         Row: {
           id: string;
@@ -654,6 +696,7 @@ export type Database = {
     };
     Functions: {
       cache_berrywallet_card: { Args: { p_card: Json }; Returns: string };
+      cache_optcg_card: { Args: { p_card: Json }; Returns: string };
       save_deck: { Args: { p_input: Json }; Returns: string };
       save_deck_version: {
         Args: {

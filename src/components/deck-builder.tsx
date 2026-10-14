@@ -199,7 +199,7 @@ export function DeckBuilder({
             disabled={previewPending}
             onClick={() => review(true)}
           >
-            Resolver desconocidas con BerryWallet
+            Resolver desconocidas con OPTCG API
           </button>
         )}
         {preview.providerNotice && (

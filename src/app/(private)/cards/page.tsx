@@ -4,8 +4,7 @@ import { ManualCatalogProvider } from "@/lib/data";
 import { PageHeading, EmptyState } from "@/components/ui";
 import { CardCatalog } from "@/components/card-catalog";
 import { SavedNotice } from "@/components/forms";
-import { BerryWalletTools } from "@/components/berrywallet-tools";
-import { berryConfigured } from "@/lib/berrywallet";
+import { OptcgTools } from "@/components/optcg-tools";
 export default async function CardsPage({
   searchParams,
 }: {
@@ -18,7 +17,7 @@ export default async function CardsPage({
       <PageHeading
         eyebrow="CONOCE TUS OPCIONES"
         title="Cartas"
-        description="Catálogo privado con cartas manuales o de BerryWallet. Ninguna fuente certifica aquí la legalidad actual de torneo."
+        description="Catálogo privado con cartas manuales o de OPTCG API. Ninguna fuente certifica aquí la legalidad actual de torneo."
       />
       <SavedNotice saved={(await searchParams).saved} />
       <div className="mb-6">
@@ -26,7 +25,7 @@ export default async function CardsPage({
           Añadir carta manual
         </Link>
       </div>
-      <BerryWalletTools enabled={berryConfigured()} />
+      <OptcgTools />
       {catalog.length ? (
         <CardCatalog catalog={catalog} />
       ) : (

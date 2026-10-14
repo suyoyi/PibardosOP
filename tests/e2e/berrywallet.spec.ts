@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { connectLocalDatabase } from "../helpers/local-database";
 import { normalizeBerryCard } from "../../src/domain/berrywallet";
 import { berryRecord } from "../fixtures/berrywallet";
-test("mobile provider cache, quote reuse, image authorization and missing-provider import fallback", async ({
+test("mobile historical BerryWallet cards remain readable without provider requests", async ({
   page,
   request,
 }) => {
@@ -51,9 +51,7 @@ test("mobile provider cache, quote reuse, image authorization and missing-provid
     }
     await page.goto("/cards");
     await expect(
-      page.getByText(
-        "El proveedor no está conectado. Puedes usar el catálogo manual.",
-      ),
+      page.getByRole("heading", { name: "OPTCG API", exact: true }),
     ).toBeVisible();
     await page.goto(`/cards/${ownCard}`);
     await expect(
@@ -64,12 +62,10 @@ test("mobile provider cache, quote reuse, image authorization and missing-provid
     await expect(
       page.getByLabel("Sin ilustración de Synthetic provider character"),
     ).toBeVisible();
-    await page
-      .getByRole("button", { name: "Consultar precios de nuevo" })
-      .click();
+    await expect(page.getByText(/BerryWallet está retirado/)).toBeVisible();
     await expect(
-      page.getByRole("status").filter({ hasText: "menos de 15 minutos" }),
-    ).toBeVisible();
+      page.getByRole("button", { name: "Consultar precios de nuevo" }),
+    ).toHaveCount(0);
     expect((await request.get(`/api/cards/${ownCard}/image`)).status()).toBe(
       401,
     );
@@ -78,51 +74,12 @@ test("mobile provider cache, quote reuse, image authorization and missing-provid
     ).toBe(404);
     expect(
       (await page.request.get(`/api/cards/${ownCard}/image`)).status(),
-    ).toBe(502);
+    ).toBe(404);
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= window.innerWidth,
       ),
     ).toBe(true);
-    await page.goto("/decks/new");
-    await page.getByLabel("Lista de texto").fill("4 OP97-099");
-    await page
-      .getByRole("button", { name: "Revisar importación", exact: true })
-      .click();
-    await expect(
-      page.getByRole("alert").filter({ hasText: "OP97-099 no está" }),
-    ).toBeVisible();
-    await page
-      .getByRole("button", { name: "Resolver desconocidas con BerryWallet" })
-      .click();
-    await expect(
-      page
-        .getByRole("status")
-        .filter({ hasText: "Configura BERRYWALLET_API_KEY" }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("alert").filter({ hasText: "OP97-099 no está" }),
-    ).toBeVisible();
-    await expect(page.getByLabel("Lista de texto")).toHaveValue("4 OP97-099");
-    const audit = await connectLocalDatabase();
-    try {
-      const jobs = (
-        await audit.query(
-          "select error_report from import_jobs where user_id=(select id from auth.users where email=$1) order by created_at desc",
-          [email],
-        )
-      ).rows;
-      expect(jobs).toHaveLength(2);
-      expect(
-        jobs[0].error_report.some(
-          (p: { code: string; message?: string }) =>
-            p.code === "PROVIDER_NOTICE" &&
-            p.message?.includes("BERRYWALLET_API_KEY"),
-        ),
-      ).toBe(true);
-    } finally {
-      await audit.end();
-    }
   } finally {
     const db = await connectLocalDatabase();
     try {

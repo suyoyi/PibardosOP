@@ -19,8 +19,8 @@ import {
   validationMessage,
   type ActionState,
 } from "@/domain/forms";
-import { BerryWalletProvider, berryClient } from "@/lib/berrywallet";
-import { BerryWalletError } from "@/domain/berrywallet";
+import { OptcgProvider, optcgClient } from "@/lib/optcg";
+import { OptcgError, selectDefaultOptcgPrinting } from "@/domain/optcg";
 import type { Json } from "@/lib/supabase/database.types";
 
 function databaseError(error: {
@@ -131,28 +131,29 @@ export async function previewImport(
           .filter((n): n is string => Boolean(n)),
       ),
     ];
-    const client = berryClient(),
-      provider = new BerryWalletProvider(supabase, "en", undefined, client);
+    const client = optcgClient(),
+      provider = new OptcgProvider(supabase, undefined, client);
     const notices: string[] = [];
-    // A code cannot identify an artwork. Do not choose between multiple results.
+    // Use the documented base printing when present; never guess ambiguous variants.
     for (const number of numbers.slice(0, 15)) {
       try {
-        const matches = await client.search(number);
-        const exact = matches.data.filter((c) => c.card_number === number);
-        if (exact.length !== 1 || matches.total > matches.data.length) {
+        const matches = await client.cards(number);
+        notices.push(...matches.issues);
+        const selected = selectDefaultOptcgPrinting(matches.cards, number);
+        if (!selected) {
           notices.push(
             `${number}: sin una coincidencia única. Selecciona la impresión en Cartas o añádela manualmente.`,
           );
           continue;
         }
-        await provider.importCard(exact[0].external_id);
+        await provider.save(selected);
       } catch (e) {
         notices.push(
-          e instanceof BerryWalletError
+          e instanceof OptcgError
             ? e.message
             : "No se pudo consultar el proveedor; conserva la lista y reintenta.",
         );
-        break;
+        if (!(e instanceof OptcgError) || e.code !== "NOT_FOUND") break;
       }
     }
     if (numbers.length > 15)

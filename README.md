@@ -1,6 +1,6 @@
 # Pibardos OP
 
-A Spanish mobile-first personal workspace for One Piece Card Game. The app includes secure authentication, private manual cards, an optional BerryWallet adapter, confirmed deck imports, a versioned deck builder, match history, tournaments and charts of saved results. Practice and collection/offline UI are subsequent phases; see `PROJECT_STATUS.md` and `docs/ARCHITECTURE.md`.
+A Spanish mobile-first personal workspace for One Piece Card Game. The app includes secure authentication, private manual cards, OPTCG API card imports, confirmed deck imports, a versioned deck builder, match history, tournaments and charts of saved results. Practice and collection/offline UI are subsequent phases; see `PROJECT_STATUS.md` and `docs/ARCHITECTURE.md`.
 
 ## Try the app in your browser with GitHub Codespaces
 
@@ -56,19 +56,21 @@ Integration tests require local Supabase and fail if unavailable; they are never
 
 `npm run db:reset` **deletes local development data** and replays migrations; only use it on disposable databases. Production migrations are applied with the Supabase CLI to a reviewed linked project, never with the local reset command. After changing `.env.local`, restart Next.js and rebuild before E2E.
 
-## Optional BerryWallet connection
+## OPTCG API catalog and imports
 
-Configure `BERRYWALLET_API_KEY` in the server's secret settings, or add your own key to ignored `.env.local` for local development. Restart/rebuild Next.js after a credential change. Never share the key in chat, commit it, or use a `NEXT_PUBLIC_` prefix. The adapter supports this cloud's network-secret HTTP proxy without changing local Supabase requests.
+OPTCG API is the current external provider and **needs no API key**. In **Cartas**, search by code/name, select a group (sets, starter decks, promos or DON), then add the desired printing. Printed ST/P codes route to their documented category. You can also load one chosen collection, such as `OP01`, `EB01`, `PRB01` or `ST01`; no full-catalog background download occurs. API data is English; manual entry remains available for missing or incomplete cards.
 
-In **Cartas**, explicitly search BerryWallet and add the desired printing, or load one collection with an explicit language. Imported cards become private catalog entries usable by decks and opponent selection. Missing/invalid facts are reported; manual entry remains available. In the import preview, **Resolver desconocidas con BerryWallet** optionally resolves up to 15 codes; ambiguous printings require selection in Cartas. Every preview and provider notice is retained; saving still requires confirmation.
+In the deck import preview, **Resolver desconocidas con OPTCG API** explicitly consults up to 15 missing printed codes. It chooses a unique base printing when the provider identifies one, otherwise a single exact match. Ambiguous variants require catalog selection. Review recognized/unknown/malformed entries and confirm before saving; provider notices and original text remain in import history. A missing code does not prevent resolving subsequent codes; network/quota/persistence failures stop the batch safely.
 
-Card detail shows separately cached CardMarket EUR and TCGPlayer USD quotes, the consultation date, and a refresh action with a 15-minute reuse interval. Original card facts stay immutable to preserve deck history. Authenticated artwork passes through a server proxy without exposing credentials or storing image files. Unavailable images use the existing placeholder.
+Saved cards and price/image references are private in Supabase. Canonical roots preserve copy limits across variants. Repeated imports refresh quotes and image references without changing card facts used by historical deck snapshots. Card detail shows market/inventory quotes, the consultation time and the provider's date; **the API does not declare currency, so amounts remain unlabeled by EUR/USD and the limitation is shown explicitly**. Missing prices are never zero. Price refresh reuses owner cache younger than 15 minutes.
 
-The documented free quota is 100 requests/hour and 1,000/day shared across games; searches, details and images consume provider requests. This integration uses basic prices included in responses, never the paid `/op/prices` endpoint or automatic subscriptions. See [provider review, limits and live verification](docs/BERRYWALLET.md). **The current environment's live requests return HTTP 401; actual card/image/quote responses remain unverified until the credential is accepted.** Controlled fixtures verify the application flows without querying a live card website.
+Server-side public metadata responses are reused for one hour by default to reduce provider traffic (`OPTCG_CACHE_SECONDS=3600`; set `0` to disable or a value up to `86400`). Images use an authenticated, fixed-host transient proxy with no-store responses and placeholders for absent/rejected artwork; no image files are downloaded to permanent storage. There is no promised numeric daily quota or guaranteed complete catalog. See [provider review and verification](docs/OPTCG_API.md).
+
+BerryWallet is retired from UI, import resolution and image requests. Existing BerryWallet facts, prices and deck references remain readable, with historical quotes labeled and refresh removed. Its key is unnecessary and unused by current app routes.
 
 ## Using the competitive workflows
 
-1. Add your leader, opponent leaders and missing main-deck cards in **Cartas** using facts from your physical cards. For alternate printings/reprints choose their original canonical identity. Manual data remains explicitly unverified, and no copyrighted images are bundled or downloaded.
+1. Add your leader, opponent leaders and missing main-deck cards in **Cartas** using facts from your physical cards. For alternate printings/reprints choose their original canonical identity. Manual data remains explicitly unverified, and no copyrighted image files are bundled or stored permanently.
 2. In **Mazos → Crear o importar mazo**, paste quantities and printed codes. Review recognized cards, aggregated duplicates and every unknown/malformed line. Correct codes or add missing cards, then review again. Each preview is retained separately in import history; failed/unknown previews are not overwritten. Confirm the preview before saving.
 3. Save incomplete lists as **Borrador**. **Activo** requires 50 main cards, valid types, a leader, known compatible colors and canonical copy/restriction limits. DON is separate. Active construction does not certify tournament legality. Cards/leader/format changes create immutable versions; rename/description/tag changes alone retain the current version. Compare versions or download the text list from deck detail. Text export retains quantities/codes but not alternate artwork selection.
 4. In **Partidas → Registrar partida**, choose the exact deck version, opponent leader, Victoria/Derrota/Empate, and Primero/Segundo. Optional fields include UTC date/time, opponent name, type and notes. Displayed history uses Madrid time. Editing/deleting updates the derived statistics; deletion requires confirmation.
@@ -86,7 +88,7 @@ To update an existing local checkout, stop its web-server terminal first, run `g
 
 Installation requires HTTPS (loopback is allowed during testing). The service worker caches only original public icons and the offline notice. Private responses and credentials are never cached. Offline reads/writes, synchronization and conflict resolution are not implemented. Browser/OS install prompts vary; the manifest and service worker are the foundation, not a guarantee of an install prompt on every device.
 
-Production release gates still include account recovery/export/deletion workflows, the practice simulator, collection workflows, externally verified restriction data and accepted provider credentials and live response verification. The full MVP and a production deployment are not claimed complete.
+Production release gates still include account recovery/export/deletion workflows, the practice simulator, collection workflows, externally verified restriction data and reviewed hosted provider behavior. The full MVP and a production deployment are not claimed complete.
 
 ## Security and data
 

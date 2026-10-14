@@ -5,6 +5,7 @@ import { uuid } from "@/domain/forms";
 import { typeLabels, colorLabels } from "@/domain/cards";
 import { CardArtwork } from "@/components/card-catalog";
 import { PageHeading } from "@/components/ui";
+import { OptcgPrices } from "@/components/optcg-prices";
 import { CardPrices } from "@/components/card-prices";
 import { SavedNotice } from "@/components/forms";
 export default async function CardPage({
@@ -21,6 +22,11 @@ export default async function CardPage({
   if (!card) notFound();
   const { data: provider, error: providerError } = await supabase
     .from("card_provider_items")
+    .select("*")
+    .eq("card_id", card.id)
+    .maybeSingle();
+  const { data: optcg, error: optcgError } = await supabase
+    .from("optcg_card_items")
     .select("*")
     .eq("card_id", card.id)
     .maybeSingle();
@@ -58,11 +64,19 @@ export default async function CardPage({
           </p>
         )}
       </div>
-      {providerError && (
+      {(providerError || optcgError) && (
         <p role="alert" className="mt-6 text-sm text-red-200">
           No se pudieron leer los precios guardados. Revisa la conexión y las
           migraciones.
         </p>
+      )}
+      {optcg && (
+        <OptcgPrices
+          prices={optcg.prices}
+          fetchedAt={optcg.fetched_at}
+          sourceDate={optcg.source_date}
+          externalId={optcg.external_id}
+        />
       )}
       {provider && (
         <CardPrices

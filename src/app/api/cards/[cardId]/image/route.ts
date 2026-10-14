@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { berryClient } from "@/lib/berrywallet";
+import { optcgClient } from "@/lib/optcg";
 import { getSupabaseConfig } from "@/lib/config";
 import { uuid } from "@/domain/forms";
 export async function GET(
@@ -19,13 +19,14 @@ export async function GET(
   if (auth.error || !auth.data.user)
     return new Response(null, { status: 401, headers });
   const { data, error } = await db
-    .from("card_provider_items")
-    .select("image_path")
+    .from("optcg_card_items")
+    .select("image_url")
     .eq("card_id", cardId)
     .maybeSingle();
-  if (error || !data) return new Response(null, { status: 404, headers });
+  if (error || !data?.image_url)
+    return new Response(null, { status: 404, headers });
   try {
-    const image = await berryClient().image(data.image_path);
+    const image = await optcgClient().image(data.image_url!);
     return new Response(image.body, {
       headers: { ...headers, "Content-Type": image.type },
     });

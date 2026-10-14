@@ -62,16 +62,18 @@ export function parseDecklist(
     return report;
   }
   const byNumber = new Map<string, Card>();
-  // A plain printed code chooses its root/default printing, never an arbitrary artwork.
+  // Canonical roots define copy identity, not necessarily the base artwork.
+  // Prefer an explicitly identified OPTCG base, then a root, with stable ties.
+  const priority = (card: Card) =>
+    card.source === "optcgapi" && card.printing_code === card.card_number
+      ? 2
+      : card.id === card.canonical_card_id
+        ? 1
+        : 0;
   for (const card of [...catalog].sort((a, b) => a.id.localeCompare(b.id))) {
     const key = normalizeCardNumber(card.card_number),
       current = byNumber.get(key);
-    if (
-      !current ||
-      (card.id === card.canonical_card_id &&
-        current.id !== current.canonical_card_id)
-    )
-      byNumber.set(key, card);
+    if (!current || priority(card) > priority(current)) byNumber.set(key, card);
   }
   const aggregated = new Map<string, ImportEntry>();
   normalizeDeckText(raw)

@@ -1,4 +1,6 @@
-# BerryWallet integration review
+# BerryWallet integration review (retired)
+
+OPTCG API supersedes this adapter. BerryWallet UI/actions and image requests have been removed; no current application route requires or uses its key. Historical private cards and quotes stay readable. The rest of this file records the original review and verification, not current setup instructions.
 
 Reviewed on 2026-10-14 using the published One Piece guide, pricing page and terms:
 

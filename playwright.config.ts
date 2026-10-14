@@ -20,7 +20,11 @@ export default defineConfig({
   projects: [{ name: "mobile-chromium", use: { ...devices["Pixel 7"] } }],
   webServer: {
     command: "npm run start -- --port 3100",
-    env: { BERRYWALLET_API_KEY: "" },
+    env: {
+      BERRYWALLET_API_KEY: "",
+      OPTCG_CACHE_SECONDS: "0",
+      NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ""} --import=./tests/helpers/optcg-preload.mjs`,
+    },
     url: "http://127.0.0.1:3100/api/health",
     reuseExistingServer: false,
     timeout: 60000,

@@ -1,7 +1,5 @@
 "use client";
 import { z } from "zod";
-import { refreshBerryWalletPrice } from "@/app/(private)/cards/berrywallet-actions";
-import { ActionForm } from "./forms";
 const quotesSchema = z.array(
   z.object({
     market: z.enum(["cardmarket", "tcgplayer"]),
@@ -13,8 +11,6 @@ const quotesSchema = z.array(
 export function CardPrices({
   prices,
   fetchedAt,
-  externalId,
-  language,
 }: {
   prices: unknown;
   fetchedAt: string;
@@ -40,7 +36,7 @@ export function CardPrices({
     <section className="panel mt-6 grid gap-5 p-5">
       <h2 className="font-semibold">Precios de la impresión</h2>
       <p className="text-xs leading-5 text-muted">
-        Fuente: BerryWallet · consultado{" "}
+        Fuente histórica: BerryWallet · consultado{" "}
         {new Date(fetchedAt).toLocaleString("es-ES", {
           timeZone: "Europe/Madrid",
         })}
@@ -73,20 +69,10 @@ export function CardPrices({
           muestran como cero.
         </p>
       )}
-      <ActionForm
-        action={refreshBerryWalletPrice}
-        submit="Consultar precios de nuevo"
-      >
-        <input type="hidden" name="external_id" value={externalId} />
-        <input
-          type="hidden"
-          name="language"
-          value={language === "ja" ? "jp" : "en"}
-        />
-        <p className="text-xs text-muted">
-          Reutilizamos consultas de menos de 15 minutos para ahorrar cuota.
-        </p>
-      </ActionForm>
+      <p className="text-xs text-muted">
+        BerryWallet está retirado. Se conservan los precios históricos, sin
+        nuevas consultas.
+      </p>
     </section>
   );
 }
