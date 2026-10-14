@@ -36,6 +36,12 @@ String numeric facts normalize strictly; JSON null, `"NULL"` and empty optional 
 
 A unique provider base printing (`card_image_id == card_set_id`) may resolve a plain code. Otherwise resolution requires one exact match. Ambiguous codes require selecting a specific catalog printing or manual entry. Import preview resolves at most 15 missing codes and never saves a deck automatically; all unknown/malformed lines, user confirmation and raw/error audit remain authoritative.
 
+## Direct deck-builder search
+
+The builder uses the same search field for saved and remote cards, with a 500 ms debounce, two-character minimum and cancellation of superseded response display. Category selection supports sets/starter/promo/DON lookups; all builder filters apply to both sources. Remote previews are never inserted merely because they were searched.
+
+`getOptcgBuilderCard` validates printed number, family and exact provider identity, authenticates, and first reuses the owner's immutable cached card. Otherwise it verifies the selected printing against the provider and uses the existing idempotent owned RPC. It returns the persisted card without redirect/revalidation, preserving draft name, notes, leader and quantities. Selecting a leader updates the leader field; selecting main/DON cards adds one copy with the appropriate role. These are virtual deck quantities and do not allocate physical inventory. Saving the deck remains an explicit separate action. Dynamic filter options retain the currently selected value during query changes, and failures leave saved candidates/editor contents available.
+
 ## Private persistence and historical integrity
 
 `cards` facts are immutable to the client. `cache_optcg_card` is an authenticated, transaction-safe, idempotent RPC deriving ownership from `auth.uid()`; caller-supplied user/card IDs are ignored. It serializes printing and canonical-root creation. `optcg_card_items` holds quote/image references, source date and consultation time separately with owner SELECT-only RLS and a composite card/owner FK. Direct cache writes are denied. Canonical roots join the owner's/shared printed-number identities; alternate art does not increase copy limits.

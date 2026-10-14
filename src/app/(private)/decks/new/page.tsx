@@ -16,11 +16,11 @@ export default async function NewDeckPage() {
       />
       {!catalog.length && (
         <p className="mb-6 text-sm text-muted">
-          Primero{" "}
+          Busca tu líder y tus cartas en el constructor. También puedes{" "}
           <Link className="text-accent underline" href="/cards/new">
-            añade tu líder y tus cartas
+            crear una carta manual
           </Link>{" "}
-          al catálogo manual.
+          si falta en el proveedor.
         </p>
       )}
       <DeckBuilder

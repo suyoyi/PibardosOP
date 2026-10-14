@@ -45,6 +45,24 @@ globalThis.fetch = async (input, init) => {
       ? Response.json(found)
       : new Response(null, { status: 404 });
   }
+  if (
+    url.pathname === "/api/sets/filtered/" &&
+    url.searchParams.get("card_name") === "Unavailable"
+  )
+    return Response.json([
+      optcgRecord({
+        card_set_id: "OP97-066",
+        card_image_id: "OP97-066",
+        card_name: "Synthetic unavailable card",
+      }),
+    ]);
+  if (
+    url.pathname === "/api/sets/filtered/" &&
+    url.searchParams.get("card_name") === "delayed"
+  ) {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    return Response.json([base]);
+  }
   if (url.pathname === "/api/sets/filtered/")
     return Response.json(
       records.filter((c) =>

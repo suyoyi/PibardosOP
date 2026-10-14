@@ -7,7 +7,7 @@ import {
   saveDeck,
   type PreviewState,
 } from "@/app/(private)/actions";
-import { filterCards, type Card, type CardFilters } from "@/domain/cards";
+import { type Card, type CardFilters } from "@/domain/cards";
 import { importedMainEntries, type DeckEntry } from "@/domain/deck-import";
 import {
   validateDeck,
@@ -16,7 +16,8 @@ import {
   type Restriction,
 } from "@/domain/decks";
 import { ActionForm, Field } from "./forms";
-import { CardArtwork, CatalogControls } from "./card-catalog";
+import { CardArtwork } from "./card-catalog";
+import { DeckCardSearch } from "./deck-card-search";
 export function ValidationMessages({
   result,
 }: {
@@ -104,10 +105,6 @@ export function DeckBuilder({
       restrictions,
       standardRules(format),
     );
-  const candidates = filterCards(
-    catalog.filter((c) => c.card_type !== "leader"),
-    filters,
-  );
   const report = preview.report,
     importedLeaders =
       report?.entries.filter((e) => e.card.card_type === "leader") ?? [];
@@ -137,6 +134,18 @@ export function DeckBuilder({
               },
             ],
     );
+  const selectCard = (card: Card) => {
+    setCatalog((current) => [
+      ...new Map([...current, card].map((c) => [c.id, c])).values(),
+    ]);
+    if (card.card_type === "leader") setLeaderId(card.id);
+    else
+      changeQuantity(
+        card,
+        (getValues("entries").find((e) => e.card_id === card.id)?.quantity ??
+          0) + 1,
+      );
+  };
   const review = (resolveMissing = false) =>
     startPreview(async () => {
       const next = await previewImport(raw, resolveMissing);
@@ -164,6 +173,12 @@ export function DeckBuilder({
     });
   return (
     <div className="grid gap-6">
+      <DeckCardSearch
+        catalog={catalog}
+        filters={filters}
+        onFilters={setFilters}
+        onSelect={selectCard}
+      />
       <section className="panel grid gap-4 p-5" aria-label="Importar lista">
         <h2 className="text-lg font-semibold">Importar lista de texto</h2>
         <p className="text-sm text-muted">
@@ -453,58 +468,9 @@ export function DeckBuilder({
           </ul>
         ) : (
           <p className="text-sm text-muted">
-            Añade cartas desde el catálogo o importa una lista.
+            Busca cartas arriba para añadirlas o importa una lista.
           </p>
         )}
-      </section>
-      <section className="panel grid gap-5 p-5">
-        <h2 className="text-lg font-semibold">Añadir cartas</h2>
-        <CatalogControls
-          catalog={catalog}
-          filters={filters}
-          onChange={setFilters}
-        />
-        <p className="text-sm text-muted">
-          {candidates.length} coincidencias. Se muestran las primeras 40; afina
-          la búsqueda para localizar más.
-        </p>
-        <ul className="grid gap-2 sm:grid-cols-2">
-          {candidates.slice(0, 40).map((card) => (
-            <li
-              key={card.id}
-              className="flex items-center justify-between gap-3 rounded-lg border border-border p-3"
-            >
-              <div className="min-w-0">
-                <p className="text-xs text-accent">{card.card_number}</p>
-                <p className="break-words text-sm">
-                  {card.name} · {card.printing_code}
-                </p>
-              </div>
-              <button
-                type="button"
-                className="button-secondary shrink-0"
-                aria-label={`Añadir ${card.card_number} al mazo`}
-                onClick={() =>
-                  changeQuantity(
-                    card,
-                    (entries.find((e) => e.card_id === card.id)?.quantity ??
-                      0) + 1,
-                  )
-                }
-              >
-                Añadir
-              </button>
-            </li>
-          ))}
-        </ul>
-        <Link
-          href="/cards/new"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm text-accent underline"
-        >
-          Crear carta manual que falta
-        </Link>
       </section>
     </div>
   );

@@ -8,6 +8,7 @@ import {
   typeLabels,
   type Card,
   type CardFilters,
+  type CatalogFilterCard,
 } from "@/domain/cards";
 import { Field } from "./forms";
 export function CardArtwork({
@@ -50,7 +51,7 @@ export function CatalogControls({
   filters,
   onChange,
 }: {
-  catalog: readonly Card[];
+  catalog: readonly CatalogFilterCard[];
   filters: CardFilters;
   onChange: (filters: CardFilters) => void;
 }) {
@@ -64,6 +65,7 @@ export function CatalogControls({
           value={filters.search ?? ""}
           onChange={(e) => update("search", e.target.value)}
           placeholder="Código o nombre"
+          maxLength={120}
         />
       </Field>
       <Field label="Color">
@@ -111,9 +113,10 @@ export function CatalogControls({
           >
             <option value="">Todos</option>
             {[
-              ...new Set(
-                values.filter((v) => v !== null && v !== "").map(String),
-              ),
+              ...new Set([
+                ...values.filter((v) => v !== null && v !== "").map(String),
+                ...(filters[key] ? [filters[key]!] : []),
+              ]),
             ]
               .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
               .map((v) => (

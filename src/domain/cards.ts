@@ -27,7 +27,22 @@ export type CardFilters = {
   counter?: string;
   attribute?: string;
 };
-export function filterCards(cards: readonly Card[], filters: CardFilters) {
+export type CatalogFilterCard = Pick<
+  Card,
+  | "card_number"
+  | "name"
+  | "colors"
+  | "card_type"
+  | "set_code"
+  | "cost"
+  | "power"
+  | "counter"
+  | "attribute"
+>;
+export function filterCards<T extends CatalogFilterCard>(
+  cards: readonly T[],
+  filters: CardFilters,
+): T[] {
   const query = (filters.search ?? "").trim().toLocaleLowerCase("es");
   return cards.filter(
     (card) =>

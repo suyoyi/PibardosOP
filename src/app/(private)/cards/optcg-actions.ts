@@ -11,7 +11,11 @@ import {
   optcgSetSchema,
   type OptcgCard,
 } from "@/domain/optcg";
-import { cardNumberPattern, normalizeCardNumber } from "@/domain/cards";
+import {
+  cardNumberPattern,
+  normalizeCardNumber,
+  type Card,
+} from "@/domain/cards";
 import type { ActionState } from "@/domain/forms";
 function failure(error: unknown): ActionState {
   return {
@@ -39,21 +43,63 @@ export async function searchOptcg(
     return failure(e);
   }
 }
+const selectionSchema = z
+  .object({
+    external_id: optcgIdSchema,
+    family: familySchema,
+    card_number: z
+      .string()
+      .transform(normalizeCardNumber)
+      .refine((n) => cardNumberPattern.test(n)),
+  })
+  .refine((v) => v.external_id.startsWith(`optcg_${v.family}_`));
+
+export async function getOptcgBuilderCard(
+  selection: unknown,
+): Promise<{ card?: Card; error?: string }> {
+  const { supabase, user } = await requireUser(),
+    input = selectionSchema.safeParse(selection);
+  if (!input.success)
+    return { error: "Selecciona una impresión válida del buscador." };
+  try {
+    const { data: cached, error } = await supabase
+      .from("cards")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("source", "optcgapi")
+      .eq("provider_card_id", input.data.external_id)
+      .eq("card_number", input.data.card_number)
+      .maybeSingle();
+    if (error)
+      throw new OptcgError(
+        "PERSISTENCE",
+        "No se pudo consultar la ficha. Reintenta sin salir del editor.",
+      );
+    if (cached) return { card: cached };
+    const provider = new OptcgProvider(supabase),
+      id = await provider.importCard(
+        input.data.card_number,
+        input.data.external_id,
+        input.data.family,
+      );
+    const card = await provider.getCard(id);
+    if (!card)
+      throw new OptcgError(
+        "PERSISTENCE",
+        "No se pudo recuperar la ficha añadida. Reintenta sin salir del editor.",
+      );
+    // Return data without navigation/revalidation so the unsaved editor is preserved.
+    return { card };
+  } catch (e) {
+    return failure(e);
+  }
+}
 export async function importOptcgCard(
   _state: ActionState,
   form: FormData,
 ): Promise<ActionState> {
   const { supabase } = await requireUser();
-  const input = z
-    .object({
-      external_id: optcgIdSchema,
-      family: familySchema,
-      card_number: z
-        .string()
-        .transform(normalizeCardNumber)
-        .refine((n) => cardNumberPattern.test(n)),
-    })
-    .safeParse(Object.fromEntries(form));
+  const input = selectionSchema.safeParse(Object.fromEntries(form));
   if (!input.success)
     return { error: "Selecciona una impresión válida del proveedor." };
   let cardId: string;
