@@ -4,8 +4,11 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const child = spawn(
-  path.join(root, "node_modules/.bin/supabase"),
-  process.argv.slice(2),
+  process.execPath,
+  [
+    path.join(root, "node_modules/supabase/dist/supabase.js"),
+    ...process.argv.slice(2),
+  ],
   {
     cwd: root,
     stdio: "inherit",

@@ -56,3 +56,11 @@ Implement cards/import, deck editing/version comparisons, competitive tracking, 
 - Executed validation: devcontainer CLI accepted the configuration; launcher syntax and formatting checks passed; lint and strict types passed; **30 unit/integration tests** passed, including five exact-origin configuration tests.
 - The preview launcher started local Supabase and a production app, verified real health/login responses, and reused the healthy server on a second invocation.
 - **4 mobile E2E tests passed** with Codespaces origin metadata, including native HTTP replay of a real Server Action: an untrusted Origin was rejected before account creation; the exact allowed Codespace Origin created an account whose session opened the private dashboard. Dedicated accounts were removed afterward.
+
+## Windows local startup — preparation
+
+- Added `local:start` with dependency bootstrap, verified Supabase, preserved public configuration, a foreground loopback app and readiness-gated browser opening. Local data is never reset on launch or exit.
+- Supabase now runs through its published JavaScript CLI entry point using Node, avoiding Windows-incompatible execution of a Unix npm shim. The local launcher similarly invokes npm's JavaScript entry and Next.js directly.
+- Windows browser opening uses the default handler through PowerShell; macOS/Linux openers are also supported. Instructions cover opening the repository in a local desktop-agent session.
+- No Windows computer is attached to this chat. Execution on the owner's Windows PC and actual browser opening there are not claimed verified.
+- Executed Linux validation: pinned dependency installation, Supabase CLI version, lint, strict types and all 30 unit/integration tests passed. The new launcher started verified PostgreSQL/Auth/REST, built the application and checked real health/login responses with browser opening disabled. Sending SIGINT to the launcher stopped its web server while retaining Supabase containers; browser opening on Windows remains untested.

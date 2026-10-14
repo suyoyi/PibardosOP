@@ -18,6 +18,18 @@ Next.js trusts only this Codespace's exact forwarded hostname for development as
 
 ## Local development
 
+For Windows, install Node.js 24, Git and Docker Desktop with the WSL 2 / Linux-container engine. Open Docker Desktop before starting. Clone the repository into a user-owned folder and open it as a **local** project in your desktop coding app:
+
+```powershell
+git clone https://github.com/suyoyi/PibardosOP.git
+cd PibardosOP
+npm run local:start
+```
+
+`local:start` installs locked dependencies if missing, starts and verifies Supabase, creates public `.env.local` settings only when absent, builds the application and starts a foreground loopback server. After checking the actual health and login form, it opens the default browser (PowerShell `Start-Process` on Windows). Keep the terminal open. Ctrl+C stops the web server; `npm run db:stop` stops local Supabase while retaining data. Existing healthy instances and configuration are preserved. To use a different port set `PIBARDOS_APP_PORT`; to suppress browser opening set `PIBARDOS_OPEN_BROWSER=false`.
+
+This cloud chat cannot execute commands on your Windows PC. Once the repository is open in a local desktop-agent session, ask that session to run `npm run local:start`. Browser preview inside the desktop app still depends on that app's available tools; the normal Windows browser works independently.
+
 Requirements: Node 22.12+ (validated with Node 24), npm, Docker with a running daemon. Dependencies are pinned in `package-lock.json`.
 
 ```bash
