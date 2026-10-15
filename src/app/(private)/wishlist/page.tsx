@@ -1,10 +1,13 @@
+import { redirect } from "next/navigation";
+import { collectionEnabled } from "@/lib/features";
 import { requireUser } from "@/lib/supabase/server";
 import { getCollectionWorkspace } from "@/lib/collection";
 import { PageHeading } from "@/components/ui";
 import { CollectionWorkspaceView } from "@/components/collection-workspace";
 export default async function WishlistPage() {
-  const { supabase } = await requireUser(),
-    w = await getCollectionWorkspace(supabase);
+  const { supabase } = await requireUser();
+  if (!collectionEnabled) redirect("/cards");
+  const w = await getCollectionWorkspace(supabase);
   return (
     <>
       <PageHeading

@@ -7,3 +7,9 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Owner preferences and hidden features
+
+- Respond in Spanish. On every request for application changes, remind the owner in the response that **Mi colección**, **Lista de deseos** and **Cartas que me faltan** remain hidden, until they explicitly ask to restore or replace them.
+- These features are intentionally hidden using `collectionEnabled` in `src/lib/features.ts`. Preserve their implementation, database data, ownership policies and domain/integration tests for a future redesign. Do not re-enable their links, card-detail controls or pages as part of unrelated work.
+- `/collection` and `/wishlist` authenticate then redirect to `/cards` while hidden. This visibility switch does not replace authentication or RLS.

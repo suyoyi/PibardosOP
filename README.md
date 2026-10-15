@@ -1,5 +1,7 @@
 # Pibardos OP
 
+**Intentionally hidden pending redesign:** Mi colección, Lista de deseos and Cartas que me faltan. Their code and existing data remain intact; `collectionEnabled` in `src/lib/features.ts` controls visibility. Navigation, card-detail controls and the deck’s missing-card action stay hidden. Direct collection/wishlist URLs authenticate then redirect to Cartas. Do not restore these features without the owner’s explicit request.
+
 A Spanish mobile-first personal workspace for One Piece Card Game. The app includes secure authentication, provider-backed cards, OPTCG API card imports, confirmed deck imports, a deck builder with internal immutable match snapshots, match history, tournaments, physical collection, missing-card reservations, exact-art wishes and charts of saved results. Practice and offline synchronization are subsequent phases; see `PROJECT_STATUS.md` and `docs/ARCHITECTURE.md`.
 
 ## Try the app in your browser with GitHub Codespaces
@@ -95,6 +97,8 @@ Price totals retain exact market price × saved quantity for leader/main/listed 
 The valuation uses only saved **OPTCG API market quotes** with the requested USD display format and an explicit source-currency limitation; it performs no conversion. The oldest consultation used is shown in price information, while each printing's detail also retains the provider date. These are indicative stored quotes, without shipping or guaranteed real-time values. **Consultar precios de nuevo** in the popup reuses the existing explicit cached-price refresh (15-minute owner cache/public-provider TTL). Prices can change without editing immutable card facts or creating a deck version. Deck browsing performs no metadata refresh/import, physical ownership declaration or automatic history request; open the history section to request its existing bounded source flow. Private quotes are filtered to the deck's UUIDs through the authenticated client and RLS, with no public cache of account data. Price-read failure leaves the saved artwork/list usable and offers page reload.
 
 ## Physical collection, missing cards and wishlist
+
+This implementation is currently hidden from the app at the owner’s request and retained for a future redesign. The following documents its retained behavior.
 
 Open **Mi colección** or **Lista de deseos** from Cartas or Ajustes. In the catalog dialog, choose the exact artwork and expand **Colección y deseos**. Browsing and opening these controls never imports the catalog or establishes physical ownership. Saving a wish or inventory lot privately caches only the selected printing when needed.
 

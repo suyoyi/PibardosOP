@@ -49,6 +49,9 @@ test("mobile OPTCG search, selected printing, artwork, quote reuse, collection s
     await expect(page).toHaveURL(/\/cards\/[a-f0-9-]+\?saved=1/);
     const cardId = new URL(page.url()).pathname.split("/").at(-1)!;
     await expect(
+      page.getByText("Colección y deseos", { exact: true }),
+    ).toHaveCount(0);
+    await expect(
       page.getByText(/Moneda no especificada por la API/),
     ).toBeVisible();
     await expect(page.getByText("2,5", { exact: true })).toBeVisible();

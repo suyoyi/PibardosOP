@@ -158,6 +158,9 @@ test("deck artwork gallery values exact printings and quantities, opens accessib
       await db.end();
     }
     await page.goto(`/decks/${deckId}`);
+    await expect(
+      page.getByRole("link", { name: "Cartas que me faltan", exact: true }),
+    ).toHaveCount(0);
     const valuation = page.getByRole("region", {
       name: "Precio mazo",
       exact: true,
@@ -202,6 +205,9 @@ test("deck artwork gallery values exact printings and quantities, opens accessib
       exact: true,
     });
     await expect(dialog).toBeVisible();
+    await expect(
+      dialog.getByText("Colección y deseos", { exact: true }),
+    ).toHaveCount(0);
     await expect(page).toHaveURL(`/decks/${deckId}`);
     await expect(dialog).toContainText("Synthetic effect");
     await expect(dialog).toContainText("Synthetic trait block");

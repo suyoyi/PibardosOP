@@ -1,3 +1,4 @@
+import { collectionEnabled } from "../../src/lib/features";
 import { test, expect, type Page, type Locator } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import { connectLocalDatabase } from "../helpers/local-database";
@@ -29,6 +30,10 @@ test("physical collection, exact-art wishes and missing cards reserve copies onc
   page,
   browser,
 }) => {
+  test.skip(
+    !collectionEnabled,
+    "Collection and wishlist UI are intentionally hidden pending redesign; database/domain coverage remains active.",
+  );
   test.setTimeout(180000);
   const email = `collection-${randomUUID()}@example.com`,
     deckA = randomUUID(),

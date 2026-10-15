@@ -74,6 +74,17 @@ test("register, navigate real empty data, logout and log back in", async ({
     }
     await page.getByRole("link", { name: "Ajustes", exact: true }).click();
     await expect(page.getByText(email, { exact: true })).toBeVisible();
+    await expect(
+      page.locator('a[href^="/collection"], a[href^="/wishlist"]'),
+    ).toHaveCount(0);
+    for (const path of ["/collection", "/wishlist"]) {
+      await page.goto(path);
+      await expect(page).toHaveURL("/cards");
+      await expect(
+        page.getByRole("link", { name: /Mi colección|Lista de deseos/ }),
+      ).toHaveCount(0);
+    }
+    await page.goto("/settings");
     await page.getByRole("button", { name: "Cerrar sesión" }).click();
     await expect(page).toHaveURL(/\/login/);
     await page.goto("/settings");

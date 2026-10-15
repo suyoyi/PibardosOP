@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { collectionEnabled } from "@/lib/features";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { typeLabels, colorLabels } from "@/domain/cards";
@@ -229,12 +230,14 @@ export function DeckGallery({
           >
             Comparar estadísticas
           </Link>
-          <Link
-            href={`/collection?deck=${deckId}`}
-            className="button-secondary"
-          >
-            Cartas que me faltan
-          </Link>
+          {collectionEnabled && (
+            <Link
+              href={`/collection?deck=${deckId}`}
+              className="button-secondary"
+            >
+              Cartas que me faltan
+            </Link>
+          )}
           <Link
             href={`/matches/new?version=${versionId}`}
             className="button-secondary"

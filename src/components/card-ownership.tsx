@@ -1,4 +1,5 @@
 "use client";
+import { collectionEnabled } from "@/lib/features";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -172,13 +173,14 @@ function WishForm({
     </form>
   );
 }
-export function CardOwnership({
-  reference,
-  initialState,
-}: {
+type CardOwnershipProps = {
   reference: CardReference;
   initialState?: CardOwnershipState;
-}) {
+};
+export function CardOwnership(props: CardOwnershipProps) {
+  return collectionEnabled ? <EnabledCardOwnership {...props} /> : null;
+}
+function EnabledCardOwnership({ reference, initialState }: CardOwnershipProps) {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState(initialState),
     [message, setMessage] = useState<Reply>({}),

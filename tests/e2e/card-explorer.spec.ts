@@ -29,6 +29,9 @@ test("mobile catalog loads without importing, filters all facts and opens exact-
       .click();
     await expect(page).toHaveURL("/");
     await page.goto("/cards");
+    await expect(
+      page.locator('a[href^="/collection"], a[href^="/wishlist"]'),
+    ).toHaveCount(0);
     const results = page.getByRole("list", { name: "Resultados del catálogo" });
     await expect(
       results.getByRole("button", { name: /^Ver carta / }),
@@ -64,6 +67,9 @@ test("mobile catalog loads without importing, filters all facts and opens exact-
     await tile.click();
     const dialog = page.getByRole("dialog", { name: "Detalle de OP97-010" });
     await expect(dialog).toBeVisible();
+    await expect(
+      dialog.getByText("Colección y deseos", { exact: true }),
+    ).toHaveCount(0);
     await expect(
       dialog.getByRole("heading", {
         name: "Synthetic OPTCG character parallel",

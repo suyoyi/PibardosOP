@@ -1,4 +1,5 @@
-import { notFound } from "next/navigation";
+import { collectionEnabled } from "@/lib/features";
+import { notFound, redirect } from "next/navigation";
 import { requireUser } from "@/lib/supabase/server";
 import { getCollectionWorkspace } from "@/lib/collection";
 import { PageHeading } from "@/components/ui";
@@ -8,8 +9,9 @@ export default async function CollectionPage({
 }: {
   searchParams: Promise<{ deck?: string }>;
 }) {
-  const { supabase } = await requireUser(),
-    w = await getCollectionWorkspace(supabase),
+  const { supabase } = await requireUser();
+  if (!collectionEnabled) redirect("/cards");
+  const w = await getCollectionWorkspace(supabase),
     q = await searchParams;
   if (q.deck && !w.decks.some((d) => d.id === q.deck)) notFound();
   const selected = q.deck ?? w.decks[0]?.id;
