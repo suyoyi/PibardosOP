@@ -22,9 +22,21 @@ export function mergeCardCandidates(
       .filter((card) => card.source === "optcgapi")
       .map((card) => card.provider_card_id),
   );
+  // The shared canonical base is a fallback. Prefer an available provider or
+  // owned printing so its actual quote/import controls remain available.
+  const availablePrintings = new Set([
+    ...owned,
+    ...remote.map((c) => c.external_id),
+  ]);
   return [
     ...new Map(
-      saved.map((card) => [card.id, { kind: "saved" as const, card }]),
+      saved
+        .filter(
+          (card) =>
+            card.source !== "optcgapi-catalog" ||
+            !availablePrintings.has(card.provider_card_id),
+        )
+        .map((card) => [card.id, { kind: "saved" as const, card }]),
     ).values(),
     ...new Map(
       remote

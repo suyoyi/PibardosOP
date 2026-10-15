@@ -41,9 +41,9 @@ test("mobile catalog loads without importing, filters all facts and opens exact-
     const results = page.getByRole("list", { name: "Resultados del catálogo" });
     await expect(
       results.getByRole("button", { name: /^Ver carta / }),
-    ).toHaveCount(3);
+    ).toHaveCount(4);
     await expect(
-      page.getByRole("status").filter({ hasText: "3 cartas" }),
+      page.getByRole("status").filter({ hasText: "4 cartas" }),
     ).toBeVisible();
     await expect(page.getByLabel("Counter", { exact: true })).toBeHidden();
     await page.getByLabel("Buscar carta", { exact: true }).fill("op97-10");

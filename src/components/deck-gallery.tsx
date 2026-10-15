@@ -110,20 +110,22 @@ function DeckPrintingDetail({
           />
         )}
         <CardOwnership reference={{ kind: "saved", id: card.id }} />
-        <details onToggle={(e) => setHistoryOpen(e.currentTarget.open)}>
-          <summary className="min-h-12 cursor-pointer py-3 text-sm text-accent">
-            Ver histórico de precios
-          </summary>
-          {historyOpen && (
-            <CardPriceHistory
-              selection={historySelection(
-                card.card_number,
-                card.source === "optcgapi" ? card.provider_card_id : null,
-              )}
-              cache={historyCache}
-            />
-          )}
-        </details>
+        {card.source !== "custom-artwork" && (
+          <details onToggle={(e) => setHistoryOpen(e.currentTarget.open)}>
+            <summary className="min-h-12 cursor-pointer py-3 text-sm text-accent">
+              Ver histórico de precios
+            </summary>
+            {historyOpen && (
+              <CardPriceHistory
+                selection={historySelection(
+                  card.card_number,
+                  card.source === "optcgapi" ? card.provider_card_id : null,
+                )}
+                cache={historyCache}
+              />
+            )}
+          </details>
+        )}
         <Link href={`/cards/${card.id}`} className="button-secondary">
           Abrir ficha guardada
         </Link>

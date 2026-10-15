@@ -166,17 +166,11 @@ export function DeckCardSearch({
   };
   const usable = (card: Card | OptcgCard) =>
     searchMode !== "cards" || visibleBuilderMainCard(card, leader, entries);
-  const saved = filterCards(english, effective).filter(usable),
-    savedIds = new Set(
-      english.map((card) => card.provider_card_id).filter(Boolean),
-    );
-  const available = filterCards(received, effective).filter(
-    (card) => usable(card) && !savedIds.has(card.external_id),
+  const candidates: Candidate[] = mergeCardCandidates(english, received).filter(
+    (candidate) =>
+      filterCards([candidate.card], effective).length > 0 &&
+      usable(candidate.card),
   );
-  const candidates: Candidate[] = [
-    ...saved.map((card) => ({ kind: "saved" as const, card })),
-    ...available.map((card) => ({ kind: "remote" as const, card })),
-  ];
   candidates.sort(
     (a, b) =>
       a.card.card_number.localeCompare(b.card.card_number) ||

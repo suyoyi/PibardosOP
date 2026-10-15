@@ -60,7 +60,11 @@ export async function browseCardCatalog(input: unknown) {
     // are separate private metadata, read only for the visible page under RLS.
     const ids = result.groups.flatMap((g) =>
       g.printings.flatMap((p) =>
-        p.candidate.kind === "saved" && !p.quote ? [p.candidate.card.id] : [],
+        p.candidate.kind === "saved" &&
+        p.candidate.card.source === "optcgapi" &&
+        !p.quote
+          ? [p.candidate.card.id]
+          : [],
       ),
     );
     if (ids.length) {

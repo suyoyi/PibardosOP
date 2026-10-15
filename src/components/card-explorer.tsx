@@ -207,7 +207,9 @@ function PrintingDetail({
   const variant =
     candidate.kind === "remote"
       ? candidate.card.variant
-      : candidate.card.printing_code;
+      : candidate.card.source === "custom-artwork"
+        ? "Arte personalizado"
+        : candidate.card.printing_code;
   const facts = [
     [
       "Expansión",
@@ -255,17 +257,24 @@ function PrintingDetail({
         </section>
       )}
       <CardOwnership reference={referenceForCandidate(candidate)} />
-      <CardPriceHistory
-        selection={historySelection(
-          card.card_number,
-          candidate.kind === "remote"
-            ? candidate.card.external_id
-            : candidate.card.source === "optcgapi"
-              ? candidate.card.provider_card_id
-              : null,
-        )}
-        cache={historyCache}
-      />
+      {candidate.kind === "saved" &&
+      candidate.card.source === "custom-artwork" ? (
+        <p className="text-xs text-muted">
+          Este arte personalizado no tiene precio de mercado propio.
+        </p>
+      ) : (
+        <CardPriceHistory
+          selection={historySelection(
+            card.card_number,
+            candidate.kind === "remote"
+              ? candidate.card.external_id
+              : candidate.card.source === "optcgapi"
+                ? candidate.card.provider_card_id
+                : null,
+          )}
+          cache={historyCache}
+        />
+      )}
       <section>
         <h4 className="font-semibold">Habilidad</h4>
         <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-7 text-muted">
@@ -343,7 +352,7 @@ function ExplorerModal({
                     key={candidateKey(item.candidate)}
                     type="button"
                     className={`rounded-lg border-2 p-1 ${index === selected ? "border-accent" : "border-border"}`}
-                    aria-label={`Ver variante ${item.candidate.kind === "remote" ? item.candidate.card.variant : item.candidate.card.printing_code}`}
+                    aria-label={`Ver variante ${item.candidate.kind === "remote" ? item.candidate.card.variant : item.candidate.card.source === "custom-artwork" ? `${item.candidate.card.name} · arte personalizado` : item.candidate.card.printing_code}`}
                     aria-pressed={index === selected}
                     onClick={() => setSelected(index)}
                   >

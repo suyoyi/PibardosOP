@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import { customArtworkForCard } from "@/domain/custom-artworks";
 import Link from "next/link";
 import { useState } from "react";
 import {
@@ -20,9 +21,16 @@ export function CardArtwork({
   small?: boolean;
   full?: boolean;
 }) {
-  const imageUrl = ["berrywallet", "optcgapi"].includes(card.source)
-    ? `/api/cards/${card.id}/image`
-    : card.image_url;
+  const artwork = customArtworkForCard(card);
+  const imageUrl = artwork
+    ? `/api/custom-artworks/${artwork.id}/image`
+    : card.source === "optcgapi-catalog" && card.image_url
+      ? `/api/cards/preview?url=${encodeURIComponent(card.image_url)}`
+      : ["berrywallet", "optcgapi"].includes(card.source)
+        ? `/api/cards/${card.id}/image`
+        : card.source === "custom-artwork"
+          ? null
+          : card.image_url;
   return (
     <CardPicture
       src={imageUrl}

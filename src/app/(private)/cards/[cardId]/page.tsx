@@ -38,7 +38,7 @@ export default async function CardPage({
       <PageHeading
         eyebrow={card.card_number}
         title={card.name}
-        description={`${typeLabels[card.card_type]} · ${card.source === "manual" ? "Datos manuales sin verificar" : card.source}`}
+        description={`${typeLabels[card.card_type]} · ${card.source === "custom-artwork" ? "Arte personalizado" : card.source === "optcgapi-catalog" ? "Ficha de referencia" : card.source === "manual" ? "Datos manuales sin verificar" : card.source}`}
       />
       <SavedNotice saved={(await searchParams).saved} />
       <div className="panel grid gap-6 p-6 sm:grid-cols-2">

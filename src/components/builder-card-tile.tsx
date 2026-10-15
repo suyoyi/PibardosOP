@@ -41,7 +41,9 @@ export function BuilderCardTile({
     name = `${card.card_number} · ${card.name}`;
   const printing =
     candidate.kind === "saved"
-      ? candidate.card.printing_code
+      ? candidate.card.source === "custom-artwork"
+        ? "Arte personalizado"
+        : candidate.card.printing_code
       : candidate.card.variant;
   return (
     <li className="min-w-0">
