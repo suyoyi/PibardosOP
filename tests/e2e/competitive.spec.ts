@@ -76,8 +76,18 @@ test("mobile fifty-card import, exact-version match history, tournament rounds a
       .getByRole("link", { name: "Registrar partida", exact: true })
       .click();
     await page
-      .getByLabel("Líder rival", { exact: true })
-      .selectOption({ label: "OP95-002 · Synthetic rival leader" });
+      .getByRole("button", { name: "Elegir líder rival", exact: true })
+      .click();
+    await page
+      .getByLabel("Buscar líder rival", { exact: true })
+      .fill("OP95-002");
+    await page
+      .getByRole("dialog", { name: "Elegir líder rival", exact: true })
+      .getByRole("button", {
+        name: "Elegir rival OP95-002 · Synthetic rival leader",
+        exact: true,
+      })
+      .click();
     await page.getByLabel("Victoria", { exact: true }).check();
     await page.getByLabel("Primero", { exact: true }).check();
     await page
@@ -100,8 +110,18 @@ test("mobile fifty-card import, exact-version match history, tournament rounds a
       .getByRole("link", { name: "Registrar partida", exact: true })
       .click();
     await page
-      .getByLabel("Líder rival", { exact: true })
-      .selectOption({ label: "OP95-002 · Synthetic rival leader" });
+      .getByRole("button", { name: "Elegir líder rival", exact: true })
+      .click();
+    await page
+      .getByLabel("Buscar líder rival", { exact: true })
+      .fill("OP95-002");
+    await page
+      .getByRole("dialog", { name: "Elegir líder rival", exact: true })
+      .getByRole("button", {
+        name: "Elegir rival OP95-002 · Synthetic rival leader",
+        exact: true,
+      })
+      .click();
     await page.getByLabel("Derrota", { exact: true }).check();
     await page.getByLabel("Segundo", { exact: true }).check();
     await page
@@ -137,8 +157,18 @@ test("mobile fifty-card import, exact-version match history, tournament rounds a
       .click();
     await expect(page.getByLabel("Número de ronda")).toHaveValue("1");
     await page
-      .getByLabel("Líder rival", { exact: true })
-      .selectOption({ label: "OP95-002 · Synthetic rival leader" });
+      .getByRole("button", { name: "Elegir líder rival", exact: true })
+      .click();
+    await page
+      .getByLabel("Buscar líder rival", { exact: true })
+      .fill("OP95-002");
+    await page
+      .getByRole("dialog", { name: "Elegir líder rival", exact: true })
+      .getByRole("button", {
+        name: "Elegir rival OP95-002 · Synthetic rival leader",
+        exact: true,
+      })
+      .click();
     await page.getByLabel("Victoria", { exact: true }).check();
     await page.getByLabel("Primero", { exact: true }).check();
     await page

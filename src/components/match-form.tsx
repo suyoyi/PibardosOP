@@ -5,6 +5,8 @@ import type { Deck, DeckVersion } from "@/domain/decks";
 import type { Card } from "@/domain/cards";
 import type { Match, Tournament } from "@/lib/data";
 import { ActionForm, Field } from "./forms";
+import { CardArtwork } from "./card-catalog";
+import { OpponentLeaderPicker } from "./opponent-leader-picker";
 export function MatchForm({
   id,
   decks,
@@ -42,6 +44,9 @@ export function MatchForm({
     version = versions.find(
       (v) => v.id === (tournament?.deck_version_id ?? versionId),
     );
+  const playerLeader = catalog.find(
+    (card) => card.id === version?.leader_card_id,
+  );
   const displayedVersions = [...versions].sort(
     (a, b) => b.version_number - a.version_number,
   );
@@ -103,23 +108,29 @@ export function MatchForm({
           <option value="">Seleccionar versión</option>
         </select>
       </Field>
-      <Field label="Líder rival">
-        <select
-          name="opponent_leader_id"
-          className="field"
-          required
-          defaultValue={initial?.opponent_leader_id ?? ""}
+      {playerLeader && (
+        <section
+          aria-label="Tu líder en la versión jugada"
+          className="flex min-w-0 items-center gap-4 rounded-xl border border-border bg-background p-4"
         >
-          <option value="">Seleccionar líder rival</option>
-          {catalog
-            .filter((c) => c.card_type === "leader")
-            .map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.card_number} · {c.name}
-              </option>
-            ))}
-        </select>
-      </Field>
+          <CardArtwork key={playerLeader.id} card={playerLeader} small />
+          <div className="min-w-0">
+            <p className="text-xs text-accent">
+              TU LÍDER · v{version?.version_number}
+            </p>
+            <p className="mt-1 break-words font-semibold">
+              {playerLeader.name}
+            </p>
+            <p className="mt-1 text-xs text-muted">
+              {playerLeader.card_number}
+            </p>
+          </div>
+        </section>
+      )}
+      <OpponentLeaderPicker
+        catalog={catalog}
+        initialId={initial?.opponent_leader_id}
+      />
       <fieldset>
         <legend className="field-label">Resultado</legend>
         <div className="grid grid-cols-2 gap-2">

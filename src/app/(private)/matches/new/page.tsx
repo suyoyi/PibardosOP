@@ -55,11 +55,11 @@ export default async function NewMatchPage({
         </EmptyState>
       )}
       <p className="mt-5 text-sm text-muted">
-        ¿Falta el líder rival?{" "}
+        ¿Falta el líder rival en el catálogo?{" "}
         <Link href="/cards/new" className="text-accent underline">
           Añádelo al catálogo manual
         </Link>{" "}
-        antes de completar el registro.
+        si no está disponible en el buscador.
       </p>
     </>
   );
