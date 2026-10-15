@@ -1,6 +1,11 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import {
+  normalizePriceHistory,
+  type PriceHistory,
+  type PriceHistorySelection,
+} from "./price-history";
+import {
   cardNumberPattern,
   normalizeCardNumber,
   normalizeCardSearch,
@@ -358,6 +363,47 @@ export class OptcgClient {
       );
     }
     return normalizeOptcgRecords(raw, family);
+  }
+  async priceHistory(selection: PriceHistorySelection): Promise<PriceHistory> {
+    const family = parse(familySchema, selection.family);
+    const id = parse(optcgIdSchema, selection.external_id);
+    const number = parse(
+      z
+        .string()
+        .transform(normalizeCardNumber)
+        .refine((n) => cardNumberPattern.test(n)),
+      selection.card_number,
+    );
+    if (!id.startsWith(`optcg_${family}_`))
+      throw new OptcgError(
+        "INVALID_ID",
+        "La impresión y su proveedor no coinciden.",
+      );
+    if (family === "promos" || family === "don")
+      return {
+        status: "unavailable",
+        points: [],
+        sourceDate: null,
+        issues: [],
+        message:
+          family === "promos"
+            ? "La API todavía no ofrece un histórico documentado para promociones y reimpresiones de este grupo."
+            : "La API no documenta un histórico de precios para DON!!.",
+      };
+    const response = await this.request(
+      `https://optcgapi.com/api/${family}/card/twoweeks/${encodeURIComponent(number)}/`,
+    );
+    try {
+      const raw: unknown = JSON.parse(
+        new TextDecoder().decode(await body(response)),
+      );
+      return normalizePriceHistory(raw, { ...selection, card_number: number });
+    } catch {
+      throw new OptcgError(
+        "INVALID_HISTORY",
+        "El histórico recibido no es válido o supera el tamaño permitido.",
+      );
+    }
   }
   async catalog(): Promise<OptcgResult> {
     const cards: OptcgCard[] = [],

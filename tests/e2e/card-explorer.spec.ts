@@ -7,6 +7,16 @@ test("mobile catalog loads without importing, filters all facts and opens exact-
 }) => {
   test.setTimeout(90000);
   const email = `explorer-e2e-${randomUUID()}@example.com`;
+  const historyRequests: string[] = [];
+  page.on("request", (request) => {
+    const body = request.postData() ?? "";
+    if (
+      request.headers()["next-action"] &&
+      body.includes("external_id") &&
+      body.includes("card_number")
+    )
+      historyRequests.push(body);
+  });
   try {
     await page.goto("/login");
     await page.getByRole("button", { name: "Crear mi primera cuenta" }).click();
@@ -73,6 +83,26 @@ test("mobile catalog loads without importing, filters all facts and opens exact-
     await expect(
       dialog.getByText("Synthetic trait block", { exact: true }),
     ).toBeVisible();
+    const history = dialog.getByRole("region", {
+      name: "Histórico de precios",
+      exact: true,
+    });
+    await expect(history.getByText(/Sin fechas individuales/)).toBeVisible();
+    await expect(history.locator("svg.recharts-surface")).toBeVisible();
+    await expect(history.locator("svg.recharts-surface")).not.toHaveAttribute(
+      "tabindex",
+      "0",
+    );
+    await history
+      .getByText("Ver valores del histórico", { exact: true })
+      .click();
+    await expect(
+      history.getByRole("row", { name: "Day1 0 2,1", exact: true }),
+    ).toBeVisible();
+    await expect(
+      history.getByRole("row", { name: "Day2 Sin dato Sin dato", exact: true }),
+    ).toBeVisible();
+    await expect(history.getByRole("row")).toHaveCount(15);
     // The selected filter finds one printing, but the detail includes its other arts.
     await expect(
       dialog.getByRole("button", { name: /^Ver variante / }),
@@ -87,6 +117,30 @@ test("mobile catalog loads without importing, filters all facts and opens exact-
       }),
     ).toBeVisible();
     await expect(dialog.getByText("2,5", { exact: true })).toBeVisible();
+    await expect(history.getByText(/Sin fechas individuales/)).toBeVisible();
+    await history
+      .getByText("Ver valores del histórico", { exact: true })
+      .click();
+    await expect(
+      history.getByRole("row", { name: "Day1 1,1 2,1", exact: true }),
+    ).toBeVisible();
+    // Reopening a previously selected artwork reuses its mounted-dialog request.
+    const previousRequests = historyRequests.filter((body) =>
+      body.includes("optcg_sets_OP97-010_p1"),
+    ).length;
+    expect(previousRequests).toBe(1);
+    await dialog
+      .getByRole("button", { name: "Ver variante OP97-010_p1", exact: true })
+      .click();
+    await expect(history.getByText(/Sin fechas individuales/)).toBeVisible();
+    expect(
+      historyRequests.filter((body) => body.includes("optcg_sets_OP97-010_p1")),
+    ).toHaveLength(previousRequests);
+
+    await dialog
+      .getByRole("button", { name: "Ver variante OP97-010", exact: true })
+      .click();
+    await expect(history.getByText(/Sin fechas individuales/)).toBeVisible();
     const artwork = dialog
       .getByRole("img", {
         name: "Ilustración de Synthetic OPTCG character",
@@ -100,6 +154,11 @@ test("mobile catalog loads without importing, filters all facts and opens exact-
       .getByRole("button", { name: "Ver variante OP97-010_r1", exact: true })
       .click();
     await expect(dialog.getByText(/Sin precios disponibles/)).toBeVisible();
+    await expect(
+      history.getByText(/todavía no ofrece un histórico documentado/),
+    ).toBeVisible();
+    await expect(history.locator("svg.recharts-surface")).toHaveCount(0);
+
     for (const width of [320, 390, 1280]) {
       await page.setViewportSize({ width, height: 850 });
       expect(
@@ -121,6 +180,23 @@ test("mobile catalog loads without importing, filters all facts and opens exact-
     await page
       .getByRole("button", { name: "Limpiar filtros", exact: true })
       .click();
+    await page.getByLabel("Buscar carta", { exact: true }).fill("OP97-011");
+    await results.getByRole("button", { name: /^Ver carta OP97-011/ }).click();
+    const failed = page.getByRole("dialog", { name: "Detalle de OP97-011" });
+    const failedHistory = failed.getByRole("region", {
+      name: "Histórico de precios",
+      exact: true,
+    });
+    await expect(failedHistory.getByRole("alert")).toContainText(
+      "no está disponible ahora mismo",
+    );
+    await expect(failed.getByText("2,5", { exact: true })).toBeVisible();
+    await expect(failedHistory.locator("svg.recharts-surface")).toHaveCount(0);
+    await failedHistory
+      .getByRole("button", { name: "Reintentar histórico" })
+      .click();
+    await expect(failedHistory.getByRole("alert")).toBeVisible();
+    await page.keyboard.press("Escape");
     await page
       .getByLabel("Buscar carta", { exact: true })
       .fill("No existe esta carta");

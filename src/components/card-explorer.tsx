@@ -16,6 +16,8 @@ import { CandidateArtwork } from "./builder-card-tile";
 import { Field, ActionForm } from "./forms";
 import { Modal } from "./modal";
 import { OptcgPrices } from "./optcg-prices";
+import { CardPriceHistory, type PriceHistoryCache } from "./card-price-history";
+import { historySelection } from "@/domain/price-history";
 
 function ExplorerFiltersPanel({
   filters,
@@ -191,7 +193,13 @@ function ExplorerFiltersPanel({
   );
 }
 
-function PrintingDetail({ printing }: { printing: ExplorerPrinting }) {
+function PrintingDetail({
+  printing,
+  historyCache,
+}: {
+  printing: ExplorerPrinting;
+  historyCache: PriceHistoryCache;
+}) {
   const { candidate, expansionName, quote } = printing,
     card = candidate.card;
   const variant =
@@ -244,6 +252,17 @@ function PrintingDetail({ printing }: { printing: ExplorerPrinting }) {
           </p>
         </section>
       )}
+      <CardPriceHistory
+        selection={historySelection(
+          card.card_number,
+          candidate.kind === "remote"
+            ? candidate.card.external_id
+            : candidate.card.source === "optcgapi"
+              ? candidate.card.provider_card_id
+              : null,
+        )}
+        cache={historyCache}
+      />
       <section>
         <h4 className="font-semibold">Habilidad</h4>
         <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-7 text-muted">
@@ -298,6 +317,7 @@ function ExplorerModal({
 }) {
   const [selected, setSelected] = useState(0),
     [visible, setVisible] = useState(12);
+  const [historyCache] = useState<PriceHistoryCache>(() => new Map());
   const printing = group.printings[selected];
   return (
     <Modal title={`Detalle de ${group.number}`} onClose={onClose}>
@@ -344,6 +364,7 @@ function ExplorerModal({
         <PrintingDetail
           key={candidateKey(printing.candidate)}
           printing={printing}
+          historyCache={historyCache}
         />
       </div>
     </Modal>

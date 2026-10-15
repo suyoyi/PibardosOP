@@ -23,3 +23,14 @@ export function optcgRecord(overrides: Record<string, unknown> = {}) {
     ...overrides,
   };
 }
+
+// Synthetic price-history fields in provider order; no inferred calendar dates.
+export function optcgHistoryRecord(overrides: Record<string, unknown> = {}) {
+  const points = Object.fromEntries(
+    Array.from({ length: 13 }, (_, i) => [
+      [`Day${i + 1}_Market_Price`, Number((1 + (i + 1) / 10).toFixed(2))],
+      [`Day${i + 1}_Inventory_Price`, Number((2 + (i + 1) / 10).toFixed(2))],
+    ]).flat(),
+  );
+  return optcgRecord({ ...points, ...overrides });
+}

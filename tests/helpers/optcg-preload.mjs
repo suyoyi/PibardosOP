@@ -1,6 +1,6 @@
 // Loaded only by Playwright's server command, never by development/deployment.
 // Intercept all provider traffic so normal browser tests use no live card site.
-import { optcgRecord } from "../fixtures/optcg.ts";
+import { optcgRecord, optcgHistoryRecord } from "../fixtures/optcg.ts";
 const original = globalThis.fetch;
 const leader = optcgRecord({
   card_set_id: "OP97-001",
@@ -55,6 +55,18 @@ globalThis.fetch = async (input, init) => {
   const url = new URL(value);
   if (!["optcgapi.com", "www.optcgapi.com"].includes(url.hostname))
     return original(input, init);
+  if (url.pathname === "/api/sets/card/twoweeks/OP97-010/")
+    return Response.json([
+      optcgHistoryRecord(base),
+      optcgHistoryRecord({
+        ...alternate,
+        Day1_Market_Price: 0,
+        Day2_Market_Price: null,
+        Day2_Inventory_Price: null,
+      }),
+    ]);
+  if (url.pathname === "/api/sets/card/twoweeks/OP97-011/")
+    return new Response(null, { status: 500 });
   if (url.pathname === "/api/allSetCards/")
     return Response.json([...records, leaderAlternate]);
   if (url.pathname === "/api/allSTCards/") return Response.json([]);

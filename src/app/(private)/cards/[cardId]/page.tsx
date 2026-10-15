@@ -8,6 +8,8 @@ import { PageHeading } from "@/components/ui";
 import { OptcgPrices } from "@/components/optcg-prices";
 import { CardPrices } from "@/components/card-prices";
 import { SavedNotice } from "@/components/forms";
+import { CardPriceHistory } from "@/components/card-price-history";
+import { historySelection } from "@/domain/price-history";
 export default async function CardPage({
   params,
   searchParams,
@@ -77,6 +79,14 @@ export default async function CardPage({
           sourceDate={optcg.source_date}
           externalId={optcg.external_id}
         />
+      )}
+      {optcg && (
+        <div className="mt-6">
+          <CardPriceHistory
+            key={optcg.external_id}
+            selection={historySelection(card.card_number, optcg.external_id)}
+          />
+        </div>
       )}
       {provider && (
         <CardPrices
