@@ -20,9 +20,7 @@ export function TournamentForm({
   today: string;
 }) {
   const [versionId, setVersionId] = useState(
-      initial?.deck_version_id ??
-        decks.find((d) => d.status !== "archived")?.current_version_id ??
-        "",
+      initial?.deck_version_id ?? decks[0]?.current_version_id ?? "",
     ),
     version = versions.find((v) => v.id === versionId);
   return (

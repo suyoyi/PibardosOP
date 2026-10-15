@@ -59,11 +59,13 @@ export function DeckBuilder({
   restrictions,
   deck,
   initialEntries = [],
+  mode = "create",
 }: {
   id: string;
   catalog: Card[];
   restrictions: Restriction[];
   deck?: Deck;
+  mode?: "create" | "import";
   initialEntries?: DeckEntry[];
 }) {
   const [catalog, setCatalog] = useState(initialCatalog);
@@ -74,8 +76,6 @@ export function DeckBuilder({
     name: deck?.name ?? "",
     description: deck?.description ?? "",
     tags: deck?.tags.join(", ") ?? "",
-    notes: "",
-    status: deck?.status ?? "draft",
   });
   const updateMetadata = (key: keyof typeof metadata, value: string) =>
     setMetadata((current) => ({ ...current, [key]: value }));
@@ -204,7 +204,7 @@ export function DeckBuilder({
           setEntries(importedMainEntries(next.report));
           if (leaders[0]) {
             setLeaderId(leaders[0].card.id);
-            if (wizard) setStep(1);
+            if (wizard && mode !== "import") setStep(1);
           }
         }
       }
@@ -214,26 +214,28 @@ export function DeckBuilder({
       {wizard && (
         <nav aria-label="Pasos para crear el mazo">
           <ol className="grid grid-cols-3 gap-2">
-            {["Líder", "Cartas", "Nombre"].map((label, index) => (
-              <li key={label}>
-                <button
-                  type="button"
-                  className={`picker-tab w-full ${step === index ? "picker-tab-active" : ""}`}
-                  aria-current={step === index ? "step" : undefined}
-                  disabled={index > step && (index !== 1 || !leader)}
-                  onClick={() => {
-                    setStep(index);
-                    setFilters({});
-                  }}
-                >
-                  {index + 1}. {label}
-                </button>
-              </li>
-            ))}
+            {[mode === "import" ? "Lista" : "Líder", "Cartas", "Nombre"].map(
+              (label, index) => (
+                <li key={label}>
+                  <button
+                    type="button"
+                    className={`picker-tab w-full ${step === index ? "picker-tab-active" : ""}`}
+                    aria-current={step === index ? "step" : undefined}
+                    disabled={index > step && (index !== 1 || !leader)}
+                    onClick={() => {
+                      setStep(index);
+                      setFilters({});
+                    }}
+                  >
+                    {index + 1}. {label}
+                  </button>
+                </li>
+              ),
+            )}
           </ol>
         </nav>
       )}
-      {(!wizard || step < 2) && (
+      {(!wizard || (step < 2 && (mode !== "import" || step > 0))) && (
         <DeckCardSearch
           catalog={catalog}
           filters={filters}
@@ -244,7 +246,9 @@ export function DeckBuilder({
           leaderId={leaderId}
           mainCount={result.mainCount}
           donCount={result.donCount}
-          mode={wizard ? (step === 0 ? "leader" : "cards") : undefined}
+          mode={
+            wizard ? (step === 0 || !leader ? "leader" : "cards") : undefined
+          }
         />
       )}
       {adjustmentNotice && (
@@ -252,11 +256,9 @@ export function DeckBuilder({
           {adjustmentNotice}
         </p>
       )}
-      {(!wizard || step < 2) && (
-        <details className="panel p-5" aria-label="Importar lista">
-          <summary className="min-h-11 cursor-pointer text-sm font-semibold text-accent">
-            Importar lista de texto
-          </summary>
+      {mode === "import" && wizard && step === 0 && (
+        <section className="panel p-5" aria-label="Importar lista">
+          <h2 className="text-lg font-semibold">Importar lista de texto</h2>
           <div className="mt-4 grid gap-4">
             <p className="text-sm text-muted">
               Acepta 4 OP01-025, 4x OP01-025 y OP01-025 x4. Las líneas con # son
@@ -360,7 +362,15 @@ export function DeckBuilder({
               </div>
             )}
           </div>
-        </details>
+          <button
+            type="button"
+            className="button-primary mt-5"
+            disabled={!report || blocked || previewPending}
+            onClick={() => setStep(1)}
+          >
+            Continuar con la lista
+          </button>
+        </section>
       )}
       {(!wizard || step > 0) && <ValidationMessages result={result} />}
       {wizard && step === 1 && (
@@ -460,7 +470,7 @@ export function DeckBuilder({
             )}
             <details open={!wizard}>
               <summary className="min-h-11 cursor-pointer text-sm text-accent">
-                Opciones del mazo y nota de versión
+                Opciones del mazo
               </summary>
               <div className="mt-4 grid gap-5">
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -473,22 +483,6 @@ export function DeckBuilder({
                       required
                       maxLength={60}
                     />
-                  </Field>
-                  <Field label="Estado">
-                    <select
-                      name="status"
-                      className="field"
-                      value={metadata.status}
-                      onChange={(event) =>
-                        updateMetadata("status", event.target.value)
-                      }
-                    >
-                      <option value="draft">Borrador</option>
-                      <option value="active">
-                        Activo (construcción válida)
-                      </option>
-                      <option value="archived">Archivado</option>
-                    </select>
                   </Field>
                 </div>
                 <Field label="Descripción">
@@ -512,22 +506,6 @@ export function DeckBuilder({
                     onChange={(event) =>
                       updateMetadata("tags", event.target.value)
                     }
-                  />
-                </Field>
-                <Field
-                  label="Nota de la versión"
-                  hint="Se guarda al crear una versión por cambios de líder, formato o cartas."
-                >
-                  <textarea
-                    name="notes"
-                    className="field"
-                    rows={2}
-                    maxLength={10000}
-                    value={metadata.notes}
-                    onChange={(event) =>
-                      updateMetadata("notes", event.target.value)
-                    }
-                    placeholder="Qué has cambiado y por qué"
                   />
                 </Field>
               </div>
@@ -633,7 +611,7 @@ export function DeckBuilder({
             </ul>
           ) : (
             <p className="text-sm text-muted">
-              Busca cartas arriba para añadirlas o importa una lista.
+              Busca cartas arriba para añadirlas a tu mazo.
             </p>
           )}
         </section>

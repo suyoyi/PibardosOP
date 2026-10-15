@@ -3,10 +3,12 @@ import Link from "next/link";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { typeLabels, colorLabels } from "@/domain/cards";
-import { formatDeckAmount, type DeckDisplay } from "@/domain/deck-prices";
+import { formatDeckUsd, type DeckDisplay } from "@/domain/deck-prices";
 import { historySelection } from "@/domain/price-history";
 import { CardArtwork } from "./card-catalog";
 import { Modal } from "./modal";
+import { DeckExport } from "./deck-export";
+import { DeckDelete } from "./deck-operations";
 import { OptcgPrices } from "./optcg-prices";
 import { CardOwnership } from "./card-ownership";
 import { CardPriceHistory, type PriceHistoryCache } from "./card-price-history";
@@ -48,7 +50,7 @@ function DeckPrintingDetail({
         >
           <h4 className="font-semibold">Precio de mercado</h4>
           <p className="mt-2 break-words text-2xl font-semibold text-accent">
-            {formatDeckAmount(row.unitPrice)}
+            {formatDeckUsd(row.unitPrice)}
             {row.unitPrice !== null && (
               <span className="text-xs font-normal text-muted"> / unidad</span>
             )}
@@ -57,11 +59,11 @@ function DeckPrintingDetail({
             {row.quantity} copias ·{" "}
             {row.lineTotal === null
               ? "Sin subtotal disponible"
-              : `Subtotal ${formatDeckAmount(row.lineTotal)}`}
+              : `Subtotal ${formatDeckUsd(row.lineTotal)}`}
           </p>
           <p className="mt-2 text-xs text-muted">
-            OPTCG API · moneda no especificada. Se usa el arte exacto de la
-            lista.
+            Formato USD elegido para el mazo; OPTCG API no especifica moneda. No
+            hay conversión. Se usa el arte exacto de la lista.
           </p>
         </section>
         <section>
@@ -133,13 +135,22 @@ export function DeckGallery({
   display,
   priceError,
   format,
-  status,
+  deckId,
+  name,
+  description,
+  exportText,
+  versionId,
 }: {
   display: DeckDisplay;
   priceError?: string;
   format: string;
-  status: string;
+  deckId: string;
+  name: string;
+  description: string;
+  exportText: string;
+  versionId: string;
 }) {
+  const [priceOpen, setPriceOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null),
     [historyCache] = useState<PriceHistoryCache>(() => new Map());
   const { rows, total, groups } = display,
@@ -149,94 +160,136 @@ export function DeckGallery({
   return (
     <div className="grid min-w-0 gap-6">
       <section
-        className="panel flex min-w-0 items-center gap-4 p-5"
-        aria-label="Líder del mazo"
+        className="panel grid min-w-0 gap-5 p-5"
+        aria-label="Cabecera del mazo"
       >
-        <button
-          type="button"
-          className="shrink-0 rounded-md"
-          onClick={() => setSelectedId(leader.card.id)}
-          aria-label={`Ampliar líder ${leader.card.name}`}
-        >
-          <CardArtwork card={leader.card} small />
-        </button>
-        <div className="min-w-0">
-          <h2 className="break-words font-semibold">{leader.card.name}</h2>
-          <p className="mt-2 text-sm text-muted">
-            {leader.card.card_number} · {format} ·{" "}
-            {status === "draft"
-              ? "Borrador"
-              : status === "active"
-                ? "Activo"
-                : "Archivado"}
-          </p>
-        </div>
-      </section>
-      <section
-        className="panel grid min-w-0 gap-4 p-5"
-        aria-label="Valoración del mazo"
-      >
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 className="font-semibold">
-              {total.complete
-                ? "Total orientativo del mazo"
-                : "Subtotal conocido del mazo"}
-            </h2>
-            <p className="mt-2 break-words text-3xl font-bold text-accent">
-              {total.amount === null
-                ? "No disponible"
-                : formatDeckAmount(total.amount)}
+        <div className="flex flex-wrap items-start gap-4">
+          <button
+            type="button"
+            className="shrink-0 rounded-md"
+            onClick={() => setSelectedId(leader.card.id)}
+            aria-label={`Ampliar líder ${leader.card.name}`}
+          >
+            <CardArtwork card={leader.card} small />
+          </button>
+          <div className="min-w-0 flex-1">
+            <p className="eyebrow">TU MAZO</p>
+            <h1 className="mt-2 break-words text-2xl font-bold">{name}</h1>
+            <p className="mt-2 break-words text-sm text-muted">
+              {leader.card.name} · {leader.card.card_number} · {format}
             </p>
+            {description && (
+              <p className="mt-2 whitespace-pre-wrap break-words text-sm text-muted">
+                {description}
+              </p>
+            )}
           </div>
-          <p className="text-xs leading-6 text-muted">
-            Precio de mercado · OPTCG API
-            <br />
-            Moneda no especificada
-          </p>
+          <div className="ml-auto flex w-full min-w-0 flex-wrap items-center justify-end gap-4 sm:w-auto">
+            <DeckExport text={exportText} />
+            <div
+              role="region"
+              className="min-w-0 text-right"
+              aria-label="Precio mazo"
+            >
+              <p className="text-xs text-muted">Precio mazo · USD*</p>
+              <p className="mt-1 break-words text-2xl font-bold text-accent">
+                {total.amount === null
+                  ? "No disponible"
+                  : formatDeckUsd(total.amount)}
+              </p>
+              {!total.complete && (
+                <p className="mt-1 text-xs text-muted">
+                  Parcial · {total.pricedCopies}/{total.copies} copias con
+                  precio
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={() => setPriceOpen(true)}
+                className="mt-2 min-h-11 text-xs text-accent underline"
+              >
+                Información del precio
+              </button>
+            </div>
+          </div>
         </div>
         {priceError && (
           <p role="alert" className="text-sm text-red-200">
             {priceError}
           </p>
         )}
-        <p className="text-sm text-muted">
-          Precio disponible para {total.pricedCopies} de {total.copies} copias ·{" "}
-          {total.pricedPrintings} de {total.printings} impresiones.
-        </p>
-        {!total.complete && (
-          <p className="text-sm text-amber-100">
-            Falta el precio de {total.copies - total.pricedCopies} copias. El
-            total completo no está disponible; las cartas sin precio no se
-            valoran como cero.
-          </p>
-        )}
-        <dl className="grid gap-3 sm:grid-cols-3">
-          {groups.map((g) => (
-            <div
-              key={g.role}
-              className="min-w-0 rounded-xl border border-border p-3"
-            >
-              <dt className="text-xs text-muted">
-                {roleLabels[g.role]} · {g.copies} copias
-              </dt>
-              <dd className="mt-2 break-words text-sm font-semibold">
-                {!g.copies
-                  ? "Sin cartas"
-                  : `${g.complete ? "Total" : "Subtotal"}: ${formatDeckAmount(g.amount)}`}
-              </dd>
-            </div>
-          ))}
-        </dl>
-        <p className="text-xs leading-5 text-muted">
-          Suma de precio unitario × copias del arte seleccionado, incluido el
-          líder y los DON!! listados. Son cotizaciones guardadas, sin envío ni
-          precios garantizados en tiempo real.
-          {total.oldestFetchedAt &&
-            ` La consulta más antigua utilizada es del ${date(total.oldestFetchedAt)}.`}{" "}
-          Puedes volver a consultar una impresión desde su detalle.
-        </p>
+        <div className="flex flex-wrap items-start gap-3">
+          <Link href={`/decks/${deckId}/edit`} className="button-primary">
+            Editar mazo
+          </Link>
+          <DeckDelete id={deckId} />
+          <Link
+            href={`/collection?deck=${deckId}`}
+            className="button-secondary"
+          >
+            Cartas que me faltan
+          </Link>
+          <Link
+            href={`/matches/new?version=${versionId}`}
+            className="button-secondary"
+          >
+            Registrar partida
+          </Link>
+        </div>
       </section>
+      {priceOpen && (
+        <Modal
+          title="Información del precio del mazo"
+          onClose={() => setPriceOpen(false)}
+        >
+          <section
+            className="panel grid min-w-0 gap-4 p-5"
+            aria-label="Desglose del precio del mazo"
+          >
+            <p className="text-sm text-muted">
+              * Los importes se muestran en USD según tu preferencia. OPTCG API
+              no declara moneda; no se ha realizado ninguna conversión ni se
+              afirma que la moneda esté verificada.
+            </p>
+            <p className="text-sm text-muted">
+              Precio disponible para {total.pricedCopies} de {total.copies}{" "}
+              copias · {total.pricedPrintings} de {total.printings} impresiones.
+            </p>
+            {!total.complete && (
+              <p className="text-sm text-amber-100">
+                Falta el precio de {total.copies - total.pricedCopies} copias.
+                El total completo no está disponible; las cartas sin precio no
+                se valoran como cero.
+              </p>
+            )}
+            <dl className="grid gap-3 sm:grid-cols-3">
+              {groups.map((g) => (
+                <div
+                  key={g.role}
+                  className="min-w-0 rounded-xl border border-border p-3"
+                >
+                  <dt className="text-xs text-muted">
+                    {roleLabels[g.role]} · {g.copies} copias
+                  </dt>
+                  <dd className="mt-2 break-words text-sm font-semibold">
+                    {!g.copies
+                      ? "Sin cartas"
+                      : `${g.complete ? "Total" : "Subtotal"}: ${formatDeckUsd(g.amount)}`}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <p className="text-xs leading-5 text-muted">
+              Suma de precio unitario × copias del arte seleccionado, incluido
+              el líder y los DON!! listados. Son cotizaciones guardadas, sin
+              envío ni precios garantizados en tiempo real.
+              {total.oldestFetchedAt &&
+                ` La consulta más antigua utilizada es del ${date(total.oldestFetchedAt)}.`}{" "}
+              Puedes volver a consultar una impresión desde su detalle.
+            </p>
+          </section>
+        </Modal>
+      )}
       {(["list", "don"] as const).map((role) => {
         const group = rows.filter((r) =>
           role === "don" ? r.role === "don" : r.role !== "don",
@@ -266,7 +319,7 @@ export function DeckGallery({
                     <div className="relative aspect-[5/7] overflow-hidden rounded-lg border border-border bg-background transition group-hover:border-accent">
                       <CardArtwork card={row.card} full />
                       <span className="deck-price-badge">
-                        {formatDeckAmount(row.unitPrice)}
+                        {formatDeckUsd(row.unitPrice)}
                         {row.unitPrice !== null && (
                           <span className="text-[10px]"> / ud.</span>
                         )}
@@ -286,7 +339,7 @@ export function DeckGallery({
                     <p className="mt-1 break-words text-xs text-muted">
                       {row.lineTotal === null
                         ? "Sin subtotal"
-                        : `${row.quantity} × ${formatDeckAmount(row.unitPrice)} = ${formatDeckAmount(row.lineTotal)}`}
+                        : `${row.quantity} × ${formatDeckUsd(row.unitPrice)} = ${formatDeckUsd(row.lineTotal)}`}
                     </p>
                   </button>
                 </li>

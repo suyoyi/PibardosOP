@@ -1,54 +1,68 @@
 "use client";
-import { useState } from "react";
-export function DeckExport({ text, name }: { text: string; name: string }) {
-  const [message, setMessage] = useState("");
-  const download = () => {
-    const url = URL.createObjectURL(
-        new Blob([text], { type: "text/plain;charset=utf-8" }),
-      ),
-      link = document.createElement("a");
-    link.href = url;
-    link.download = `${name.replace(/[^\p{L}\p{N}_-]/gu, "_")}.txt`;
-    link.click();
-    URL.revokeObjectURL(url);
-    setMessage("Lista descargada.");
-  };
+import { useState, useRef } from "react";
+import { Modal } from "./modal";
+export function DeckExport({ text }: { text: string }) {
+  const [open, setOpen] = useState(false),
+    [message, setMessage] = useState(""),
+    [copying, setCopying] = useState(false),
+    area = useRef<HTMLTextAreaElement>(null);
   return (
-    <section className="panel grid gap-4 p-5">
-      <h2 className="font-semibold">Exportar lista</h2>
-      <p className="text-xs text-muted">
-        El texto conserva códigos y cantidades, sin distinguir ilustraciones
-        alternativas. Las versiones guardadas sí conservan cada impresión.
-      </p>
-      <textarea
-        aria-label="Lista exportada"
-        className="field font-mono text-sm"
-        rows={5}
-        readOnly
-        value={text}
-      />
-      <div className="flex flex-wrap gap-3">
-        <button
-          className="button-secondary"
-          type="button"
-          onClick={async () => {
-            try {
-              await navigator.clipboard.writeText(text);
-              setMessage("Lista copiada.");
-            } catch {
-              setMessage("Selecciona el texto y cópialo manualmente.");
-            }
-          }}
+    <>
+      <button
+        className="button-secondary"
+        type="button"
+        onClick={() => {
+          setMessage("");
+          setOpen(true);
+        }}
+      >
+        Exportar lista
+      </button>
+      {open && (
+        <Modal
+          title="Exportar lista"
+          onClose={() => setOpen(false)}
+          busy={copying}
         >
-          Copiar lista
-        </button>
-        <button className="button-secondary" type="button" onClick={download}>
-          Descargar texto
-        </button>
-      </div>
-      <p role="status" className="text-sm text-muted">
-        {message}
-      </p>
-    </section>
+          <div className="grid gap-4">
+            <textarea
+              ref={area}
+              aria-label="Lista exportada"
+              className="field font-mono text-sm"
+              rows={12}
+              readOnly
+              value={text}
+            />
+            <button
+              className="button-primary justify-self-start"
+              type="button"
+              disabled={copying}
+              onClick={async () => {
+                setCopying(true);
+                try {
+                  await navigator.clipboard.writeText(text);
+                  setMessage("Lista copiada al portapapeles.");
+                } catch {
+                  area.current?.focus();
+                  area.current?.select();
+                  setMessage(
+                    "No se pudo acceder al portapapeles. La lista está seleccionada para copiarla manualmente.",
+                  );
+                } finally {
+                  setCopying(false);
+                }
+              }}
+            >
+              {copying ? "Copiando…" : "Copiar"}
+            </button>
+            {message && (
+              <p role="status" className="text-sm text-muted">
+                {message}
+              </p>
+            )}
+          </div>
+        </Modal>
+      )}
+    </>
   );
 }

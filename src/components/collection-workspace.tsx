@@ -170,7 +170,6 @@ export function CollectionWorkspaceView({
                     {w.decks.map((d) => (
                       <option key={d.id} value={d.id}>
                         {d.name}
-                        {d.status === "archived" ? " · archivado" : ""}
                       </option>
                     ))}
                   </select>

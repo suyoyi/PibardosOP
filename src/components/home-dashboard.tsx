@@ -233,9 +233,7 @@ function LeaderPanel({ leader }: { leader: DashboardLeader }) {
             <li key={item.id}>
               <Link href={`/decks/${item.id}`} className="home-deck-card panel">
                 <div className="min-w-0 flex-1">
-                  <span className="eyebrow">
-                    {item.status === "draft" ? "BORRADOR" : "ACTIVO"}
-                  </span>
+                  <span className="eyebrow">MAZO</span>
                   <h4 className="mt-3 break-words text-base font-semibold">
                     {item.name}
                   </h4>
@@ -321,8 +319,8 @@ export function HomeDashboard({ data }: { data: DashboardData }) {
       </header>
       <section aria-label="Resumen general" className="home-overview panel">
         <div>
-          <p className="text-xs text-muted">Mazos activos</p>
-          <p className="mt-1 text-xl font-semibold">{data.activeDeckCount}</p>
+          <p className="text-xs text-muted">Tus mazos</p>
+          <p className="mt-1 text-xl font-semibold">{data.deckCount}</p>
         </div>
         <div>
           <p className="text-xs text-muted">Partidas registradas</p>
@@ -353,7 +351,7 @@ export function HomeDashboard({ data }: { data: DashboardData }) {
               <div>
                 <h2 className="text-lg font-semibold">Tus líderes</h2>
                 <p className="mt-1 text-xs text-muted">
-                  De tus mazos sin archivar · las variantes se agrupan
+                  De tus mazos · las variantes se agrupan
                 </p>
               </div>
               <Link href="/decks" className="home-text-link">
@@ -396,8 +394,7 @@ export function HomeDashboard({ data }: { data: DashboardData }) {
           <EmptyState title="Tu estrategia empieza con un líder">
             <p>
               Guarda tu primer mazo para ver aquí su líder, sus resultados y su
-              curva de coste. Si tus mazos están archivados, puedes restaurarlos
-              desde Mazos.
+              curva de coste.
             </p>
             <Link href="/decks/new" className="button-primary mt-5">
               Crear mi primer mazo

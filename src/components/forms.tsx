@@ -51,12 +51,14 @@ export function ActionForm({
   submit = "Guardar",
   confirm,
   className = "panel grid gap-5 p-5",
+  submitClassName = "button-primary",
 }: {
   action: (state: ActionState, form: FormData) => Promise<ActionState>;
   children: ReactNode;
   submit?: string;
   confirm?: string;
   className?: string;
+  submitClassName?: string;
 }) {
   const [state, formAction, pending] = useActionState(action, {}),
     formRef = useRef<HTMLFormElement>(null),
@@ -111,7 +113,7 @@ export function ActionForm({
           {state.success}
         </p>
       )}
-      <button className="button-primary" disabled={pending}>
+      <button className={submitClassName} disabled={pending}>
         {pending ? "Guardando…" : submit}
       </button>
     </form>

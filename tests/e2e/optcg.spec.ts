@@ -71,8 +71,7 @@ test("mobile OPTCG search, selected printing, artwork, quote reuse, collection s
     await expect(
       page.getByRole("status").filter({ hasText: "menos de 15 minutos" }),
     ).toBeVisible();
-    await page.goto("/decks/new");
-    await page.getByText("Importar lista de texto", { exact: true }).click();
+    await page.goto("/decks/import");
     await page
       .getByLabel("Lista de texto")
       .fill("1 OP97-001\n4 OP97-010\n4 OP97-099");
@@ -92,6 +91,7 @@ test("mobile OPTCG search, selected printing, artwork, quote reuse, collection s
     await page
       .getByRole("button", { name: "Revisar importación", exact: true })
       .click();
+    await page.getByRole("button", { name: "Continuar con la lista" }).click();
     await expect(
       page.getByRole("heading", { name: "Mazo principal: 4 / 50" }),
     ).toBeVisible();

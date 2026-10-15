@@ -180,13 +180,13 @@ test("home switches saved leaders, preserves snapshot history and shows exact cu
     }
     await page.reload();
     await expect(page.getByRole("button", { name: /^Ver líder / })).toHaveCount(
-      2,
+      3,
     );
     await expect(
       page.getByRole("button", {
         name: /Ver líder.*Synthetic archived leader/,
       }),
-    ).toHaveCount(0);
+    ).toHaveCount(1);
     const leader = page.getByRole("button", {
       name: /^Ver líder OP94-001 · Synthetic home Alpha(?: alternate)?$/,
     });

@@ -24,9 +24,9 @@ export function buildDashboard(workspace: Workspace) {
     ...match,
     deck_id: snapshots.get(match.deck_version_id)?.deck_id ?? "",
   }));
-  const activeDecks = decks.filter((deck) => deck.status !== "archived");
+  const libraryDecks = decks;
   const leaders = new Map<string, Card>();
-  for (const deck of activeDecks) {
+  for (const deck of libraryDecks) {
     const snapshot = snapshots.get(deck.current_version_id ?? "");
     const leader = cards.get(snapshot?.leader_card_id ?? deck.leader_card_id);
     if (leader && !leaders.has(identity(leader.id)))
@@ -55,7 +55,7 @@ export function buildDashboard(workspace: Workspace) {
         };
       });
   return {
-    activeDeckCount: activeDecks.length,
+    deckCount: libraryDecks.length,
     overall: buildAnalytics(records).summary,
     recent: recent(records),
     leaders: [...leaders].map(([id, card]) => {
@@ -72,7 +72,7 @@ export function buildDashboard(workspace: Workspace) {
         byMonth: analytics.byMonth,
         byOrder: analytics.byOrder,
         recent: recent(games),
-        decks: activeDecks
+        decks: libraryDecks
           .filter((deck) => {
             const version = snapshots.get(deck.current_version_id ?? "");
             return (
@@ -87,7 +87,6 @@ export function buildDashboard(workspace: Workspace) {
             return {
               id: deck.id,
               name: deck.name,
-              status: deck.status,
               format: version?.format ?? deck.format,
               versionId: version?.id ?? null,
               versionNumber: version?.version_number ?? null,

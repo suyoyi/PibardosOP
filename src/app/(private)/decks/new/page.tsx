@@ -12,7 +12,7 @@ export default async function NewDeckPage() {
       <PageHeading
         eyebrow="PREPARA TU ESTRATEGIA"
         title="Crear mazo"
-        description="Primero elige tu líder, después sus cartas y al final ponle nombre. Puedes guardar una lista incompleta como borrador."
+        description="Primero elige tu líder, después sus cartas y al final ponle nombre. Puedes seguir completándolo después."
       />
       {!catalog.length && (
         <p className="mb-6 text-sm text-muted">

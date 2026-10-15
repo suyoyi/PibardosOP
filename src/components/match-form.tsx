@@ -36,7 +36,7 @@ export function MatchForm({
     [versionId, setVersionId] = useState(
       initial?.deck_version_id ??
         initialVersion ??
-        decks.find((d) => d.status !== "archived")?.current_version_id ??
+        decks[0]?.current_version_id ??
         "",
     );
   const [date, setDate] = useState((initial?.played_at ?? now).slice(0, 16));

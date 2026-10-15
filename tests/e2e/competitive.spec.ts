@@ -46,10 +46,10 @@ test("mobile fifty-card import, exact-version match history, tournament rounds a
         (_, i) => `${i === 12 ? 2 : 4} OP95-${String(i + 10).padStart(3, "0")}`,
       ),
     ].join("\n");
-    await page.goto("/decks/new");
-    await page.getByText("Importar lista de texto", { exact: true }).click();
+    await page.goto("/decks/import");
     await page.getByLabel("Lista de texto").fill(raw);
     await page.getByRole("button", { name: "Revisar importación" }).click();
+    await page.getByRole("button", { name: "Continuar con la lista" }).click();
     await expect(
       page.getByRole("heading", { name: "Mazo principal: 50 / 50" }),
     ).toBeVisible();
@@ -57,10 +57,7 @@ test("mobile fifty-card import, exact-version match history, tournament rounds a
     await page
       .getByLabel("Nombre del mazo")
       .fill("Synthetic competitive mobile");
-    await page
-      .getByText("Opciones del mazo y nota de versión", { exact: true })
-      .click();
-    await page.getByLabel("Estado", { exact: true }).selectOption("active");
+    await page.getByText("Opciones del mazo", { exact: true }).click();
     await page.getByLabel(/He revisado las cantidades/).check();
     await page
       .getByRole("button", { name: "Guardar mazo", exact: true })
@@ -116,7 +113,6 @@ test("mobile fifty-card import, exact-version match history, tournament rounds a
     await expect(noSecond).toContainText("n=0");
     await page.goto(`${deckUrl}/edit`);
     await page.getByRole("button", { name: "Quitar una OP95-010" }).click();
-    await page.getByLabel("Estado", { exact: true }).selectOption("draft");
     await page
       .getByRole("button", { name: "Guardar mazo", exact: true })
       .click();

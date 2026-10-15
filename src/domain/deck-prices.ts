@@ -130,3 +130,11 @@ export function buildDeckDisplay(
   };
 }
 export type DeckDisplay = ReturnType<typeof buildDeckDisplay>;
+
+// User-selected display denomination only. Source quotes remain currency:null;
+// no currency conversion or provider-confirmed USD value is inferred.
+export function formatDeckUsd(amount: string | null) {
+  if (amount === null) return "Sin precio";
+  const [whole, fraction = ""] = amount.split(".");
+  return `$${BigInt(whole).toLocaleString("en-US")}.${fraction.padEnd(2, "0")}`;
+}

@@ -13,7 +13,7 @@ export default async function EditDeckPage({
       <PageHeading
         eyebrow="AJUSTA TU ESTRATEGIA"
         title={`Editar ${w.deck.name}`}
-        description="Cambiar el líder, el formato o la lista crea una versión nueva. Las anteriores se conservan."
+        description="Ajusta el nombre, el líder y las cartas de tu mazo."
       />
       <DeckBuilder
         id={deckId}

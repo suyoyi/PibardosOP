@@ -135,15 +135,15 @@ const workspace = {
   ],
 };
 describe("home dashboard snapshot semantics", () => {
-  it("groups alternate leaders once and counts only nonarchived decks in the selector", () => {
+  it("groups alternate leaders once and includes legacy archived decks without exposing statuses", () => {
     const data = buildDashboard(workspace);
-    expect(data.activeDeckCount).toBe(3);
+    expect(data.deckCount).toBe(4);
     expect(data.leaders).toHaveLength(2);
     expect(
       data.leaders
         .find((group) => group.card.id === a.id)
         ?.decks.map((item) => item.id),
-    ).toEqual(["original", "alternate"]);
+    ).toEqual(["original", "alternate", "archive"]);
     expect(data.overall.totalGames).toBe(5);
   });
   it("attributes past games to the actual played leader and preserves archived history", () => {
@@ -211,7 +211,7 @@ describe("home dashboard snapshot semantics", () => {
         matches: [],
       }),
     ).toMatchObject({
-      activeDeckCount: 0,
+      deckCount: 0,
       leaders: [],
       recent: [],
       overall: { totalGames: 0, winRate: null },

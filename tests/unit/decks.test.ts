@@ -223,3 +223,19 @@ describe("construction rules and immutable comparisons", () => {
     ).toEqual([{ cost: "Sin dato", quantity: 4 }]);
   });
 });
+
+it("exports only quantities/codes and combines alternate printings without comments", () => {
+  const text = exportDecklist(
+    leader,
+    [
+      { card_id: main.id, quantity: 2, role: "main" },
+      { card_id: alternate.id, quantity: 2, role: "main" },
+      { card_id: don.id, quantity: 10, role: "don" },
+    ],
+    [leader, main, alternate, don],
+  );
+  expect(text).toBe(
+    `1 ${leader.card_number}\n4 ${main.card_number}\n10 ${don.card_number}`,
+  );
+  expect(text).not.toContain("#");
+});

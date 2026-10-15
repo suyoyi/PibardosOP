@@ -43,9 +43,7 @@ test("register, navigate real empty data, logout and log back in", async ({
     await expect(
       page.getByRole("heading", { name: "Rumbo a la próxima partida" }),
     ).toBeVisible();
-    await expect(
-      page.getByText("Mazos activos", { exact: true }),
-    ).toBeVisible();
+    await expect(page.getByText("Tus mazos", { exact: true })).toBeVisible();
     const nav = page.getByRole("navigation", { name: "Navegación principal" });
     for (const [label, empty] of [
       ["Mazos", "Una biblioteca por construir"],

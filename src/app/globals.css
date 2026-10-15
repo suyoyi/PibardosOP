@@ -591,3 +591,32 @@ body {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }
+
+.button-danger {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid #ed7185;
+  border-radius: 0.65rem;
+  background: #a6203c;
+  padding: 0.65rem 1rem;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.button-danger:hover {
+  background: #bd2a48;
+}
+.button-danger:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.deck-delete-form {
+  display: grid;
+  gap: 0.5rem;
+}
+.deck-delete-form > fieldset {
+  display: none;
+}

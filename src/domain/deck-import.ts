@@ -152,26 +152,21 @@ export function exportDecklist(
   catalog: readonly Card[],
 ) {
   const byId = new Map(catalog.map((card) => [card.id, card]));
-  const lines = [`# Líder`, `1 ${leader.card_number}`, `# Mazo principal`];
-  for (const entry of [...entries]
-    .filter((e) => e.role === "main")
-    .sort((a, b) =>
-      (byId.get(a.card_id)?.card_number ?? "").localeCompare(
-        byId.get(b.card_id)?.card_number ?? "",
-      ),
-    )) {
-    const card = byId.get(entry.card_id);
-    if (!card) throw new Error("Cannot export an unknown card.");
-    lines.push(`${entry.quantity} ${card.card_number}`);
-  }
-  const don = entries.filter((entry) => entry.role === "don");
-  if (don.length) {
-    lines.push("# DON!! separado");
-    for (const entry of don) {
+  const lines = [`1 ${leader.card_number}`];
+  for (const role of ["main", "don"] as const) {
+    const counts = new Map<string, number>();
+    for (const entry of entries.filter((e) => e.role === role)) {
       const card = byId.get(entry.card_id);
       if (!card) throw new Error("Cannot export an unknown card.");
-      lines.push(`${entry.quantity} ${card.card_number}`);
+      counts.set(
+        card.card_number,
+        (counts.get(card.card_number) ?? 0) + entry.quantity,
+      );
     }
+    for (const [code, quantity] of [...counts].sort(([a], [b]) =>
+      a.localeCompare(b),
+    ))
+      lines.push(`${quantity} ${code}`);
   }
   return lines.join("\n");
 }

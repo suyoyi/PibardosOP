@@ -158,9 +158,7 @@ test("mobile empty-catalog deck builder searches automatically, selects leader a
     ).toBe(true);
     await page.getByRole("button", { name: "Continuar al nombre" }).click();
     await page.getByLabel("Nombre del mazo").fill("Direct builder draft");
-    await page
-      .getByText("Opciones del mazo y nota de versión", { exact: true })
-      .click();
+    await page.getByText("Opciones del mazo", { exact: true }).click();
     await page
       .getByLabel("Descripción", { exact: true })
       .fill("Keep these unsaved notes");
@@ -172,9 +170,7 @@ test("mobile empty-catalog deck builder searches automatically, selects leader a
     await expect(page.getByLabel("Nombre del mazo")).toHaveValue(
       "Direct builder draft",
     );
-    await page
-      .getByText("Opciones del mazo y nota de versión", { exact: true })
-      .click();
+    await page.getByText("Opciones del mazo", { exact: true }).click();
     await expect(page.getByLabel("Descripción", { exact: true })).toHaveValue(
       "Keep these unsaved notes",
     );

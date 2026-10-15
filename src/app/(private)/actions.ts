@@ -40,7 +40,7 @@ function databaseError(error: {
   if (error.code === "23503")
     return {
       error:
-        "Este registro está vinculado a historial guardado. Archiva el mazo o revisa sus partidas antes de eliminarlo.",
+        "No se pudo completar la operación: hay registros relacionados. Revisa las referencias y los datos vinculados.",
     };
   if (error.message?.includes("Event version has recorded matches"))
     return {
@@ -198,6 +198,8 @@ export async function saveDeck(
   }
   const parsed = deckSchema.safeParse({
     ...Object.fromEntries(form),
+    status: "draft",
+    notes: "",
     cards,
     tags: String(form.get("tags") ?? "")
       .split(",")
@@ -228,22 +230,8 @@ export async function saveDeck(
       "COPY_LIMIT",
     ].includes(issue.code),
   );
-  if (
-    fatal.length ||
-    (input.status === "active" && !validation.constructionVerified)
-  )
-    return {
-      error:
-        (fatal.length
-          ? fatal
-          : validation.issues.filter(
-              (i) => i.severity === "error" || i.code === "COLOR_UNVERIFIED",
-            )
-        )
-          .map((i) => i.message)
-          .join(" ") +
-        " Puedes guardar una construcción incompleta como borrador.",
-    };
+  if (fatal.length)
+    return { error: fatal.map((issue) => issue.message).join(" ") };
   const importJob = String(form.get("import_job_id") ?? ""),
     raw = normalizeDeckText(String(form.get("raw_input") ?? ""));
   if (importJob) {
@@ -286,38 +274,13 @@ export async function deckOperation(
   const workspace = await getDeckWorkspace(supabase),
     deck = workspace.decks.find((d) => d.id === id);
   if (!deck) return { error: "Mazo no disponible." };
-  if (operation === "duplicate") {
-    const newId = randomUUID();
-    const cards = workspace.entries
-      .filter((e) => e.deck_version_id === deck.current_version_id)
-      .map(({ card_id, quantity, role }) => ({ card_id, quantity, role }));
-    const { error } = await supabase.rpc("save_deck", {
-      p_input: {
-        id: newId,
-        expected_version_id: "",
-        name: `${deck.name.slice(0, 110)} (copia)`,
-        leader_card_id: deck.leader_card_id,
-        description: deck.description,
-        format: deck.format,
-        status: "draft",
-        tags: deck.tags,
-        notes: "Copia independiente",
-        cards,
-      },
-    });
-    if (error) return databaseError(error);
-    finish(`/decks/${newId}`);
-  }
-  if (operation === "archive" || operation === "restore") {
-    const { error } = await supabase
-      .from("decks")
-      .update({ status: operation === "archive" ? "archived" : "draft" })
-      .eq("id", id);
-    if (error) return databaseError(error);
-    finish(`/decks/${id}`);
-  }
   if (operation === "delete" && form.get("confirmed") === "yes") {
     const { error } = await supabase.from("decks").delete().eq("id", id);
+    if (error?.code === "23503")
+      return {
+        error:
+          "No se puede eliminar: hay partidas o torneos vinculados. Sus registros se conservan; elimina primero esas referencias si quieres borrar el mazo.",
+      };
     if (error) return databaseError(error);
     finish("/decks");
   }

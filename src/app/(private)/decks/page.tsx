@@ -16,19 +16,19 @@ export default async function DecksPage({
       <PageHeading
         eyebrow="PREPARA TU ESTRATEGIA"
         title="Mazos"
-        description="Importa listas, ajusta cantidades y conserva cada versión de tu estrategia."
+        description="Crea tus mazos o importa una lista para empezar a jugar."
       />
       <SavedNotice saved={(await searchParams).saved} />
       <div className="mb-6 flex flex-wrap gap-3">
         <Link href="/decks/new" className="button-primary">
-          Crear o importar mazo
+          Crear mazo
         </Link>
-        <Link href="/decks/imports" className="button-secondary">
-          Historial de importaciones
+        <Link href="/decks/import" className="button-secondary">
+          Importar mazo
         </Link>
       </div>
       {w.decks.length ? (
-        <DeckList decks={w.decks} catalog={w.catalog} versions={w.versions} />
+        <DeckList decks={w.decks} catalog={w.catalog} />
       ) : (
         <EmptyState title="Una biblioteca por construir">
           <p>

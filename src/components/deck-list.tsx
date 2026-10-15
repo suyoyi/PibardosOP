@@ -2,53 +2,33 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { Card } from "@/domain/cards";
-import type { Deck, DeckVersion } from "@/domain/decks";
+import type { Deck } from "@/domain/decks";
 import { CardArtwork } from "./card-catalog";
 import { Field } from "./forms";
 export function DeckList({
   decks,
   catalog,
-  versions,
 }: {
   decks: Deck[];
   catalog: Card[];
-  versions: DeckVersion[];
 }) {
   const [search, setSearch] = useState(""),
-    [status, setStatus] = useState("current"),
-    [grid, setGrid] = useState(false);
-  const visible = decks.filter(
-    (d) =>
-      (status === "all" ||
-        (status === "current"
-          ? d.status !== "archived"
-          : d.status === status)) &&
-      `${d.name} ${d.tags.join(" ")}`
-        .toLowerCase()
-        .includes(search.toLowerCase()),
+    [grid, setGrid] = useState(true);
+  const visible = decks.filter((d) =>
+    `${d.name} ${d.tags.join(" ")}`
+      .toLowerCase()
+      .includes(search.toLowerCase()),
   );
   return (
     <div className="grid gap-5">
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
         <Field label="Buscar mazo">
           <input
             className="field"
             value={search}
+            maxLength={120}
             onChange={(e) => setSearch(e.target.value)}
           />
-        </Field>
-        <Field label="Estado del mazo">
-          <select
-            className="field"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-          >
-            <option value="current">Sin archivar</option>
-            <option value="all">Todos</option>
-            <option value="draft">Borradores</option>
-            <option value="active">Activos</option>
-            <option value="archived">Archivados</option>
-          </select>
         </Field>
         <button
           type="button"
@@ -59,33 +39,42 @@ export function DeckList({
         </button>
       </div>
       <ul
+        aria-label="Mis mazos"
         className={
-          grid ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-3" : "grid gap-3"
+          grid
+            ? "grid gap-4 min-[380px]:grid-cols-2 lg:grid-cols-3"
+            : "grid gap-3"
         }
       >
         {visible.map((deck) => {
-          const leader = catalog.find((c) => c.id === deck.leader_card_id),
-            version = versions.find((v) => v.id === deck.current_version_id);
+          const leader = catalog.find((c) => c.id === deck.leader_card_id);
           return (
             <li key={deck.id}>
               <Link
                 href={`/decks/${deck.id}`}
-                className={`panel flex h-full gap-4 p-5 ${grid ? "flex-col" : "items-center"}`}
+                className={`panel flex h-full gap-4 p-4 ${grid ? "flex-col" : "items-center"}`}
               >
-                {leader && <CardArtwork card={leader} small={!grid} />}
+                {leader && (
+                  <div
+                    className={
+                      grid
+                        ? "mx-auto aspect-[5/7] w-full max-w-[220px]"
+                        : "shrink-0"
+                    }
+                  >
+                    <CardArtwork card={leader} full={grid} small={!grid} />
+                  </div>
+                )}
                 <div className="min-w-0">
                   <h2 className="break-words font-semibold">{deck.name}</h2>
-                  <p className="mt-2 text-sm text-muted">
-                    {leader?.name} · v{version?.version_number ?? "—"} ·{" "}
-                    {deck.status === "draft"
-                      ? "Borrador"
-                      : deck.status === "active"
-                        ? "Activo"
-                        : "Archivado"}
-                  </p>
                   <p className="mt-2 break-words text-sm text-muted">
-                    {deck.description || "Sin descripción"}
+                    {leader?.name}
                   </p>
+                  {deck.description && (
+                    <p className="mt-2 break-words text-sm text-muted">
+                      {deck.description}
+                    </p>
+                  )}
                   {deck.tags.length > 0 && (
                     <p className="mt-2 text-xs text-accent">
                       {deck.tags.join(" · ")}
@@ -98,7 +87,7 @@ export function DeckList({
         })}
       </ul>
       {!visible.length && (
-        <p className="panel p-5 text-muted">No hay mazos con estos filtros.</p>
+        <p className="panel p-5 text-muted">No hay mazos con esta búsqueda.</p>
       )}
     </div>
   );

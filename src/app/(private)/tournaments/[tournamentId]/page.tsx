@@ -70,7 +70,7 @@ export default async function TournamentPage({
           {version && deck && (
             <Link
               className="text-sm text-accent underline"
-              href={`/decks/${deck.id}/compare?after=${version.id}`}
+              href={`/decks/${deck.id}`}
             >
               {deck.name} · v{version.version_number}
             </Link>

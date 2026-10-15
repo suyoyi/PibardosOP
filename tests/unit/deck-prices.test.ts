@@ -190,3 +190,17 @@ it("reports the oldest consulted quote actually used, excluding missing prices",
   ]);
   expect(d.total.oldestFetchedAt).toBe("2026-10-15T11:00:00Z");
 });
+
+it("formats the user's USD presentation without mutating source currency or converting amounts", async () => {
+  const { formatDeckUsd } = await import("../../src/domain/deck-prices");
+  expect(formatDeckUsd("1234.5")).toBe("$1,234.50");
+  expect(formatDeckUsd("0")).toBe("$0.00");
+  expect(formatDeckUsd("0.000000001")).toBe("$0.000000001");
+  expect(formatDeckUsd(null)).toBe("Sin precio");
+  const saved = quote(leader, 2.5),
+    before = structuredClone(saved);
+  expect(buildDeckDisplay(leader.id, [], cards, [saved]).total.amount).toBe(
+    "2.5",
+  );
+  expect(saved).toEqual(before);
+});

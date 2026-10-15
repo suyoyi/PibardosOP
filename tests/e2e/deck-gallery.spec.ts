@@ -159,18 +159,24 @@ test("deck artwork gallery values exact printings and quantities, opens accessib
     }
     await page.goto(`/decks/${deckId}`);
     const valuation = page.getByRole("region", {
-      name: "Valoración del mazo",
+      name: "Precio mazo",
       exact: true,
     });
-    await expect(valuation).toContainText("Subtotal conocido del mazo");
-    await expect(valuation).toContainText("13,90");
-    await expect(valuation).toContainText("17 de 19 copias");
-    await expect(valuation).toContainText("5 de 6 impresiones");
-    await expect(valuation).toContainText("Falta el precio de 2 copias");
-    await expect(valuation).toContainText("Moneda no especificada");
-    await expect(valuation).not.toContainText("999");
-    await expect(valuation).not.toContainText("$");
-    await expect(valuation).not.toContainText("€");
+    await expect(valuation).toContainText("$13.90");
+    await expect(valuation).toContainText("17/19 copias con precio");
+    await page
+      .getByRole("button", { name: "Información del precio", exact: true })
+      .click();
+    const priceInfo = page.getByRole("dialog", {
+      name: "Información del precio del mazo",
+      exact: true,
+    });
+    await expect(priceInfo).toContainText("17 de 19 copias");
+    await expect(priceInfo).toContainText("5 de 6 impresiones");
+    await expect(priceInfo).toContainText("Falta el precio de 2 copias");
+    await expect(priceInfo).toContainText("OPTCG API no declara moneda");
+    await expect(priceInfo).not.toContainText("999");
+    await page.keyboard.press("Escape");
     const gallery = page.getByRole("region", {
       name: "Cartas: Lista del mazo",
       exact: true,
@@ -184,11 +190,11 @@ test("deck artwork gallery values exact printings and quantities, opens accessib
       name: "Ver carta OP97-010 · OP97-010_p1 · Synthetic OPTCG character parallel",
       exact: true,
     });
-    await expect(base).toContainText("3 × 2,50 = 7,50");
-    await expect(alt).toContainText("1 × 0,00 = 0,00");
+    await expect(base).toContainText("3 × $2.50 = $7.50");
+    await expect(alt).toContainText("1 × $0.00 = $0.00");
     await expect(
       page.getByRole("region", { name: "Cartas: DON!! separado", exact: true }),
-    ).toContainText("10 × 0,10 = 1,00");
+    ).toContainText("10 × $0.10 = $1.00");
     await base.scrollIntoViewIfNeeded();
     await base.click();
     const dialog = page.getByRole("dialog", {
@@ -201,7 +207,7 @@ test("deck artwork gallery values exact printings and quantities, opens accessib
     await expect(dialog).toContainText("Synthetic trait block");
     await expect(
       dialog.getByRole("region", { name: "Precio de la carta en el mazo" }),
-    ).toContainText("Subtotal 7,50");
+    ).toContainText("Subtotal $7.50");
     const art = dialog.getByRole("img", {
       name: "Ilustración de Synthetic OPTCG character",
       exact: true,
@@ -227,7 +233,7 @@ test("deck artwork gallery values exact printings and quantities, opens accessib
     ).toBeVisible();
     await expect(
       dialog.getByRole("region", { name: "Precio de la carta en el mazo" }),
-    ).toContainText("Subtotal 0,00");
+    ).toContainText("Subtotal $0.00");
     await dialog
       .getByRole("button", { name: "Carta anterior", exact: true })
       .click();
@@ -315,8 +321,8 @@ test("deck artwork gallery values exact printings and quantities, opens accessib
       await update.end();
     }
     await page.reload();
-    await expect(valuation).toContainText("18,40");
-    await expect(base).toContainText("3 × 4,00 = 12,00");
+    await expect(valuation).toContainText("$18.40");
+    await expect(base).toContainText("3 × $4.00 = $12.00");
     await base.click();
     await dialog
       .getByRole("button", { name: "Consultar precios de nuevo" })
@@ -363,9 +369,13 @@ test("deck artwork gallery values exact printings and quantities, opens accessib
       await finish.end();
     }
     await page.reload();
-    await expect(valuation).toContainText("Total orientativo del mazo");
-    await expect(valuation).toContainText("17 de 17 copias");
-    await expect(valuation).toContainText("18,40");
+    await expect(valuation).not.toContainText("Parcial");
+    await page
+      .getByRole("button", { name: "Información del precio", exact: true })
+      .click();
+    await expect(priceInfo).toContainText("17 de 17 copias");
+    await page.keyboard.press("Escape");
+    await expect(valuation).toContainText("$18.40");
     // Next can stream the not-found UI with HTTP 200. Assert actual denial
     // and absence of private HTML/RSC data instead of assuming a status code.
     const denied = await page.goto(`/decks/${foreignDeck}`);

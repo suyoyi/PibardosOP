@@ -12,10 +12,7 @@ export default async function CollectionPage({
     w = await getCollectionWorkspace(supabase),
     q = await searchParams;
   if (q.deck && !w.decks.some((d) => d.id === q.deck)) notFound();
-  const selected =
-    q.deck ??
-    w.decks.find((d) => d.status !== "archived")?.id ??
-    w.decks[0]?.id;
+  const selected = q.deck ?? w.decks[0]?.id;
   return (
     <>
       <PageHeading
