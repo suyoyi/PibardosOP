@@ -61,6 +61,13 @@ test("register, navigate real empty data, logout and log back in", async ({
             .getByRole("list", { name: "Resultados del catálogo" })
             .getByRole("button", { name: /^Ver carta / }),
         ).toHaveCount(3);
+      if (label === "Estadísticas")
+        for (const name of ["Al ir primero", "Al ir segundo"]) {
+          const emptyOrder = page.getByRole("region", { name, exact: true });
+          await expect(emptyOrder).toContainText("Victorias—");
+          await expect(emptyOrder).toContainText("Derrotas—");
+          await expect(emptyOrder).toContainText("n=0");
+        }
       expect(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= window.innerWidth,

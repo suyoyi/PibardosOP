@@ -3,6 +3,7 @@ import { getCompetitiveWorkspace } from "@/lib/data";
 import { buildAnalytics } from "@/domain/statistics";
 import { PageHeading, EmptyState } from "@/components/ui";
 import { ResultsChart } from "@/components/charts";
+import { PlayOrderResults } from "@/components/play-order-results";
 export default async function StatisticsPage({
   searchParams,
 }: {
@@ -103,6 +104,12 @@ export default async function StatisticsPage({
         {s.totalGames} partidas · {s.decisiveGames} victorias o derrotas para el
         porcentaje. Fórmula: victorias / (victorias + derrotas).
       </p>
+      <div className="mb-6">
+        <PlayOrderResults
+          title="Primero frente a segundo"
+          rows={analytics.byOrder}
+        />
+      </div>
       {s.totalGames ? (
         <div className="grid gap-6">
           <section className="panel p-5">
@@ -130,10 +137,6 @@ export default async function StatisticsPage({
           <ResultsChart title="Resultados por mazo" rows={byDeck} />
           <ResultsChart title="Resultados por versión" rows={byVersion} />
           <ResultsChart title="Resultados por líder rival" rows={byOpponent} />
-          <ResultsChart
-            title="Primero frente a segundo"
-            rows={analytics.byOrder}
-          />
           <ResultsChart
             title="Evolución mensual (Madrid)"
             rows={analytics.byMonth}

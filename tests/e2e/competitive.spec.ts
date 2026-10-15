@@ -99,6 +99,21 @@ test("mobile fifty-card import, exact-version match history, tournament rounds a
         exact: true,
       }),
     ).toBeVisible();
+    await page.goto("/statistics");
+    const firstOnly = page.getByRole("region", {
+      name: "Al ir primero",
+      exact: true,
+    });
+    await expect(firstOnly).toContainText("Victorias100%");
+    await expect(firstOnly).toContainText("Derrotas0%");
+    await expect(firstOnly).toContainText("n=1");
+    const noSecond = page.getByRole("region", {
+      name: "Al ir segundo",
+      exact: true,
+    });
+    await expect(noSecond).toContainText("Victorias—");
+    await expect(noSecond).toContainText("Derrotas—");
+    await expect(noSecond).toContainText("n=0");
     await page.goto(`${deckUrl}/edit`);
     await page.getByRole("button", { name: "Quitar una OP95-010" }).click();
     await page.getByLabel("Estado", { exact: true }).selectOption("draft");
@@ -205,6 +220,31 @@ test("mobile fifty-card import, exact-version match history, tournament rounds a
     await expect(
       order.getByRole("row").filter({ hasText: "Segundo" }),
     ).toContainText("0%");
+    const second = order.getByRole("region", {
+      name: "Al ir segundo",
+      exact: true,
+    });
+    await expect(second).toContainText("Victorias0%");
+    await expect(second).toContainText("Derrotas100%");
+    await expect(second).toContainText("n=2");
+    for (const width of [320, 390, 1280]) {
+      await page.setViewportSize({ width, height: 844 });
+      await expect(second).toContainText("Derrotas100%");
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= window.innerWidth,
+        ),
+      ).toBe(true);
+    }
+    await order.screenshot({ path: "/tmp/pibardos-play-order-synthetic.png" });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(second).toContainText("Muestra pequeña");
+    await page
+      .getByLabel("Mazo para las gráficas")
+      .selectOption(deckUrl.split("/").at(-1)!);
+    await page.getByRole("button", { name: "Aplicar filtros" }).click();
+    await expect(second).toContainText("Derrotas100%");
+    await expect(second).toContainText("n=2");
     await expect(
       page
         .getByRole("listitem")
@@ -260,6 +300,13 @@ test("mobile fifty-card import, exact-version match history, tournament rounds a
         .getByRole("cell")
         .filter({ hasText: "66,7%" }),
     ).toBeVisible();
+    const updatedSecond = page.getByRole("region", {
+      name: "Al ir segundo",
+      exact: true,
+    });
+    await expect(updatedSecond).toContainText("Victorias50%");
+    await expect(updatedSecond).toContainText("Derrotas50%");
+    await expect(updatedSecond).toContainText("n=2");
     await page.goto("/matches");
     const loss = page
       .getByRole("listitem")

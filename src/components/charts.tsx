@@ -1,4 +1,5 @@
 "use client";
+import type { ReactNode } from "react";
 import {
   BarChart,
   Bar,
@@ -91,9 +92,11 @@ export function DeckCostChart({
 export function ResultsChart({
   title,
   rows,
+  children,
 }: {
   title: string;
   rows: ResultChartRow[];
+  children?: ReactNode;
 }) {
   return (
     <section className="panel min-w-0 p-5" aria-label={title}>
@@ -104,6 +107,7 @@ export function ResultsChart({
           solo usan victorias y derrotas.
         </p>
       )}
+      {children}
       {rows.length ? (
         <>
           <div className="h-64 min-w-0" aria-hidden="true">

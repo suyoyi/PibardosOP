@@ -14,6 +14,66 @@ const match = (overrides: Partial<AnalyticsMatch> = {}): AnalyticsMatch => ({
   ...overrides,
 });
 describe("honest competitive analytics", () => {
+  it("uses a separate win/loss denominator for each play order", () => {
+    const a = buildAnalytics([
+      match({ went_first: false, result: "win" }),
+      match({ went_first: false, result: "loss" }),
+      match({ went_first: false, result: "loss" }),
+      match(),
+      match(),
+      match(),
+      match({ result: "loss" }),
+    ]);
+    expect(a.byOrder[0]).toMatchObject({
+      label: "Primero",
+      wins: 3,
+      losses: 1,
+      decisiveGames: 4,
+      winRate: 0.75,
+      lossRate: 0.25,
+    });
+    expect(a.byOrder[1]).toMatchObject({
+      label: "Segundo",
+      wins: 1,
+      losses: 2,
+      decisiveGames: 3,
+      winRate: 1 / 3,
+      lossRate: 2 / 3,
+    });
+  });
+  it("keeps both orders visible without inventing percentages for absent games", () => {
+    const empty = buildAnalytics([]).byOrder;
+    expect(empty.map((r) => r.label)).toEqual(["Primero", "Segundo"]);
+    for (const row of empty)
+      expect(row).toMatchObject({
+        totalGames: 0,
+        decisiveGames: 0,
+        winRate: null,
+        lossRate: null,
+      });
+    const oneOrder = buildAnalytics([match()]).byOrder;
+    expect(oneOrder[0]).toMatchObject({ winRate: 1, lossRate: 0 });
+    expect(oneOrder[1]).toMatchObject({ winRate: null, lossRate: null });
+  });
+  it("excludes unsupported historical records from both order percentages", () => {
+    const rows = buildAnalytics([
+      match({ result: "draw" }),
+      match({ result: "loss" }),
+      match({ result: "draw", went_first: false }),
+    ]).byOrder;
+    expect(rows[0]).toMatchObject({
+      totalGames: 2,
+      decisiveGames: 1,
+      winRate: 0,
+      lossRate: 1,
+    });
+    expect(rows[1]).toMatchObject({
+      totalGames: 1,
+      decisiveGames: 0,
+      winRate: null,
+      lossRate: null,
+    });
+  });
   it("handles no games or only draws without a percentage", () => {
     expect(buildAnalytics([]).summary.winRate).toBe(null);
     expect(buildAnalytics([match({ result: "draw" })]).summary).toMatchObject({

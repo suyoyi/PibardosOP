@@ -70,14 +70,24 @@ export function buildAnalytics(
     }).formatToParts(new Date(date));
     return `${parts.find((p) => p.type === "year")?.value}-${parts.find((p) => p.type === "month")?.value}`;
   };
+  const byOrder = [true, false].map((wentFirst) => {
+    const record = summarizeResults(
+      matches.filter((m) => m.went_first === wentFirst).map((m) => m.result),
+    );
+    return {
+      label: wentFirst ? "Primero" : "Segundo",
+      ...record,
+      lossRate: record.decisiveGames
+        ? record.losses / record.decisiveGames
+        : null,
+    };
+  });
   return {
     summary,
     byDeck,
     byVersion: groupedResults(matches, (m) => m.deck_version_id),
     byOpponent: groupedResults(matches, (m) => m.opponent_leader_id),
-    byOrder: groupedResults(matches, (m) =>
-      m.went_first ? "Primero" : "Segundo",
-    ),
+    byOrder,
     byMonth: groupedResults(matches, (m) => monthKey(m.played_at)).sort(
       (a, b) => a.label.localeCompare(b.label),
     ),

@@ -14,6 +14,7 @@ import type { DashboardData, DashboardLeader } from "@/domain/dashboard";
 import { colorLabels } from "@/domain/cards";
 import { CardArtwork } from "./card-catalog";
 import { ResultsChart, DeckCostChart } from "./charts";
+import { PlayOrderResults } from "./play-order-results";
 import { EmptyState } from "./ui";
 
 const percent = (value: number | null) =>
@@ -276,7 +277,7 @@ function LeaderPanel({ leader }: { leader: DashboardLeader }) {
         )}
       </div>
       {leader.summary.totalGames > 0 && (
-        <ResultsChart
+        <PlayOrderResults
           title="Resultados por orden de salida"
           rows={leader.byOrder}
         />
