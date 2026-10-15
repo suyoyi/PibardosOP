@@ -21,11 +21,16 @@ test("mobile empty-catalog deck builder searches automatically, selects leader a
       name: "Buscar cartas para el mazo",
     });
     await search.getByLabel("Buscar carta").fill("OP97-001");
-    const chooseLeader = search.getByRole("button", {
-      name: "Elegir líder OP97-001 · Synthetic OPTCG leader",
-      exact: true,
+    const leaderGroup = search.getByRole("button", {
+      name: /^Ver variantes OP97-001 ·/,
     });
-    await expect(chooseLeader).toBeVisible();
+    const chooseLeader = page
+      .getByRole("dialog", { name: "Variantes de OP97-001", exact: true })
+      .getByRole("button", {
+        name: "Elegir líder OP97-001 · Synthetic OPTCG leader",
+        exact: true,
+      });
+    await expect(leaderGroup).toBeVisible();
     // A search must not turn all its results into the user's private collection.
     let db = await connectLocalDatabase();
     try {
@@ -40,24 +45,28 @@ test("mobile empty-catalog deck builder searches automatically, selects leader a
     } finally {
       await db.end();
     }
+    await leaderGroup.click();
     await chooseLeader.click();
     await expect(
       page.getByRole("button", { name: "2. Cartas", exact: true }),
     ).toHaveAttribute("aria-current", "step");
     await expect(page).toHaveURL(/\/decks\/new$/);
     await search.getByLabel("Buscar carta").fill("OP97-010");
-    await expect(
-      search.getByRole("button", {
-        name: "Añadir OP97-010 · Synthetic OPTCG character parallel",
-        exact: true,
-      }),
-    ).toBeVisible();
+    const mainGroup = search.getByRole("button", {
+      name: /^Ver variantes OP97-010 ·/,
+    });
+    await expect(mainGroup).toHaveCount(1);
     await search.getByLabel("Coste", { exact: true }).selectOption("3");
     await expect(
       search.getByRole("option", { name: "Azul", exact: true }),
     ).toHaveCount(0);
     await search.getByLabel("Color", { exact: true }).selectOption("red");
-    const add = search.getByRole("button", {
+    await mainGroup.click();
+    const variants = page.getByRole("dialog", {
+      name: "Variantes de OP97-010",
+      exact: true,
+    });
+    const add = variants.getByRole("button", {
       name: "Añadir OP97-010 · Synthetic OPTCG character",
       exact: true,
     });
@@ -70,6 +79,9 @@ test("mobile empty-catalog deck builder searches automatically, selects leader a
     await expect(
       page.getByRole("heading", { name: "Mazo principal: 2 / 50" }),
     ).toBeVisible();
+    await variants
+      .getByRole("button", { name: "Cerrar ventana", exact: true })
+      .click();
     await search.getByLabel("Coste", { exact: true }).selectOption("");
     await search.getByLabel("Color", { exact: true }).selectOption("");
     // A slow superseded search cannot replace the newer leader query.
@@ -80,30 +92,43 @@ test("mobile empty-catalog deck builder searches automatically, selects leader a
     await page.waitForTimeout(650);
     await page.getByRole("button", { name: "1. Líder", exact: true }).click();
     await search.getByLabel("Buscar carta").fill("OP97-001");
-    await expect(chooseLeader).toBeVisible();
+    await expect(leaderGroup).toBeVisible();
     await expect(
       search.getByRole("button", {
         name: "Añadir OP97-010 · Synthetic OPTCG character",
         exact: true,
       }),
     ).toHaveCount(0);
+    await leaderGroup.click();
     await chooseLeader.click();
     await search.getByLabel("Buscar carta").fill("Unavailable");
-    const unavailable = search.getByRole("button", {
-      name: "Añadir OP97-066 · Synthetic unavailable card",
+    const unavailableGroup = search.getByRole("button", {
+      name: /^Ver variantes OP97-066 ·/,
+    });
+    await unavailableGroup.click();
+    const unavailableDialog = page.getByRole("dialog", {
+      name: "Variantes de OP97-066",
       exact: true,
     });
-    await expect(unavailable).toBeVisible();
-    await unavailable.click();
+    await unavailableDialog
+      .getByRole("button", {
+        name: "Añadir OP97-066 · Synthetic unavailable card",
+        exact: true,
+      })
+      .click();
     await expect(
-      search.getByRole("alert").filter({ hasText: "no está disponible" }),
+      unavailableDialog
+        .getByRole("alert")
+        .filter({ hasText: "no está disponible" }),
     ).toBeVisible();
-    await search.getByLabel("Buscar carta").fill("OP97-010");
-    await search.getByLabel("Expansión").selectOption("promos");
+    await unavailableDialog
+      .getByRole("button", { name: "Cerrar ventana", exact: true })
+      .click();
+    await search.getByLabel("Buscar carta").fill("Synthetic OPTCG character");
     await expect(
-      search.getByRole("alert").filter({ hasText: "no está disponible" }),
+      search.getByRole("alert").filter({ hasText: "No se pudo completar" }),
     ).toBeVisible();
-    await expect(add).toBeVisible();
+    await expect(mainGroup).toBeVisible();
     await expect(page.getByLabel("Cantidad OP97-010")).toHaveValue("2");
     db = await connectLocalDatabase();
     try {

@@ -380,6 +380,59 @@ export class OptcgClient {
       group,
     );
   }
+  async variants(number: string): Promise<OptcgResult> {
+    const code = parse(
+      z
+        .string()
+        .transform(normalizeCardNumber)
+        .refine((value) => cardNumberPattern.test(value)),
+      number,
+    );
+    if (code === "DON!!") return this.cards(code, "don");
+    const first = code.startsWith("ST")
+      ? "decks"
+      : code.startsWith("P-")
+        ? "promos"
+        : "sets";
+    const families = [
+      first,
+      ...(["sets", "decks", "promos"] as const).filter(
+        (family) => family !== first,
+      ),
+    ] as Exclude<OptcgFamily, "don">[];
+    const cards: OptcgCard[] = [],
+      issues: string[] = [];
+    let received = 0;
+    for (const family of families) {
+      try {
+        const response = await this.cards(code, family);
+        cards.push(
+          ...response.cards.filter((card) => card.card_number === code),
+        );
+        issues.push(...response.issues);
+        received += response.received;
+      } catch (error) {
+        // A category without this printed number is an expected empty result.
+        if (error instanceof OptcgError && error.status === 404) continue;
+        issues.push(
+          `${family}: ${error instanceof OptcgError ? error.message : "No se pudieron consultar las variantes."}`,
+        );
+        if (
+          !(error instanceof OptcgError) ||
+          ["NETWORK", "RATE_LIMIT"].includes(error.code) ||
+          error.status >= 500
+        )
+          break;
+      }
+    }
+    return {
+      cards: [
+        ...new Map(cards.map((card) => [card.external_id, card])).values(),
+      ],
+      issues,
+      received,
+    };
+  }
   async search(query: string, family: OptcgFamily = "sets") {
     const q = normalizeCardSearch(
       parse(z.string().trim().min(2).max(120), query),

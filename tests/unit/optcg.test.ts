@@ -290,3 +290,58 @@ describe("named expansion and guided filters", () => {
     await expect(api.filtered("sets", { color: "invalid" })).rejects.toThrow();
   });
 });
+
+describe("on-demand exact-code variants", () => {
+  it("combines set, starter and promo printings, ignores expected missing categories and unrelated records", async () => {
+    const paths: string[] = [];
+    const api = new OptcgClient(async (url) => {
+      paths.push(url);
+      if (url.includes("/sets/"))
+        return Response.json([
+          optcgRecord(),
+          optcgRecord({ card_image_id: "OP97-010_p1" }),
+          optcgRecord({ card_set_id: "OP97-011", card_image_id: "OP97-011" }),
+        ]);
+      if (url.includes("/decks/")) return new Response(null, { status: 404 });
+      return Response.json([
+        optcgRecord({ card_image_id: "OP97-010_r1", set_id: "ST-97" }),
+      ]);
+    });
+    const result = await api.variants("op97-010");
+    expect(paths).toHaveLength(3);
+    expect(result.cards.map((card) => card.external_id)).toEqual([
+      "optcg_sets_OP97-010",
+      "optcg_sets_OP97-010_p1",
+      "optcg_promos_OP97-010_r1",
+    ]);
+    expect(result.issues).toEqual([]);
+  });
+  it("preserves fetched variants and stops remaining categories on quota failure without retry", async () => {
+    const paths: string[] = [];
+    const api = new OptcgClient(async (url) => {
+      paths.push(url);
+      return paths.length === 1
+        ? Response.json([optcgRecord()])
+        : new Response(null, { status: 429 });
+    });
+    const result = await api.variants("OP97-010");
+    expect(result.cards).toHaveLength(1);
+    expect(result.issues).toHaveLength(1);
+    expect(paths).toHaveLength(2);
+  });
+  it("routes starter/promo/DON first and rejects malformed codes before any request", async () => {
+    const paths: string[] = [];
+    const api = new OptcgClient(async (url) => {
+      paths.push(url);
+      return Response.json([]);
+    });
+    await api.variants("ST01-001");
+    expect(paths[0]).toContain("/api/decks/card/ST01-001/");
+    await api.variants("P-001");
+    expect(paths[3]).toContain("/api/promos/card/P-001/");
+    await api.variants("DON!!");
+    expect(paths[6]).toContain("/api/allDonCards/");
+    await expect(api.variants("../../secrets")).rejects.toThrow();
+    expect(paths).toHaveLength(7);
+  });
+});

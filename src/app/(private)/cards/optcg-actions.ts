@@ -210,6 +210,25 @@ export async function getBuilderExpansions() {
   await requireUser();
   return optcgClient().expansions();
 }
+export async function getBuilderVariants(number: unknown) {
+  await requireUser();
+  const code = z
+    .string()
+    .transform(normalizeCardNumber)
+    .refine((value) => cardNumberPattern.test(value))
+    .safeParse(number);
+  if (!code.success)
+    return {
+      cards: [],
+      issues: [],
+      error: "Elige un código de carta válido para ver sus variantes.",
+    };
+  try {
+    return await optcgClient().variants(code.data);
+  } catch (error) {
+    return { cards: [], issues: [], ...failure(error) };
+  }
+}
 const builderSearchSchema = z.object({
   mode: z.enum(["leader", "cards", "don"]),
   search: z.string().trim().max(120).default(""),

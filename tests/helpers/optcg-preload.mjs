@@ -25,6 +25,18 @@ const incompatible = optcgRecord({
   card_color: "Blue",
 });
 const records = [leader, base, alternate, incompatible];
+const leaderAlternate = {
+  ...leader,
+  card_image_id: "OP97-001_p1",
+  card_name: "Synthetic OPTCG leader parallel",
+  card_image: "https://optcgapi.com/media/static/Card_Images/OP97-001_p1.jpg",
+};
+const reprint = optcgRecord({
+  card_image_id: "OP97-010_r1",
+  card_name: "Synthetic OPTCG reprint",
+  set_id: "ST-97",
+  card_image: "https://optcgapi.com/media/static/Card_Images/OP97-010_r1.jpg",
+});
 const png = Uint8Array.from(
   Buffer.from(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=",
@@ -56,13 +68,22 @@ globalThis.fetch = async (input, init) => {
     return new Response(png, { headers: { "Content-Type": "image/png" } });
   if (["/api/sets/OP-97/", "/api/sets/OP-01/"].includes(url.pathname))
     return Response.json(records);
+  if (url.pathname === "/api/promos/card/OP97-010/")
+    return Response.json([reprint]);
   const match = url.pathname.match(/^\/api\/sets\/card\/(OP97-\d{3})\/$/);
   if (match) {
-    const found = records.filter((c) => c.card_set_id === match[1]);
+    const found = [...records, leaderAlternate].filter(
+      (c) => c.card_set_id === match[1],
+    );
     return found.length
       ? Response.json(found)
       : new Response(null, { status: 404 });
   }
+  if (
+    url.pathname === "/api/sets/filtered/" &&
+    url.searchParams.get("card_name") === "Synthetic OPTCG character"
+  )
+    return new Response(null, { status: 503 });
   if (
     url.pathname === "/api/sets/filtered/" &&
     url.searchParams.get("card_name") === "Unavailable"
