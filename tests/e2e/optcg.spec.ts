@@ -93,7 +93,7 @@ test("mobile OPTCG search, selected printing, artwork, quote reuse, collection s
       .click();
     await page.getByRole("button", { name: "Continuar con la lista" }).click();
     await expect(
-      page.getByRole("heading", { name: "Mazo principal: 4 / 50" }),
+      page.getByLabel("Contador del mazo: 4 de 50 cartas", { exact: true }),
     ).toBeVisible();
     await page.getByRole("button", { name: "Continuar al nombre" }).click();
     await page.getByLabel("Nombre del mazo").fill("Synthetic OPTCG import");

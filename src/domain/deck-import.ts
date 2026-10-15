@@ -112,7 +112,7 @@ export function parseDecklist(
           ...problem,
           code: "UNKNOWN_CARD",
           card_number: number,
-          message: `${number} no está en tu catálogo. Añádela manualmente o corrige el código.`,
+          message: `${number} no está en tu catálogo. Consulta OPTCG API de nuevo o corrige el código.`,
         });
         return;
       }

@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import {
@@ -29,15 +28,7 @@ export function ValidationMessages({
 }) {
   return (
     <section aria-label="Validación del mazo" className="panel p-5">
-      <h2 className="font-semibold">Mazo principal: {result.mainCount} / 50</h2>
-      <p className="mt-2 text-sm text-muted">
-        DON!! separado: {result.donCount} / 10 ·{" "}
-        {result.constructionVerified
-          ? "Construcción correcta"
-          : result.validConstruction
-            ? "Construcción pendiente de verificar"
-            : "Construcción incompleta o inválida"}
-      </p>
+      <h2 className="font-semibold">Revisa tu lista</h2>
       <ul className="mt-4 grid gap-2 text-sm">
         {result.issues.map((issue, index) => (
           <li
@@ -71,6 +62,7 @@ export function DeckBuilder({
   const [catalog, setCatalog] = useState(initialCatalog);
   const wizard = !deck;
   const [step, setStep] = useState(0);
+  const [selectingLeader, setSelectingLeader] = useState(false);
   const [adjustmentNotice, setAdjustmentNotice] = useState("");
   const [metadata, setMetadata] = useState({
     name: deck?.name ?? "",
@@ -111,8 +103,7 @@ export function DeckBuilder({
     [raw, setRaw] = useState(""),
     [preview, setPreview] = useState<PreviewState>({}),
     [previewPending, startPreview] = useTransition(),
-    [confirmed, setConfirmed] = useState(false),
-    [viewGrid, setViewGrid] = useState(false);
+    [confirmed, setConfirmed] = useState(false);
   const leader = catalog.find((c) => c.id === leaderId),
     result = validateDeck(
       leader,
@@ -145,7 +136,7 @@ export function DeckBuilder({
           quantity > builderMaximumQuantity(card, current, [...catalog, card]))
       ) {
         setAdjustmentNotice(
-          "No se puede añadir: revisa el color, el máximo de 4 copias entre variantes o el tamaño del mazo. DON!! permite 10 copias separadas.",
+          "No se puede añadir: revisa el color, el máximo de 4 copias entre variantes o el tamaño del mazo.",
         );
         return current;
       }
@@ -171,6 +162,7 @@ export function DeckBuilder({
     ]);
     if (card.card_type === "leader") {
       setLeaderId(card.id);
+      setSelectingLeader(false);
       setFilters({});
       if (wizard) setStep(1);
     } else
@@ -181,9 +173,9 @@ export function DeckBuilder({
       );
   };
   const selectCard = (card: Card) => adjustCard(card, 1);
-  const review = (resolveMissing = false) =>
+  const review = () =>
     startPreview(async () => {
-      const next = await previewImport(raw, resolveMissing);
+      const next = await previewImport(raw, true);
       setPreview(next);
       setConfirmed(false);
       if (next.report) {
@@ -244,10 +236,37 @@ export function DeckBuilder({
           onAdjust={adjustCard}
           entries={entries}
           leaderId={leaderId}
+          leaderActions={
+            wizard && step === 1 ? (
+              <>
+                <button
+                  type="button"
+                  className="button-secondary"
+                  onClick={() => {
+                    setSelectingLeader(true);
+                    setFilters({});
+                  }}
+                >
+                  Cambiar líder
+                </button>
+                <button
+                  type="button"
+                  className="button-primary"
+                  disabled={blocked || !leader || previewPending}
+                  onClick={() => setStep(2)}
+                >
+                  Continuar al nombre
+                </button>
+              </>
+            ) : undefined
+          }
           mainCount={result.mainCount}
-          donCount={result.donCount}
           mode={
-            wizard ? (step === 0 || !leader ? "leader" : "cards") : undefined
+            wizard
+              ? step === 0 || !leader || selectingLeader
+                ? "leader"
+                : "cards"
+              : undefined
           }
         />
       )}
@@ -261,7 +280,8 @@ export function DeckBuilder({
           <h2 className="text-lg font-semibold">Importar lista de texto</h2>
           <div className="mt-4 grid gap-4">
             <p className="text-sm text-muted">
-              Acepta 4 OP01-025, 4x OP01-025 y OP01-025 x4. Las líneas con # son
+              Acepta 4 OP01-025, 4xOP01-025 y OP01-025 x4. Las cartas que falten
+              se consultan en OPTCG API al revisar. Las líneas con # son
               comentarios. Una importación reconocida sustituye el contenido del
               editor; no se guarda hasta tu confirmación.
             </p>
@@ -291,7 +311,7 @@ export function DeckBuilder({
                 type="button"
                 className="button-secondary"
                 disabled={previewPending}
-                onClick={() => review(true)}
+                onClick={() => review()}
               >
                 Resolver desconocidas con OPTCG API
               </button>
@@ -347,16 +367,9 @@ export function DeckBuilder({
                 )}
                 {blocked && (
                   <p className="text-sm">
-                    <Link
-                      href="/cards/new"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-accent underline"
-                    >
-                      Añadir carta en otra pestaña
-                    </Link>
-                    . Después vuelve y pulsa Revisar importación; si hace falta,
-                    recarga tras copiar el texto.
+                    Corrige las líneas señaladas o vuelve a consultar las cartas
+                    pendientes. La lista permanece aquí y no se guarda hasta tu
+                    confirmación.
                   </p>
                 )}
               </div>
@@ -372,29 +385,7 @@ export function DeckBuilder({
           </button>
         </section>
       )}
-      {(!wizard || step > 0) && <ValidationMessages result={result} />}
-      {wizard && step === 1 && (
-        <div className="flex flex-wrap justify-between gap-3">
-          <button
-            type="button"
-            className="button-secondary"
-            onClick={() => {
-              setStep(0);
-              setFilters({});
-            }}
-          >
-            Cambiar líder
-          </button>
-          <button
-            type="button"
-            className="button-primary"
-            disabled={blocked || !leader || previewPending}
-            onClick={() => setStep(2)}
-          >
-            Continuar al nombre
-          </button>
-        </div>
-      )}
+      {(!wizard || step === 2) && <ValidationMessages result={result} />}
       {(!wizard || step === 2) && (
         <>
           {wizard && (
@@ -526,95 +517,6 @@ export function DeckBuilder({
             )}
           </ActionForm>
         </>
-      )}
-      {(!wizard || step === 1) && (
-        <section
-          className="panel grid gap-5 p-5"
-          aria-label="Contenido del mazo"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold">Contenido del editor</h2>
-            <button
-              className="button-secondary"
-              type="button"
-              onClick={() => setViewGrid(!viewGrid)}
-            >
-              {viewGrid ? "Ver lista compacta" : "Ver cuadrícula"}
-            </button>
-          </div>
-          {entries.length ? (
-            <ul
-              className={
-                viewGrid
-                  ? "grid grid-cols-2 gap-3 lg:grid-cols-3"
-                  : "grid gap-3"
-              }
-            >
-              {entries.map((entry) => {
-                const card = catalog.find((c) => c.id === entry.card_id);
-                if (!card) return null;
-                return (
-                  <li
-                    key={card.id}
-                    className={`rounded-xl border border-border p-3 ${viewGrid ? "grid gap-3" : "flex flex-wrap items-center gap-3"}`}
-                  >
-                    <CardArtwork card={card} small={!viewGrid} />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs text-accent">
-                        {card.card_number} ·{" "}
-                        {entry.role === "don" ? "DON!! separado" : "Principal"}
-                      </p>
-                      <h3 className="break-words text-sm font-semibold">
-                        {card.name}
-                      </h3>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        className="button-secondary px-4"
-                        aria-label={`Quitar una ${card.card_number}`}
-                        onClick={() => changeQuantity(card, entry.quantity - 1)}
-                      >
-                        −
-                      </button>
-                      <input
-                        aria-label={`Cantidad ${card.card_number}`}
-                        type="number"
-                        min={0}
-                        max={Math.max(
-                          entry.quantity,
-                          builderMaximumQuantity(card, entries, catalog),
-                        )}
-                        className="field w-16 px-2 text-center"
-                        value={entry.quantity}
-                        onChange={(e) =>
-                          changeQuantity(card, Number(e.target.value))
-                        }
-                      />
-                      <button
-                        type="button"
-                        className="button-secondary px-4"
-                        aria-label={`Añadir una ${card.card_number}`}
-                        disabled={
-                          entry.quantity >=
-                            builderMaximumQuantity(card, entries, catalog) ||
-                          !compatibleWithLeader(card, leader)
-                        }
-                        onClick={() => changeQuantity(card, entry.quantity + 1)}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted">
-              Busca cartas arriba para añadirlas a tu mazo.
-            </p>
-          )}
-        </section>
       )}
     </div>
   );

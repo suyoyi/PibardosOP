@@ -27,7 +27,7 @@ export function OptcgTools() {
       <p className="text-sm leading-6 text-muted">
         Busca cartas por código o nombre y añade la impresión que quieras.
         Catálogo inglés, sin clave. Las fichas guardadas se conservan para tu
-        historial; los datos incompletos mantienen la opción manual.
+        historial; los datos incompletos se muestran con avisos.
       </p>
       <form
         className="grid gap-3 sm:grid-cols-3"
@@ -129,8 +129,8 @@ export function OptcgTools() {
           </ul>
           {!result.cards.length && (
             <p className="text-sm text-muted">
-              Sin coincidencias utilizables. Puedes introducir la carta
-              manualmente.
+              Sin coincidencias utilizables. Prueba otro código o vuelve a
+              consultar el proveedor.
             </p>
           )}
           <div className="flex gap-3">

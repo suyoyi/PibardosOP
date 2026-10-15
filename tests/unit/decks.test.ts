@@ -1,3 +1,4 @@
+import { compactDecklist, compactEntries } from "../fixtures/import-list";
 import { describe, it, expect } from "vitest";
 import {
   parseDecklist,
@@ -13,6 +14,26 @@ import {
 } from "../../src/domain/decks";
 import { leader, main, alternate, don, syntheticCard } from "../fixtures/cards";
 describe("decklist normalization and preview", () => {
+  it("parses the full compact 16-code list as one leader and 50 main cards, retaining every unknown without a catalog", () => {
+    const catalog = compactEntries.map(({ code }, index) =>
+      syntheticCard(300 + index, {
+        card_number: code,
+        card_type: index === 0 ? "leader" : "character",
+      }),
+    );
+    const parsed = parseDecklist(compactDecklist, catalog);
+    expect(parsed.unknown).toEqual([]);
+    expect(parsed.malformed).toEqual([]);
+    expect(parsed.entries.map((e) => e.quantity)).toEqual(
+      compactEntries.map((e) => e.quantity),
+    );
+    expect(
+      importedMainEntries(parsed).reduce((sum, e) => sum + e.quantity, 0),
+    ).toBe(50);
+    const unknown = parseDecklist(compactDecklist, []);
+    expect(unknown.unknown).toHaveLength(16);
+    expect(unknown.malformed).toEqual([]);
+  });
   it("normalizes browser form CRLF and legacy CR to the same audited text", () => {
     expect(normalizeDeckText("1 OP00-001\r\n4 OP00-002\r")).toBe(
       "1 OP00-001\n4 OP00-002\n",

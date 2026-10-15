@@ -127,7 +127,7 @@ export function normalizeBerryCard(
   if (!card_type)
     throw new BerryWalletError(
       "INCOMPLETE_CARD",
-      `${preview.card_number}: el proveedor no indica un tipo de carta válido. Usa la entrada manual.`,
+      `${preview.card_number}: el proveedor no indica un tipo de carta válido. Revisa el código o vuelve a consultar el proveedor.`,
     );
   const colors: CardColor[] = [],
     knownColors = ["red", "green", "blue", "purple", "black", "yellow"];
@@ -402,7 +402,7 @@ export class BerryWalletClient {
         errors.push(
           error instanceof BerryWalletError
             ? error.message
-            : "Una carta no se pudo interpretar. Usa la entrada manual.",
+            : "Una carta no se pudo interpretar. Revisa el código o vuelve a consultar el proveedor.",
         );
       }
     }

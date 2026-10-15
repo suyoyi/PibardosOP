@@ -89,7 +89,7 @@ export class OptcgProvider implements CardProvider {
     if (!card)
       throw new OptcgError(
         "PRINTING_NOT_FOUND",
-        "La impresión seleccionada ya no está disponible o sus datos están incompletos. Revisa el catálogo o usa la entrada manual.",
+        "La impresión seleccionada ya no está disponible o sus datos están incompletos. Revisa el catálogo o revisa el código o vuelve a consultar el proveedor.",
       );
     return this.save(card);
   }

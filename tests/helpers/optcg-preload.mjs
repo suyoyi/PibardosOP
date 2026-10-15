@@ -1,7 +1,18 @@
 // Loaded only by Playwright's server command, never by development/deployment.
 // Intercept all provider traffic so normal browser tests use no live card site.
 import { optcgRecord, optcgHistoryRecord } from "../fixtures/optcg.ts";
+import { compactEntries } from "../fixtures/import-list.ts";
 const original = globalThis.fetch;
+const compactRecords = compactEntries.map(({ code }, index) =>
+  optcgRecord({
+    card_set_id: code,
+    card_image_id: code,
+    card_name: `Synthetic compact import ${index}`,
+    card_type: index === 0 ? "Leader" : "Character",
+    life: index === 0 ? "5" : "NULL",
+    card_image: `https://optcgapi.com/media/static/Card_Images/${code}.jpg`,
+  }),
+);
 const leader = optcgRecord({
   card_set_id: "OP97-001",
   card_image_id: "OP97-001",
@@ -55,6 +66,27 @@ globalThis.fetch = async (input, init) => {
   const url = new URL(value);
   if (!["optcgapi.com", "www.optcgapi.com"].includes(url.hostname))
     return original(input, init);
+  if (url.pathname === "/api/sets/card/OP97-002/")
+    return Response.json([
+      optcgRecord({
+        ...leader,
+        card_set_id: "OP97-002",
+        card_image_id: "OP97-002",
+        card_name: "Synthetic blue change leader",
+        card_color: "Blue",
+      }),
+    ]);
+  const compactMatch = url.pathname.match(
+    /^\/api\/(sets|decks)\/card\/([^/]+)\/$/,
+  );
+  if (
+    compactMatch &&
+    compactMatch[1] === (compactMatch[2].startsWith("ST") ? "decks" : "sets") &&
+    compactRecords.some((c) => c.card_set_id === compactMatch[2])
+  )
+    return Response.json(
+      compactRecords.filter((c) => c.card_set_id === compactMatch[2]),
+    );
   if (url.pathname === "/api/sets/card/twoweeks/OP97-010/")
     return Response.json([
       optcgHistoryRecord(base),

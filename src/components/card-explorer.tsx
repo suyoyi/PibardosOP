@@ -524,14 +524,7 @@ export function CardExplorer() {
                 </h2>
                 <p className="text-sm text-muted">
                   Prueba otro nombre, número o expansión, o limpia los filtros.
-                  Si falta una carta, puedes añadirla manualmente.
                 </p>
-                <Link
-                  className="button-secondary justify-self-start"
-                  href="/cards/new"
-                >
-                  Añadir carta manual
-                </Link>
               </section>
             )}
             <nav

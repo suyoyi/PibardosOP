@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { normalizeCardNumber, cardNumberPattern } from "./cards";
 export type ActionState = { error?: string; success?: string };
 export const uuid = z.uuid();
 const shortText = (max: number) => z.string().trim().max(max);
@@ -28,37 +27,6 @@ export const deckSchema = z.object({
   notes: shortText(10000),
   cards: entriesSchema,
 });
-const optionalNumber = (max: number) =>
-  z.preprocess(
-    (value) => (value === "" || value == null ? null : Number(value)),
-    z.number().int().min(0).max(max).nullable(),
-  );
-export const manualCardSchema = z
-  .object({
-    card_number: z
-      .string()
-      .transform(normalizeCardNumber)
-      .refine((value) => cardNumberPattern.test(value), "Código no válido."),
-    name: shortText(200).min(1),
-    card_type: z.enum(["leader", "character", "event", "stage", "don"]),
-    colors: z
-      .array(z.enum(["red", "green", "blue", "purple", "black", "yellow"]))
-      .max(6),
-    cost: optionalNumber(100),
-    power: optionalNumber(100000),
-    counter: optionalNumber(100000),
-    life: optionalNumber(100),
-    set_code: shortText(30),
-    attribute: shortText(100),
-    effect_text: shortText(10000),
-    language: z.enum(["es", "en", "ja"]),
-    printing_code: shortText(60).min(1),
-    canonical_card_id: z.union([uuid, z.literal("")]),
-  })
-  .refine(
-    (c) => c.card_type === "don" || c.colors.length > 0,
-    "Indica al menos un color.",
-  );
 export const matchSchema = z
   .object({
     id: uuid,

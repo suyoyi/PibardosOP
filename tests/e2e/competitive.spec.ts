@@ -51,7 +51,7 @@ test("mobile fifty-card import, exact-version match history, tournament rounds a
     await page.getByRole("button", { name: "Revisar importación" }).click();
     await page.getByRole("button", { name: "Continuar con la lista" }).click();
     await expect(
-      page.getByRole("heading", { name: "Mazo principal: 50 / 50" }),
+      page.getByLabel("Contador del mazo: 50 de 50 cartas", { exact: true }),
     ).toBeVisible();
     await page.getByRole("button", { name: "Continuar al nombre" }).click();
     await page
@@ -112,7 +112,18 @@ test("mobile fifty-card import, exact-version match history, tournament rounds a
     await expect(noSecond).toContainText("Derrotas—");
     await expect(noSecond).toContainText("n=0");
     await page.goto(`${deckUrl}/edit`);
-    await page.getByRole("button", { name: "Quitar una OP95-010" }).click();
+    await page.getByLabel("Buscar carta", { exact: true }).fill("OP95-010");
+    await page
+      .getByRole("button", { name: /^Ver variantes OP95-010 ·/ })
+      .click();
+    await page
+      .getByRole("dialog", { name: "Variantes de OP95-010", exact: true })
+      .getByRole("button", {
+        name: "Quitar OP95-010 · Synthetic main 1",
+        exact: true,
+      })
+      .click();
+    await page.keyboard.press("Escape");
     await page
       .getByRole("button", { name: "Guardar mazo", exact: true })
       .click();

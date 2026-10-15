@@ -54,7 +54,7 @@ An authenticated action validates family/printed number/exact printing identity 
 
 String numeric facts normalize strictly; JSON null, `"NULL"` and empty optional values stay null. Invalid types/colors/numbers/prices/dates are explained, not guessed. The API concatenates trait names without reliable boundaries, so the raw text remains one trait block. DON stays separate from main cards. Unexpected image hosts/paths become an explicit warning and placeholder; there is no guessed alternate-art URL.
 
-A unique provider base printing (`card_image_id == card_set_id`) may resolve a plain code. Otherwise resolution requires one exact match. Ambiguous codes require selecting a specific catalog printing or manual entry. Import preview resolves at most 15 missing codes and never saves a deck automatically; all unknown/malformed lines, user confirmation and raw/error audit remain authoritative.
+A unique provider base printing (`card_image_id == card_set_id`) may resolve a plain code. Otherwise resolution requires one exact match. Ambiguous codes require selecting a specific catalog printing. Import review automatically resolves at most 20 missing codes and never saves a deck automatically; all unknown/malformed lines, user confirmation and raw/error audit remain authoritative.
 
 ## Direct deck-builder search
 
@@ -68,7 +68,7 @@ Creation uses leader → compatible cards → name screens; editing retains the 
 
 Live documentation and `/api/allSets/` returned named collections, including `Romance Dawn / OP-01` and `The World's Strongest Warriors / OP-17`; `/api/allDecks/` returned named starter records. A live `sets/filtered/?color=red&card_cost=2&set_id=OP-01` request returned 11 matching source records. These checks verify availability/parameter shape, not catalog completeness.
 
-Each printing has its own virtual deck quantity and +/− controls. The selected leader is a single controlled ID and has a selection indicator; controls enforce a shared four-copy budget across canonical variants/reprints; server save validation also rejects a copy-limit violation. Main count excludes DON. The gallery shows English only, manual entry defaults to English and prior non-English history is preserved. No language chooser or Japanese art is invented. Missing illustrations remain placeholders.
+Each printing has its own virtual deck quantity and +/− controls. The selected leader is a single controlled ID and has a selection indicator; controls enforce a shared four-copy budget across canonical variants/reprints; server save validation also rejects a copy-limit violation. Main count excludes DON. The gallery shows English only, manual creation is retired and prior non-English/manual history is preserved. No language chooser or Japanese art is invented. Missing illustrations remain placeholders.
 
 The authenticated `/api/cards/preview?url=...` route permits only the same fixed provider hosts/raster paths and bounds as owned artwork, because public search previews do not yet have private UUIDs. It reads no private card cache, writes no catalog rows, forwards no credentials and returns private no-store/nosniff image bytes. Only selecting a printing uses the owned persistence action. External hosts, ports, SVG/HTML, query/fragment/traversal and redirects are rejected. No image files are permanently stored. Ordinary browser tests intercept provider metadata and artwork without live calls.
 

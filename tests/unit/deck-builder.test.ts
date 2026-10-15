@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   compatibleWithLeader,
+  visibleBuilderMainCard,
   builderCopyCount,
   builderMaximumQuantity,
 } from "../../src/domain/deck-builder";
@@ -10,6 +11,18 @@ import { matchSchema } from "../../src/domain/forms";
 import type { DeckEntry } from "../../src/domain/deck-import";
 const catalog = [leader, main, alternate, don];
 describe("guided construction constraints", () => {
+  it("keeps selected incompatible cards removable after a leader change without offering new incompatible choices", () => {
+    const blue = { ...leader, colors: ["blue"] as typeof leader.colors };
+    const entries: DeckEntry[] = [
+      { card_id: main.id, quantity: 3, role: "main" },
+    ];
+    expect(visibleBuilderMainCard(main, blue, entries)).toBe(true);
+    expect(compatibleWithLeader(main, blue)).toBe(false);
+    expect(visibleBuilderMainCard(alternate, blue, entries)).toBe(false);
+    expect(visibleBuilderMainCard(main, blue, [])).toBe(false);
+    expect(visibleBuilderMainCard(main, leader, [])).toBe(true);
+    expect(visibleBuilderMainCard(don, leader, [])).toBe(false);
+  });
   it("counts the four-copy budget across alternate artwork and canonical reprints", () => {
     const reprint = syntheticCard(9, {
       card_number: "ST00-001",

@@ -224,6 +224,12 @@ export function DeckGallery({
           </Link>
           <DeckDelete id={deckId} />
           <Link
+            href={`/statistics/compare?a=${deckId}`}
+            className="button-secondary"
+          >
+            Comparar estadísticas
+          </Link>
+          <Link
             href={`/collection?deck=${deckId}`}
             className="button-secondary"
           >

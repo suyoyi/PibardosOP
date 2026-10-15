@@ -1,6 +1,11 @@
 "use client";
-import Link from "next/link";
-import { useEffect, useRef, useState, useTransition } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+  type ReactNode,
+} from "react";
 import { Check, Layers, Search, X } from "lucide-react";
 import {
   searchBuilderCards,
@@ -30,6 +35,7 @@ import {
 import { Field } from "./forms";
 import {
   compatibleWithLeader,
+  visibleBuilderMainCard,
   builderMaximumQuantity,
   builderCopyCount,
 } from "@/domain/deck-builder";
@@ -44,7 +50,7 @@ export function DeckCardSearch({
   entries,
   leaderId,
   mainCount,
-  donCount,
+  leaderActions,
   mode: controlledMode,
 }: {
   catalog: Card[];
@@ -55,13 +61,12 @@ export function DeckCardSearch({
   entries: DeckEntry[];
   leaderId: string;
   mainCount: number;
-  donCount: number;
+  leaderActions?: ReactNode;
   mode?: "leader" | "cards";
 }) {
   const [internalMode, setMode] = useState<"leader" | "cards">(
     leaderId ? "cards" : "leader",
   );
-  const [showDon, setShowDon] = useState(false);
   const [expansions, setExpansions] = useState<OptcgExpansion[]>([]);
   const [expansionNotice, setExpansionNotice] = useState("");
   const [remote, setRemote] = useState<{ key: string; result: SearchResult }>();
@@ -88,7 +93,7 @@ export function DeckCardSearch({
   const expansion = filters.set ?? "",
     color = filters.color ?? "",
     cost = filters.cost ?? "";
-  const searchMode = mode === "cards" && showDon ? "don" : mode;
+  const searchMode = mode;
   const key = JSON.stringify([
     query,
     searchMode,
@@ -157,17 +162,10 @@ export function DeckCardSearch({
   const effective = {
     ...filters,
     set: expansion === "promos" ? undefined : expansion,
-    type:
-      searchMode === "leader"
-        ? "leader"
-        : searchMode === "don"
-          ? "don"
-          : undefined,
+    type: searchMode === "leader" ? "leader" : undefined,
   };
   const usable = (card: Card | OptcgCard) =>
-    searchMode !== "cards" ||
-    (["character", "event", "stage"].includes(card.card_type) &&
-      compatibleWithLeader(card, leader));
+    searchMode !== "cards" || visibleBuilderMainCard(card, leader, entries);
   const saved = filterCards(english, effective).filter(usable),
     savedIds = new Set(
       english.map((card) => card.provider_card_id).filter(Boolean),
@@ -199,13 +197,11 @@ export function DeckCardSearch({
   const switchMode = (next: "leader" | "cards") => {
     setMode(next);
     updateFilters({ search: "" });
-    setShowDon(false);
     setMessage({});
   };
   const accept = (card: Card, delta: number) => {
     if (card.card_type === "leader") {
       setSelection(null);
-      setShowDon(false);
       onSelect(card);
       if (!controlledMode) switchMode("cards");
       setMessage({
@@ -286,7 +282,7 @@ export function DeckCardSearch({
           normalizeCardNumber(item.card.card_number) === selection.number &&
           item.card.card_type === selection.type &&
           (selection.type === "leader" ||
-            compatibleWithLeader(item.card, leader)),
+            visibleBuilderMainCard(item.card, leader, entries)),
       )
     : [];
   const variants = groupCardVariants(variantCandidates)[0]?.variants ?? [];
@@ -324,6 +320,9 @@ export function DeckCardSearch({
             <p className="mt-2 text-[10px] text-accent">
               Toca el líder para ampliar su imagen
             </p>
+            {leaderActions && (
+              <div className="mt-4 flex flex-wrap gap-3">{leaderActions}</div>
+            )}
           </div>
         </section>
       )}
@@ -332,11 +331,7 @@ export function DeckCardSearch({
           <div>
             <p className="eyebrow">CONSTRUCTOR · CARTAS EN INGLÉS</p>
             <h2 className="mt-1 text-xl font-bold">
-              {mode === "leader"
-                ? "Elige tu líder"
-                : showDon
-                  ? "DON!! separado"
-                  : "Busca tus cartas"}
+              {mode === "leader" ? "Elige tu líder" : "Busca tus cartas"}
             </h2>
           </div>
         </div>
@@ -408,18 +403,12 @@ export function DeckCardSearch({
             </span>
           </div>
         </div>
-        {donCount > 0 && (
-          <p className="mt-2 text-xs text-muted">
-            DON!! separado: {donCount}/10
-          </p>
-        )}
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
           <div className="col-span-2 min-w-0 sm:col-span-1">
             <Field label="Expansión">
               <select
                 className="field"
                 value={expansion}
-                disabled={mode === "cards" && showDon}
                 onChange={(event) =>
                   updateFilters({ ...filters, set: event.target.value })
                 }
@@ -465,7 +454,6 @@ export function DeckCardSearch({
             <select
               className="field"
               value={color}
-              disabled={mode === "cards" && showDon}
               onChange={(event) =>
                 updateFilters({ ...filters, color: event.target.value })
               }
@@ -487,7 +475,7 @@ export function DeckCardSearch({
             <select
               className="field"
               value={cost}
-              disabled={mode === "leader" || showDon}
+              disabled={mode === "leader"}
               onChange={(event) =>
                 updateFilters({ ...filters, cost: event.target.value })
               }
@@ -510,37 +498,12 @@ export function DeckCardSearch({
             </select>
           </Field>
         </div>
-        {mode === "cards" && (
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs text-muted">
-              Solo cartas compatibles con tu líder · máximo 4 por identidad
-            </p>
-            <button
-              type="button"
-              className="home-text-link"
-              aria-pressed={showDon}
-              disabled={adding}
-              onClick={() => {
-                setShowDon(!showDon);
-                updateFilters({});
-              }}
-            >
-              {showDon
-                ? "Volver a cartas principales"
-                : "Añadir DON!! separado"}
-            </button>
-          </div>
-        )}
         {expansionNotice && (
           <p role="status" className="mt-3 text-xs text-amber-100">
             {expansionNotice}
           </p>
         )}
         <div className="mt-3 flex items-center justify-between gap-2 text-xs text-muted">
-          <span>
-            {result ? groups.length : "…"} cartas disponibles
-            {mode === "leader" ? " · líderes" : ""}
-          </span>
           {(pending || !result) && <span role="status">Buscando cartas…</span>}
         </div>
       </div>
@@ -689,14 +652,6 @@ export function DeckCardSearch({
             </button>
           </div>
         )}
-        <Link
-          href="/cards/new"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-5 inline-flex min-h-11 items-center text-xs text-accent underline"
-        >
-          Crear carta manual que falta
-        </Link>
       </div>
       {zoomLeader && leader && (
         <Modal
@@ -810,8 +765,9 @@ export function DeckCardSearch({
                     busy={adding}
                     canAdd={
                       item.card.card_type === "leader" ||
-                      builderMaximumQuantity(item.card, entries, catalog) >
-                        quantity
+                      (compatibleWithLeader(item.card, leader) &&
+                        builderMaximumQuantity(item.card, entries, catalog) >
+                          quantity)
                     }
                     onChoose={(delta) => choose(item, delta)}
                   />
@@ -821,7 +777,7 @@ export function DeckCardSearch({
           {!variants.length && variantResult && (
             <p className="mt-5 text-sm text-muted">
               No hay variantes compatibles disponibles. Cierra la ventana para
-              cambiar los filtros o usar la entrada manual.
+              cambiar los filtros o volver a consultar el proveedor.
             </p>
           )}
           {variants.length > pageSize && (

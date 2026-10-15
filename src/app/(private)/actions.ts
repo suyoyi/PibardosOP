@@ -12,7 +12,6 @@ import {
 import { validateDeck, standardRules } from "@/domain/decks";
 import {
   deckSchema,
-  manualCardSchema,
   matchSchema,
   tournamentSchema,
   uuid,
@@ -62,50 +61,6 @@ function finish(path: string): never {
   redirect(`${path}?saved=1`);
 }
 
-export async function addManualCard(
-  _previous: ActionState,
-  form: FormData,
-): Promise<ActionState> {
-  const { supabase, user } = await requireUser();
-  const parsed = manualCardSchema.safeParse({
-    ...Object.fromEntries(form),
-    colors: form.getAll("colors"),
-  });
-  if (!parsed.success) return { error: validationMessage(parsed.error) };
-  const { canonical_card_id, ...card } = parsed.data;
-  const catalog = await getCatalog(supabase);
-  const sameNumberRoot = catalog.find(
-    (c) => c.card_number === card.card_number && c.id === c.canonical_card_id,
-  );
-  const canonical = canonical_card_id || sameNumberRoot?.id;
-  if (
-    canonical &&
-    !catalog.some(
-      (c) =>
-        c.id === canonical &&
-        c.id === c.canonical_card_id &&
-        c.card_type === card.card_type,
-    )
-  )
-    return {
-      error:
-        "La identidad original debe ser una carta disponible del mismo tipo.",
-    };
-  const id = randomUUID();
-  const { error } = await supabase.from("cards").insert({
-    ...card,
-    id,
-    user_id: user.id,
-    canonical_card_id: canonical || id,
-    source: "manual",
-    set_code: card.set_code || null,
-    attribute: card.attribute || null,
-    effect_text: card.effect_text || null,
-  });
-  if (error) return databaseError(error);
-  finish("/cards");
-}
-
 export type PreviewState = {
   error?: string;
   report?: ImportReport;
@@ -115,7 +70,7 @@ export type PreviewState = {
 };
 export async function previewImport(
   raw: string,
-  resolveMissing = false,
+  resolveMissing = true,
 ): Promise<PreviewState> {
   const { supabase } = await requireUser();
   if (typeof raw !== "string" || raw.length > 100000 || !raw.trim())
@@ -135,14 +90,14 @@ export async function previewImport(
       provider = new OptcgProvider(supabase, undefined, client);
     const notices: string[] = [];
     // Use the documented base printing when present; never guess ambiguous variants.
-    for (const number of numbers.slice(0, 15)) {
+    for (const number of numbers.slice(0, 20)) {
       try {
         const matches = await client.cards(number);
         notices.push(...matches.issues);
         const selected = selectDefaultOptcgPrinting(matches.cards, number);
         if (!selected) {
           notices.push(
-            `${number}: sin una coincidencia única. Selecciona la impresión en Cartas o añádela manualmente.`,
+            `${number}: sin una coincidencia única. Revisa el código o selecciona la impresión desde el catálogo.`,
           );
           continue;
         }
@@ -156,9 +111,9 @@ export async function previewImport(
         if (!(e instanceof OptcgError) || e.code !== "NOT_FOUND") break;
       }
     }
-    if (numbers.length > 15)
+    if (numbers.length > 20)
       notices.push(
-        "Se consultan hasta 15 códigos por revisión. Repite para continuar sin agotar la cuota.",
+        "Se consultan hasta 20 códigos por revisión. Repite para continuar sin agotar la cuota.",
       );
     report = parseDecklist(raw, await getCatalog(supabase));
     providerNotice = notices.length

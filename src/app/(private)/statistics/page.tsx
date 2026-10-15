@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireUser } from "@/lib/supabase/server";
 import { getCompetitiveWorkspace } from "@/lib/data";
 import { buildAnalytics } from "@/domain/statistics";
@@ -32,14 +33,6 @@ export default async function StatisticsPage({
     id: row.label,
     label: deckName(row.label),
   }));
-  const byVersion = analytics.byVersion.map((row) => {
-    const v = w.versions.find((v) => v.id === row.label);
-    return {
-      ...row,
-      id: row.label,
-      label: `${v ? deckName(v.deck_id) : "Mazo"} · v${v?.version_number ?? "—"}`,
-    };
-  });
   const byOpponent = analytics.byOpponent.map((row) => {
     const c = w.catalog.find((c) => c.id === row.label);
     return {
@@ -55,6 +48,9 @@ export default async function StatisticsPage({
         title="Estadísticas"
         description="Gráficas de tus partidas guardadas. El porcentaje se calcula como victorias entre victorias más derrotas."
       />
+      <Link href="/statistics/compare" className="button-secondary mb-6">
+        Comparar dos mazos
+      </Link>
       <form className="panel mb-6 grid gap-4 p-5 sm:grid-cols-3">
         <label>
           <span className="field-label">Mazo para las gráficas</span>
@@ -135,7 +131,6 @@ export default async function StatisticsPage({
             </ul>
           </section>
           <ResultsChart title="Resultados por mazo" rows={byDeck} />
-          <ResultsChart title="Resultados por versión" rows={byVersion} />
           <ResultsChart title="Resultados por líder rival" rows={byOpponent} />
           <ResultsChart
             title="Evolución mensual (Madrid)"

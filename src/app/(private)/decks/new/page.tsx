@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-import Link from "next/link";
 import { requireUser } from "@/lib/supabase/server";
 import { getDeckWorkspace } from "@/lib/data";
 import { PageHeading } from "@/components/ui";
@@ -14,15 +13,6 @@ export default async function NewDeckPage() {
         title="Crear mazo"
         description="Primero elige tu líder, después sus cartas y al final ponle nombre. Puedes seguir completándolo después."
       />
-      {!catalog.length && (
-        <p className="mb-6 text-sm text-muted">
-          Busca tu líder y tus cartas en el constructor. También puedes{" "}
-          <Link className="text-accent underline" href="/cards/new">
-            crear una carta manual
-          </Link>{" "}
-          si falta en el proveedor.
-        </p>
-      )}
       <DeckBuilder
         id={randomUUID()}
         catalog={catalog}

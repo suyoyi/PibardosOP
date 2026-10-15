@@ -133,7 +133,7 @@ export function normalizeOptcgCard(
   if (!card_type)
     throw new OptcgError(
       "INCOMPLETE_CARD",
-      `${name}: falta un tipo de carta válido. Usa la entrada manual.`,
+      `${name}: falta un tipo de carta válido. Revisa el código o vuelve a consultar el proveedor.`,
     );
   const card_number =
     card_type === "don"
@@ -252,7 +252,7 @@ export function normalizeOptcgRecords(
       issues.push(...card.warnings);
     } catch (e) {
       issues.push(
-        `Entrada ${index + 1}: ${e instanceof OptcgError ? e.message : "No se pudo interpretar; usa la entrada manual."}`,
+        `Entrada ${index + 1}: ${e instanceof OptcgError ? e.message : "No se pudo interpretar; revisa el código o vuelve a consultar el proveedor."}`,
       );
     }
   return {
@@ -344,7 +344,7 @@ export class OptcgClient {
         response.status === 429
           ? "OPTCG API ha limitado las consultas. Inténtalo más tarde; no reintentamos automáticamente."
           : response.status === 404
-            ? "La carta o colección no está disponible. Corrige el código o añádela manualmente."
+            ? "La carta o colección no está disponible. Corrige el código o vuelve a consultar el proveedor."
             : "OPTCG API no permitió completar la consulta. Tu historial se conserva.",
         response.status,
       );

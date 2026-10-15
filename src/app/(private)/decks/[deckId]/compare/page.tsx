@@ -7,5 +7,5 @@ export default async function PreviousDeckPage({
 }) {
   const { deckId } = await params;
   await loadDeck(deckId);
-  redirect(`/decks/${deckId}`);
+  redirect(`/statistics/compare?a=${deckId}`);
 }

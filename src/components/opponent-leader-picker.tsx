@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { ChevronDown, Check } from "lucide-react";
 import { getMatchLeaderChoices } from "@/app/(private)/matches/leader-actions";
@@ -242,8 +241,7 @@ export function OpponentLeaderPicker({
             </ul>
             {!filtered.length && !loading && (
               <p className="text-sm text-muted">
-                No hay líderes con esa búsqueda. Prueba otro nombre o número, o
-                añade una carta manual.
+                No hay líderes con esa búsqueda. Prueba otro nombre o número.
               </p>
             )}
             {limit < filtered.length && (
@@ -256,14 +254,6 @@ export function OpponentLeaderPicker({
                 Mostrar más líderes
               </button>
             )}
-            <Link
-              href="/cards/new"
-              className={`text-sm text-accent underline ${adding ? "pointer-events-none" : ""}`}
-              tabIndex={adding ? -1 : undefined}
-              aria-disabled={adding || undefined}
-            >
-              Añadir líder manual
-            </Link>
           </div>
         </Modal>
       )}

@@ -23,18 +23,27 @@ test("separate deck creation/import, simple header, plain clipboard export and c
       .getByRole("button", { name: "Crear cuenta", exact: true })
       .click();
     await expect(page).toHaveURL("/");
-    for (const [code, name, type] of [
-      ["OP98-001", "Synthetic mobile leader", "leader"],
-      ["OP98-002", "Synthetic mobile character", "character"],
-    ]) {
-      await page.goto("/cards/new");
-      await page.getByLabel("Código de carta").fill(code);
-      await page.getByLabel("Nombre de carta").fill(name);
-      await page.getByLabel("Tipo de carta").selectOption(type);
-      await page.getByLabel("Rojo", { exact: true }).check();
-      await page.getByRole("button", { name: "Guardar carta manual" }).click();
-      await expect(page).toHaveURL(/\/cards\?saved=1/);
+    const seed = await connectLocalDatabase();
+    try {
+      owner = (
+        await seed.query("select id from auth.users where email=$1", [email])
+      ).rows[0].id;
+      for (const [code, name, type] of [
+        ["OP98-001", "Synthetic mobile leader", "leader"],
+        ["OP98-002", "Synthetic mobile character", "character"],
+      ])
+        await seed.query(
+          "insert into cards(user_id,card_number,name,card_type,source,colors) values($1,$2,$3,$4,'manual','{red}')",
+          [owner, code, name, type],
+        );
+    } finally {
+      await seed.end();
     }
+    await page.goto("/cards/new");
+    await expect(page).toHaveURL("/cards");
+    await expect(page.getByRole("link", { name: /carta manual/i })).toHaveCount(
+      0,
+    );
     await page.goto("/decks");
     await expect(
       page.getByRole("link", { name: "Importar mazo", exact: true }),
@@ -71,7 +80,7 @@ test("separate deck creation/import, simple header, plain clipboard export and c
     await expect(page.getByText(/Duplicadas agrupadas:/)).toBeVisible();
     await page.getByRole("button", { name: "Continuar con la lista" }).click();
     await expect(
-      page.getByRole("heading", { name: "Mazo principal: 4 / 50" }),
+      page.getByLabel("Contador del mazo: 4 de 50 cartas", { exact: true }),
     ).toBeVisible();
     await page.getByRole("button", { name: "Continuar al nombre" }).click();
     await page.getByLabel("Nombre del mazo").fill("Synthetic imported deck");
@@ -131,7 +140,17 @@ test("separate deck creation/import, simple header, plain clipboard export and c
       header.getByRole("button", { name: "Exportar lista", exact: true }),
     ).toBeFocused();
     await page.getByRole("link", { name: "Editar mazo", exact: true }).click();
-    await page.getByRole("button", { name: "Quitar una OP98-002" }).click();
+    await page
+      .getByRole("button", { name: /^Ver variantes OP98-002 ·/ })
+      .click();
+    await page
+      .getByRole("dialog", { name: "Variantes de OP98-002", exact: true })
+      .getByRole("button", {
+        name: "Quitar OP98-002 · Synthetic mobile character",
+        exact: true,
+      })
+      .click();
+    await page.keyboard.press("Escape");
     await page
       .getByRole("button", { name: "Guardar mazo", exact: true })
       .click();
@@ -228,10 +247,13 @@ test("separate deck creation/import, simple header, plain clipboard export and c
         .evaluate((e) => e.getBoundingClientRect().height),
     ).toBeGreaterThan(176);
     await tile.click();
-    for (const path of ["versions", "compare"]) {
-      await page.goto(`${deckUrl}/${path}`);
-      await expect(page).toHaveURL(deckUrl);
-    }
+    await page.goto(`${deckUrl}/versions`);
+    await expect(page).toHaveURL(deckUrl);
+    await page.goto(`${deckUrl}/compare`);
+    await expect(page).toHaveURL(`/statistics/compare?a=${deckId}`);
+    await expect(
+      page.getByRole("heading", { name: "Necesitas dos mazos para comparar" }),
+    ).toBeVisible();
     await page.goto("/decks/imports");
     await expect(page).toHaveURL("/decks/import");
     await page.goto(deckUrl);

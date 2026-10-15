@@ -19,9 +19,6 @@ export default async function CardsPage({
       />
       <SavedNotice saved={(await searchParams).saved} />
       <div className="mb-6 flex flex-wrap gap-3">
-        <Link href="/cards/new" className="button-primary">
-          Añadir carta manual
-        </Link>
         <Link href="/collection" className="button-secondary">
           Mi colección
         </Link>

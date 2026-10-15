@@ -23,6 +23,20 @@ export function compatibleWithLeader(
     )
   );
 }
+// Selected cards must stay removable after changing to an incompatible leader.
+export function visibleBuilderMainCard(
+  card: Candidate,
+  leader: Pick<Card, "colors"> | undefined,
+  entries: readonly DeckEntry[],
+) {
+  return (
+    ["character", "event", "stage"].includes(card.card_type) &&
+    (compatibleWithLeader(card, leader) ||
+      Boolean(
+        card.id && entries.some((e) => e.card_id === card.id && e.quantity > 0),
+      ))
+  );
+}
 export function builderCopyCount(
   card: Candidate,
   entries: readonly DeckEntry[],

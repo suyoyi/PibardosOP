@@ -227,8 +227,8 @@ export function CardCatalog({ catalog }: { catalog: Card[] }) {
         </ul>
       ) : (
         <p className="panel p-6 text-muted">
-          No hay cartas que coincidan. Cambia los filtros o añade una carta
-          manual.
+          No hay cartas que coincidan. Cambia los filtros o vuelve a consultar
+          el proveedor.
         </p>
       )}
     </div>

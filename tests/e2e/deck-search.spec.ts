@@ -72,12 +72,12 @@ test("mobile empty-catalog deck builder searches automatically, selects leader a
     });
     await add.click();
     await expect(
-      page.getByRole("heading", { name: "Mazo principal: 1 / 50" }),
+      page.getByLabel("Contador del mazo: 1 de 50 cartas", { exact: true }),
     ).toBeVisible();
     await expect(add).toBeEnabled();
     await add.click();
     await expect(
-      page.getByRole("heading", { name: "Mazo principal: 2 / 50" }),
+      page.getByLabel("Contador del mazo: 2 de 50 cartas", { exact: true }),
     ).toBeVisible();
     await variants
       .getByRole("button", { name: "Cerrar ventana", exact: true })
@@ -129,7 +129,9 @@ test("mobile empty-catalog deck builder searches automatically, selects leader a
       search.getByRole("alert").filter({ hasText: "No se pudo completar" }),
     ).toBeVisible();
     await expect(mainGroup).toBeVisible();
-    await expect(page.getByLabel("Cantidad OP97-010")).toHaveValue("2");
+    await expect(
+      page.getByLabel("Contador del mazo: 2 de 50 cartas", { exact: true }),
+    ).toBeVisible();
     db = await connectLocalDatabase();
     try {
       expect(
@@ -165,7 +167,9 @@ test("mobile empty-catalog deck builder searches automatically, selects leader a
     await page
       .getByRole("button", { name: "Volver a las cartas", exact: true })
       .click();
-    await expect(page.getByLabel("Cantidad OP97-010")).toHaveValue("2");
+    await expect(
+      page.getByLabel("Contador del mazo: 2 de 50 cartas", { exact: true }),
+    ).toBeVisible();
     await page.getByRole("button", { name: "Continuar al nombre" }).click();
     await expect(page.getByLabel("Nombre del mazo")).toHaveValue(
       "Direct builder draft",
