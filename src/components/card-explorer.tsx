@@ -16,6 +16,8 @@ import { CandidateArtwork } from "./builder-card-tile";
 import { Field, ActionForm } from "./forms";
 import { Modal } from "./modal";
 import { OptcgPrices } from "./optcg-prices";
+import { CardOwnership } from "./card-ownership";
+import { referenceForCandidate } from "@/domain/card-reference";
 import { CardPriceHistory, type PriceHistoryCache } from "./card-price-history";
 import { historySelection } from "@/domain/price-history";
 
@@ -252,6 +254,7 @@ function PrintingDetail({
           </p>
         </section>
       )}
+      <CardOwnership reference={referenceForCandidate(candidate)} />
       <CardPriceHistory
         selection={historySelection(
           card.card_number,

@@ -35,6 +35,9 @@ export default async function DeckPage({
       />
       <SavedNotice saved={(await searchParams).saved} />
       <div className="mb-6 flex flex-wrap gap-3">
+        <Link href={`/collection?deck=${deckId}`} className="button-secondary">
+          Cartas que me faltan
+        </Link>
         <Link href={`/decks/${deckId}/edit`} className="button-primary">
           Editar mazo
         </Link>

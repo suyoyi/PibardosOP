@@ -1,6 +1,6 @@
 # Pibardos OP
 
-A Spanish mobile-first personal workspace for One Piece Card Game. The app includes secure authentication, private manual cards, OPTCG API card imports, confirmed deck imports, a versioned deck builder, match history, tournaments and charts of saved results. Practice and collection/offline UI are subsequent phases; see `PROJECT_STATUS.md` and `docs/ARCHITECTURE.md`.
+A Spanish mobile-first personal workspace for One Piece Card Game. The app includes secure authentication, private manual cards, OPTCG API card imports, confirmed deck imports, a versioned deck builder, match history, tournaments, physical collection, missing-card reservations, exact-art wishes and charts of saved results. Practice and offline synchronization are subsequent phases; see `PROJECT_STATUS.md` and `docs/ARCHITECTURE.md`.
 
 ## Try the app in your browser with GitHub Codespaces
 
@@ -80,6 +80,18 @@ Server-side public metadata responses are reused for one hour by default to redu
 
 BerryWallet is retired from UI, import resolution and image requests. Existing BerryWallet facts, prices and deck references remain readable, with historical quotes labeled and refresh removed. Its key is unnecessary and unused by current app routes.
 
+## Physical collection, missing cards and wishlist
+
+Open **Mi colección** or **Lista de deseos** from Cartas or Ajustes. In the catalog dialog, choose the exact artwork and expand **Colección y deseos**. Browsing and opening these controls never imports the catalog or establishes physical ownership. Saving a wish or inventory lot privately caches only the selected printing when needed.
+
+- Record your actual English copies, tradeable quantity, finish and storage location. Separate lots can represent different binders or finishes. Quantities are absolute totals, not incremental purchases. Reservations and tradeable copies cannot exceed owned copies; release reservations before reducing or deleting a reserved lot.
+- From a deck, **Cartas que me faltan** opens the current version's physical requirements, including its leader and separate DON list. Alternate artworks and canonical reprints satisfy the same playing requirement. Tradeable copies and copies reserved by another deck are excluded. Unreserved availability is calculated for the selected deck; **Reservar copias disponibles** assigns those physical copies exclusively so another deck cannot count them again. The action can partially reserve an incomplete deck and adjusts surplus reservations to its current version.
+- Editing or archiving a virtual deck keeps its physical reservations until you explicitly adjust or release them. Duplicating a list never duplicates physical copies or reservations. **Liberar reservas del mazo** retains your inventory. Saving a virtual deck or recording a match does not declare ownership.
+- A wish belongs to an exact artwork, with a total English-copy goal, priority and notes. Its progress counts all your owned English copies of that printing, including reserved/tradeable ones. Other artworks can complete a playable deck without completing an artwork-specific wish. Completed goals remain visible and editable; removing a wish keeps the physical collection.
+- **Añadir faltantes … a deseos** targets the artwork represented in the list: currently owned copies of that exact printing plus the deck's missing copies. Repeating it preserves a higher existing goal, notes and priority. Detail links show the existing artwork-specific quotes/history when the provider supplies them; there are no purchase, price-alert or automatic acquisition actions.
+
+Inventory/wish edits reject stale row timestamps rather than overwriting another tab, while stable submission IDs protect create retries. Database row locks and an atomic, expected-version reservation RPC prevent concurrent over-allocation. Private inventory, reservations and wishes are protected by RLS. The additive collection/wishlist migration is applied by `local:start` without resetting existing local data. Offline writes remain outside this deliverable.
+
 ## Home leader dashboard
 
 **Inicio** shows your overall saved record and a visual selector of leaders from nonarchived decks. Alternate printings of the same canonical leader share one selector entry. Choose a leader to see its wins/losses, decisive sample size, six most recent games, monthly results and first/second breakdown. Win rate uses wins / (wins + losses); no decisive games show an absent percentage rather than zero. Small samples are explicitly labeled.
@@ -108,7 +120,7 @@ To update an existing local checkout, stop its web-server terminal first, run `g
 
 Installation requires HTTPS (loopback is allowed during testing). The service worker caches only original public icons and the offline notice. Private responses and credentials are never cached. Offline reads/writes, synchronization and conflict resolution are not implemented. Browser/OS install prompts vary; the manifest and service worker are the foundation, not a guarantee of an install prompt on every device.
 
-Production release gates still include account recovery/export/deletion workflows, the practice simulator, collection workflows, externally verified restriction data and reviewed hosted provider behavior. The full MVP and a production deployment are not claimed complete.
+Production release gates still include account recovery/export/deletion workflows, the practice simulator, offline policies, externally verified restriction data and reviewed hosted provider behavior. The full MVP and a production deployment are not claimed complete.
 
 ## Security and data
 

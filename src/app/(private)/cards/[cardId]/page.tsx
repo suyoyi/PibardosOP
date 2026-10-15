@@ -9,6 +9,7 @@ import { OptcgPrices } from "@/components/optcg-prices";
 import { CardPrices } from "@/components/card-prices";
 import { SavedNotice } from "@/components/forms";
 import { CardPriceHistory } from "@/components/card-price-history";
+import { CardOwnership } from "@/components/card-ownership";
 import { historySelection } from "@/domain/price-history";
 export default async function CardPage({
   params,
@@ -65,6 +66,9 @@ export default async function CardPage({
             {card.effect_text}
           </p>
         )}
+      </div>
+      <div className="mt-6">
+        <CardOwnership reference={{ kind: "saved", id: card.id }} />
       </div>
       {(providerError || optcgError) && (
         <p role="alert" className="mt-6 text-sm text-red-200">

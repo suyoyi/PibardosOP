@@ -690,6 +690,48 @@ export type Database = {
           },
         ];
       };
+      wishlist_items: {
+        Row: {
+          card_id: string;
+          created_at: string;
+          id: string;
+          notes: string;
+          priority: string;
+          target_quantity: number;
+          updated_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          card_id: string;
+          created_at?: string;
+          id?: string;
+          notes?: string;
+          priority?: string;
+          target_quantity: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Update: {
+          card_id?: string;
+          created_at?: string;
+          id?: string;
+          notes?: string;
+          priority?: string;
+          target_quantity?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "wishlist_items_card_id_fkey";
+            columns: ["card_id"];
+            isOneToOne: false;
+            referencedRelation: "cards";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -697,6 +739,10 @@ export type Database = {
     Functions: {
       cache_berrywallet_card: { Args: { p_card: Json }; Returns: string };
       cache_optcg_card: { Args: { p_card: Json }; Returns: string };
+      raise_wishlist_target: {
+        Args: { p_card_id: string; p_target: number };
+        Returns: undefined;
+      };
       save_deck: { Args: { p_input: Json }; Returns: string };
       save_deck_version: {
         Args: {
@@ -708,6 +754,10 @@ export type Database = {
         Returns: string;
       };
       save_match: { Args: { p_input: Json }; Returns: string };
+      set_deck_allocations: {
+        Args: { p_deck_id: string; p_entries: Json; p_version_id: string };
+        Returns: undefined;
+      };
     };
     Enums: {
       card_color: "red" | "green" | "blue" | "purple" | "black" | "yellow";
