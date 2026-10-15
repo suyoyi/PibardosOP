@@ -345,3 +345,51 @@ describe("on-demand exact-code variants", () => {
     expect(paths).toHaveLength(7);
   });
 });
+
+it("loads all documented working catalog categories and preserves expansion names", async () => {
+  const calls: string[] = [];
+  const api = new OptcgClient(async (url) => {
+    calls.push(new URL(url).pathname);
+    return Response.json([optcgRecord()]);
+  });
+  const result = await api.catalog();
+  expect(calls).toEqual([
+    "/api/allSetCards/",
+    "/api/allSTCards/",
+    "/api/allPromos/",
+    "/api/allDonCards/",
+  ]);
+  expect(result.received).toBe(4);
+  expect(result.cards.map((c) => c.family)).toEqual([
+    "sets",
+    "decks",
+    "promos",
+    "don",
+  ]);
+  expect(result.cards.every((c) => c.set_name === "Synthetic set")).toBe(true);
+});
+
+it("retains available catalog categories and reports missing or malformed source data", async () => {
+  const api = new OptcgClient(async (url) => {
+    if (url.includes("allSTCards")) return new Response(null, { status: 404 });
+    if (url.includes("allPromos"))
+      return Response.json([optcgRecord({ card_type: null })]);
+    return Response.json([optcgRecord()]);
+  });
+  const result = await api.catalog();
+  expect(result.cards).toHaveLength(2);
+  expect(result.issues).toHaveLength(2);
+  expect(result.issues[0]).toContain("decks:");
+});
+
+it("stops catalog loading on quota limits without retrying remaining endpoints", async () => {
+  const transport = vi.fn(async (url: string) =>
+    url.includes("allSetCards")
+      ? Response.json([optcgRecord()])
+      : new Response(null, { status: 429 }),
+  );
+  const result = await new OptcgClient(transport).catalog();
+  expect(transport).toHaveBeenCalledTimes(2);
+  expect(result.cards).toHaveLength(1);
+  expect(result.issues[0]).toContain("limitado");
+});

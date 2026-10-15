@@ -49,12 +49,18 @@ test("register, navigate real empty data, logout and log back in", async ({
     const nav = page.getByRole("navigation", { name: "Navegación principal" });
     for (const [label, empty] of [
       ["Mazos", "Una biblioteca por construir"],
-      ["Cartas", "El catálogo está vacío"],
+      ["Cartas", "Cartas"],
       ["Partidas", "Todavía no hay resultados"],
       ["Estadísticas", "Necesitas partidas para ver tendencias"],
     ]) {
       await nav.getByRole("link", { name: label, exact: true }).click();
       await expect(page.getByRole("heading", { name: empty })).toBeVisible();
+      if (label === "Cartas")
+        await expect(
+          page
+            .getByRole("list", { name: "Resultados del catálogo" })
+            .getByRole("button", { name: /^Ver carta / }),
+        ).toHaveCount(3);
       expect(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= window.innerWidth,

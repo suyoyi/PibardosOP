@@ -1,13 +1,13 @@
 # OPTCG API integration
 
-Reviewed on 2026-10-14:
+Reviewed on 2026-10-15:
 
 - [API documentation](https://optcgapi.com/documentation)
 - [General information and provenance](https://optcgapi.com/about/general)
 
 ## Service scope and access
 
-The service explicitly invites public API consumption and only accepts GET requests. It requires no authentication/key. The author asks consumers to avoid excessive calls and mentions daily limits without publishing a numeric budget or service-level guarantee. This application fetches only user-requested searches/cards/collections, caches public JSON for one hour by default and never scrapes card websites. `429` stops a batch without retry loops. `OPTCG_CACHE_SECONDS` configures 0–86400 seconds; invalid settings fall back to 3600.
+The service explicitly invites public API consumption and only accepts GET requests. It requires no authentication/key. The author asks consumers to avoid excessive calls and mentions daily limits without publishing a numeric budget or service-level guarantee. This application fetches user-requested searches/cards/collections and automatically reads the available datasets when opening Cartas, caches public JSON for one hour by default and never scrapes card websites. `429` stops a batch without retry loops. `OPTCG_CACHE_SECONDS` configures 0–86400 seconds; invalid settings fall back to 3600.
 
 General information describes English cards active on TCGPlayer and admits missing data/images, notably promos. The API supplies metadata, image references, prices and date-only provenance. A successful response does not prove complete coverage or current tournament legality. No complete current restriction dataset is installed.
 
@@ -26,7 +26,17 @@ The API author's invitation permits API consumption; it does not transfer franch
 
 Set aliases normalize `OP01` to `OP-01` and `ST01` to `ST-01` (likewise EB/PRB). The default printed-code lookup routes ST to decks and P to promos; an explicitly selected promo group can retrieve reprints carrying OP codes. Responses are arrays, not invented pagination envelopes. Search pages in the UI slice one received result set and do not call the provider again.
 
-The builder uses `/api/allSets/` (`set_name`, `set_id`) and `/api/allDecks/` (`structure_deck_name`, `structure_deck_id`) for its named expansion selector. All-card mirroring and two-week price history remain unused. Hybrid source collection codes such as `OP14-EB04` are retained; missing/invalid names are reported rather than invented. Documentation contains inconsistencies (for example the promo all-card path differs between its menu and example); these endpoints are intentionally not assumed working. Promos two-week history is explicitly still in progress.
+The builder uses `/api/allSets/` (`set_name`, `set_id`) and `/api/allDecks/` (`structure_deck_name`, `structure_deck_id`) for its named expansion selector. Automatic persistent catalog mirroring and two-week price history remain unused. Hybrid source collection codes such as `OP14-EB04` are retained; missing/invalid names are reported rather than invented. Documentation contains inconsistencies: the promo all-card path differs between its menu and example. On 2026-10-15 the documented `/api/allPromos/` returned 200; `/api/allPromoCards/` returned 404. The catalog uses only the verified working path. Promos two-week history is explicitly still in progress.
+
+## Automatic catalog explorer
+
+Authenticated **Cartas** loads `/api/allSetCards/`, `/api/allSTCards/`, `/api/allPromos/` and `/api/allDonCards/` automatically. These GET endpoints were verified live on 2026-10-15: 3654/626/1082/187 received records, approximately 2.48/0.42/0.75/0.09 MB respectively. Counts describe this check, not guaranteed complete coverage. Each streamed JSON response retains the 5 MB limit and 10000-record normalization bound. No source images are mirrored or private cards inserted by browsing.
+
+A single public metadata snapshot per server process reuses/coalesces these reads for the configured TTL. Bulk endpoints bypass Next's per-fetch cache because the set response exceeds its entry limit; no user data enters the shared snapshot. Transport/quota failures retain prior successful categories with explicit notices, cache a partial snapshot for at most 60 seconds and stop remaining requests on network/429 without retry loops. Normalization warnings remain visible without forcing repeated loads. Server restarts/independent instances may have cold caches; this is not a persistent globally shared CDN. Cache zero disables the snapshot for ordinary browser tests.
+
+The authenticated action runtime-validates filter/page input, reads owned/shared saved facts through RLS and combines exact printing identities with public metadata. Filtering applies to the full dataset before pagination. It returns 36 printed groups plus real filter options, not all metadata to each browser. Saved immutable facts win identity deduplication; public metadata supplies only the same printing's separate quotes/expansion name. During source failure, visible saved printings read their owned stored quote metadata under RLS. Unknown expansion names remain unavailable. Prices retain date/consultation time and unknown currency; missing and genuine zero amounts differ.
+
+The gallery uses the builder's primary name/code, expansion, color and cost controls, with optional type/counter/power/attribute/rarity/raw-trait filters. The native modal places the large selected illustration beside details on desktop and above them on mobile. All received variants for that printed group remain selectable beyond active filters; changing art changes its exact price/details. Pagination and variant thumbnails limit rendered images. Optional explicit save uses the existing verified owned import transaction; browsing never assigns physical copies. Existing advanced import tools and saved-card detail URLs remain available.
 
 ## Normalization and identity
 

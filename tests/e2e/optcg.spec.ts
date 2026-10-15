@@ -18,6 +18,7 @@ test("mobile OPTCG search, selected printing, artwork, quote reuse, collection s
       .click();
     await expect(page).toHaveURL("/");
     await page.goto("/cards");
+    await page.getByText("Importación avanzada", { exact: true }).click();
     await page.getByLabel("Buscar en OPTCG API").fill("OP97-010");
     await page.getByRole("button", { name: "Buscar en el proveedor" }).click();
     await expect(
@@ -37,6 +38,7 @@ test("mobile OPTCG search, selected printing, artwork, quote reuse, collection s
       .click();
     await expect(page).toHaveURL(/\/cards\/[a-f0-9-]+\?saved=1/);
     await page.goto("/cards");
+    await page.getByText("Importación avanzada", { exact: true }).click();
     await page.getByLabel("Buscar en OPTCG API").fill("OP97-010");
     await page.getByRole("button", { name: "Buscar en el proveedor" }).click();
     await page
@@ -106,6 +108,7 @@ test("mobile OPTCG search, selected printing, artwork, quote reuse, collection s
       }),
     ).toBeVisible();
     await page.goto("/cards");
+    await page.getByText("Importación avanzada", { exact: true }).click();
     await page
       .getByText("Cargar una colección o mazo inicial", { exact: true })
       .click();

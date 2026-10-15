@@ -504,3 +504,53 @@ body {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+.explorer-detail {
+  display: grid;
+  gap: 1.5rem;
+  align-items: start;
+}
+.explorer-art {
+  width: min(100%, 350px);
+  aspect-ratio: 5 / 7;
+  margin-inline: auto;
+}
+.explorer-variant-count {
+  position: absolute;
+  right: 0.4rem;
+  bottom: 0.4rem;
+  border-radius: 0.5rem;
+  background: #10141ce8;
+  color: #f5b66b;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.65rem;
+  pointer-events: none;
+}
+@media (min-width: 640px) {
+  .explorer-detail {
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  }
+}
+.field.explorer-search-input {
+  padding-inline: 2.75rem;
+}
+.explorer-variants {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.3rem;
+}
+.explorer-variants > button {
+  width: 80px;
+  flex: 0 0 80px;
+}
+@media (min-width: 640px) {
+  .explorer-variants {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow: visible;
+  }
+  .explorer-variants > button {
+    width: 100%;
+  }
+}

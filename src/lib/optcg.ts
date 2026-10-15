@@ -35,7 +35,11 @@ export function optcgClient() {
     } = {
       ...init,
       dispatcher,
-      ...(metadata && ttl > 0
+      ...(metadata &&
+      ttl > 0 &&
+      !/\/api\/all(?:SetCards|STCards|Promos|DonCards)\//.test(
+        new URL(url).pathname,
+      )
         ? { cache: "force-cache", next: { revalidate: ttl } }
         : {}),
     };

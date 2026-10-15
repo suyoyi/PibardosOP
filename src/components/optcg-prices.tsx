@@ -18,30 +18,13 @@ export function OptcgPrices({
   prices: unknown;
   fetchedAt: string;
   sourceDate: string | null;
-  externalId: string;
+  externalId?: string;
 }) {
   const p = schema.safeParse(prices),
     quotes = p.success ? p.data : [];
   return (
     <section className="panel mt-6 grid gap-5 p-5">
       <h2 className="font-semibold">Precios de la impresión</h2>
-      <p className="text-xs leading-5 text-muted">
-        Fuente: OPTCG API · consultado{" "}
-        {new Date(fetchedAt).toLocaleString("es-ES", {
-          timeZone: "Europe/Madrid",
-        })}
-        . Fecha indicada por el proveedor:{" "}
-        {sourceDate
-          ? new Date(`${sourceDate}T12:00:00Z`).toLocaleDateString("es-ES", {
-              timeZone: "Europe/Madrid",
-            })
-          : "no disponible"}
-        .
-      </p>
-      <p className="text-sm text-amber-100">
-        Moneda no especificada por la API. Valores orientativos; no se
-        convierten a euros ni se presentan como precios actuales garantizados.
-      </p>
       {quotes.length ? (
         <ul className="grid gap-3 sm:grid-cols-2">
           {quotes.map((q) => (
@@ -64,16 +47,35 @@ export function OptcgPrices({
           Sin precios disponibles para esta impresión. No se muestran como cero.
         </p>
       )}
-      <ActionForm
-        action={refreshOptcgPrices}
-        submit="Consultar precios de nuevo"
-      >
-        <input type="hidden" name="external_id" value={externalId} />
-        <p className="text-xs text-muted">
-          Reutilizamos consultas guardadas de menos de 15 minutos y respuestas
-          del proveedor hasta una hora para reducir llamadas.
-        </p>
-      </ActionForm>
+      <p className="text-xs leading-5 text-muted">
+        Fuente: OPTCG API · consultado{" "}
+        {new Date(fetchedAt).toLocaleString("es-ES", {
+          timeZone: "Europe/Madrid",
+        })}
+        . Fecha indicada por el proveedor:{" "}
+        {sourceDate
+          ? new Date(`${sourceDate}T12:00:00Z`).toLocaleDateString("es-ES", {
+              timeZone: "Europe/Madrid",
+            })
+          : "no disponible"}
+        .
+      </p>
+      <p className="text-sm text-amber-100">
+        Moneda no especificada por la API. Valores orientativos; no se
+        convierten a euros ni se presentan como precios actuales garantizados.
+      </p>
+      {externalId && (
+        <ActionForm
+          action={refreshOptcgPrices}
+          submit="Consultar precios de nuevo"
+        >
+          <input type="hidden" name="external_id" value={externalId} />
+          <p className="text-xs text-muted">
+            Reutilizamos consultas guardadas de menos de 15 minutos y respuestas
+            del proveedor hasta una hora para reducir llamadas.
+          </p>
+        </ActionForm>
+      )}
     </section>
   );
 }

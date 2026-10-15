@@ -16,6 +16,8 @@ const base = optcgRecord(),
   alternate = optcgRecord({
     card_image_id: "OP97-010_p1",
     card_name: "Synthetic OPTCG character parallel",
+    market_price: 0,
+    counter_amount: 0,
     card_image: "https://optcgapi.com/media/static/Card_Images/OP97-010_p1.jpg",
   });
 const incompatible = optcgRecord({
@@ -53,6 +55,12 @@ globalThis.fetch = async (input, init) => {
   const url = new URL(value);
   if (!["optcgapi.com", "www.optcgapi.com"].includes(url.hostname))
     return original(input, init);
+  if (url.pathname === "/api/allSetCards/")
+    return Response.json([...records, leaderAlternate]);
+  if (url.pathname === "/api/allSTCards/") return Response.json([]);
+  if (url.pathname === "/api/allPromos/")
+    return Response.json([{ ...reprint, market_price: null }]);
+  if (url.pathname === "/api/allDonCards/") return Response.json([]);
   if (url.pathname === "/api/allSets/")
     return Response.json([
       { set_id: "OP-97", set_name: "Synthetic expansion" },

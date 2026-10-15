@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/supabase/server";
-import { ManualCatalogProvider } from "@/lib/data";
-import { PageHeading, EmptyState } from "@/components/ui";
-import { CardCatalog } from "@/components/card-catalog";
+import { PageHeading } from "@/components/ui";
+import { CardExplorer } from "@/components/card-explorer";
 import { SavedNotice } from "@/components/forms";
 import { OptcgTools } from "@/components/optcg-tools";
 export default async function CardsPage({
@@ -10,14 +9,13 @@ export default async function CardsPage({
 }: {
   searchParams: Promise<{ saved?: string }>;
 }) {
-  const { supabase } = await requireUser(),
-    catalog = await new ManualCatalogProvider(supabase).search({});
+  await requireUser();
   return (
     <>
       <PageHeading
         eyebrow="CONOCE TUS OPCIONES"
         title="Cartas"
-        description="Catálogo privado con cartas manuales o de OPTCG API. Ninguna fuente certifica aquí la legalidad actual de torneo."
+        description="Explora el catálogo inglés, descubre sus variantes y consulta habilidades y precios. No necesitas importar las cartas para verlas."
       />
       <SavedNotice saved={(await searchParams).saved} />
       <div className="mb-6">
@@ -25,17 +23,13 @@ export default async function CardsPage({
           Añadir carta manual
         </Link>
       </div>
-      <OptcgTools />
-      {catalog.length ? (
-        <CardCatalog catalog={catalog} />
-      ) : (
-        <EmptyState title="El catálogo está vacío">
-          <p>
-            Añade tu líder y las cartas de tu lista para importarla. Las
-            entradas desconocidas nunca se descartan al importar.
-          </p>
-        </EmptyState>
-      )}
+      <CardExplorer />
+      <details className="mt-8">
+        <summary className="min-h-12 cursor-pointer py-3 text-sm text-muted">
+          Importación avanzada
+        </summary>
+        <OptcgTools />
+      </details>
     </>
   );
 }

@@ -51,7 +51,7 @@ test("mobile historical BerryWallet cards remain readable without provider reque
     }
     await page.goto("/cards");
     await expect(
-      page.getByRole("heading", { name: "OPTCG API", exact: true }),
+      page.getByLabel("Buscar carta", { exact: true }),
     ).toBeVisible();
     await page.goto(`/cards/${ownCard}`);
     await expect(

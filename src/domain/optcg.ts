@@ -43,6 +43,7 @@ export type OptcgCard = {
   traits: string[];
   effect_text: string | null;
   set_code: string | null;
+  set_name: string | null;
   rarity: string | null;
   language: "en";
   image_url: string | null;
@@ -207,6 +208,7 @@ export function normalizeOptcgCard(
     traits: text(r.sub_types, 3000) ? [text(r.sub_types, 3000)!] : [],
     effect_text: text(r.card_text, 10000),
     set_code,
+    set_name: text(r.set_name, 200),
     rarity: text(r.rarity, 100),
     language: "en",
     image_url,
@@ -356,6 +358,35 @@ export class OptcgClient {
       );
     }
     return normalizeOptcgRecords(raw, family);
+  }
+  async catalog(): Promise<OptcgResult> {
+    const cards: OptcgCard[] = [],
+      issues: string[] = [];
+    let received = 0;
+    // These are the documented working endpoints, not guessed pagination.
+    for (const [family, endpoint] of [
+      ["sets", "allSetCards"],
+      ["decks", "allSTCards"],
+      ["promos", "allPromos"],
+      ["don", "allDonCards"],
+    ] as const) {
+      try {
+        const result = await this.records(`/api/${endpoint}/`, family);
+        cards.push(...result.cards);
+        issues.push(...result.issues);
+        received += result.received;
+      } catch (error) {
+        issues.push(
+          `${family}: ${error instanceof OptcgError ? error.message : "No se pudo cargar esta parte del catálogo."}`,
+        );
+        if (
+          !(error instanceof OptcgError) ||
+          ["NETWORK", "RATE_LIMIT"].includes(error.code)
+        )
+          break;
+      }
+    }
+    return { cards, issues, received };
   }
   async cards(number: string, family?: OptcgFamily) {
     const code = parse(
