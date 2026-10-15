@@ -133,7 +133,7 @@ function WishForm({
     >
       <Field
         label="Objetivo total de esta impresión"
-        hint="Cantidad total que quieres tener en inglés, contando las copias que ya posees."
+        hint="Cantidad total que quieres tener, contando las copias que ya posees."
       >
         <input
           className="field"
@@ -295,7 +295,7 @@ function EnabledCardOwnership({ reference, initialState }: CardOwnershipProps) {
               )}
               <details>
                 <summary className="min-h-11 cursor-pointer py-3 text-sm text-accent">
-                  Añadir lote en inglés
+                  Añadir lote
                 </summary>
                 <div className="mt-3">
                   <LotForm
@@ -313,7 +313,7 @@ function EnabledCardOwnership({ reference, initialState }: CardOwnershipProps) {
                 {data.cardId
                   ? ownedPrintingQuantity(data.cardId, data.items)
                   : 0}{" "}
-                copias en inglés de este arte.
+                copias de este arte.
               </p>
               <WishForm
                 key={data.wish?.updated_at ?? "new-wish"}

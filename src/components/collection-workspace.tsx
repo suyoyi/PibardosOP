@@ -180,8 +180,8 @@ export function CollectionWorkspaceView({
                       Versión {version.version_number} · Faltan{" "}
                       {needs.reduce((n, r) => n + r.missing, 0)} copias. Se
                       aceptan otros artes y reimpresiones de la misma identidad.
-                      Solo copias en inglés; se excluyen las de intercambio y
-                      las reservadas a otros mazos.
+                      Se excluyen las de intercambio y las reservadas a otros
+                      mazos.
                     </p>
                     <p className="text-xs leading-5 text-muted">
                       La disponibilidad se calcula para este mazo. Reserva sus

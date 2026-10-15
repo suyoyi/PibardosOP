@@ -16,7 +16,7 @@ async function addLot(
   tradeable: number,
   location: string,
 ) {
-  await scope.getByText("Añadir lote en inglés", { exact: true }).click();
+  await scope.getByText("Añadir lote", { exact: true }).click();
   const form = scope.getByRole("form", { name: "Nuevo lote", exact: true });
   await form.getByLabel("Copias que tengo").fill(String(owned));
   await form.getByLabel("Para intercambio").fill(String(tradeable));

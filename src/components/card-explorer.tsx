@@ -236,7 +236,7 @@ function PrintingDetail({
     <div className="grid min-w-0 content-start gap-5">
       <div>
         <p className="text-xs font-semibold tracking-widest text-accent">
-          {card.card_number} · EN
+          {card.card_number}
         </p>
         <h3 className="mt-2 break-words text-2xl font-bold">{card.name}</h3>
       </div>
@@ -433,7 +433,7 @@ export function CardExplorer() {
             {pending
               ? "Cargando cartas…"
               : data
-                ? `${data.total} cartas · ${data.printings} impresiones coincidentes · solo inglés`
+                ? `${data.total} cartas · ${data.printings} impresiones coincidentes`
                 : "Catálogo no disponible"}
           </p>
           <button
@@ -507,7 +507,6 @@ export function CardExplorer() {
                       </div>
                       <div className="picker-caption">
                         <span>{group.number}</span>
-                        <span className="text-[9px] text-muted">EN</span>
                       </div>
                       <p className="mt-2 break-words text-xs font-semibold">
                         {card.name}

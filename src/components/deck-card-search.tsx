@@ -329,7 +329,7 @@ export function DeckCardSearch({
       <div className="visual-picker-header visual-picker-header-open">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="eyebrow">CONSTRUCTOR · CARTAS EN INGLÉS</p>
+            <p className="eyebrow">CONSTRUCTOR</p>
             <h2 className="mt-1 text-xl font-bold">
               {mode === "leader" ? "Elige tu líder" : "Busca tus cartas"}
             </h2>

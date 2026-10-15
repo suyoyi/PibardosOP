@@ -16,7 +16,7 @@ export default async function CardsPage({
       <PageHeading
         eyebrow="CONOCE TUS OPCIONES"
         title="Cartas"
-        description="Explora el catálogo inglés, descubre sus variantes y consulta habilidades y precios. No necesitas importar las cartas para verlas."
+        description="Explora el catálogo, descubre sus variantes y consulta habilidades y precios. No necesitas importar las cartas para verlas."
       />
       <SavedNotice saved={(await searchParams).saved} />
       {collectionEnabled && (

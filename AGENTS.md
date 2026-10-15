@@ -13,3 +13,5 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Respond in Spanish. On every request for application changes, remind the owner in the response that **Mi colección**, **Lista de deseos** and **Cartas que me faltan** remain hidden, until they explicitly ask to restore or replace them.
 - These features are intentionally hidden using `collectionEnabled` in `src/lib/features.ts`. Preserve their implementation, database data, ownership policies and domain/integration tests for a future redesign. Do not re-enable their links, card-detail controls or pages as part of unrelated work.
 - `/collection` and `/wishlist` authenticate then redirect to `/cards` while hidden. This visibility switch does not replace authentication or RLS.
+
+- Avoid redundant language labels in user-facing text: do not add “inglés”, “solo inglés” or EN badges to catalog/builder/card descriptions. Internal language metadata and current provider-selection rules remain unchanged.

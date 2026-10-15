@@ -95,7 +95,6 @@ export function BuilderCardTile({
       </div>
       <div className="picker-caption">
         <span>{card.card_number}</span>
-        <span className="text-[9px] text-muted">EN</span>
       </div>
       <p className="mt-2 break-words text-xs font-semibold">{card.name}</p>
       <p className="mt-1 break-words text-[10px] leading-4 text-muted">

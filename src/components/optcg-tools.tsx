@@ -25,9 +25,9 @@ export function OptcgTools() {
     >
       <h2 className="text-lg font-semibold">OPTCG API</h2>
       <p className="text-sm leading-6 text-muted">
-        Busca cartas por código o nombre y añade la impresión que quieras.
-        Catálogo inglés, sin clave. Las fichas guardadas se conservan para tu
-        historial; los datos incompletos se muestran con avisos.
+        Busca cartas por código o nombre y añade la impresión que quieras. Sin
+        clave. Las fichas guardadas se conservan para tu historial; los datos
+        incompletos se muestran con avisos.
       </p>
       <form
         className="grid gap-3 sm:grid-cols-3"
