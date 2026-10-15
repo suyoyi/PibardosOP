@@ -4,7 +4,6 @@ import { requireUser } from "@/lib/supabase/server";
 import { PageHeading } from "@/components/ui";
 import { CardExplorer } from "@/components/card-explorer";
 import { SavedNotice } from "@/components/forms";
-import { OptcgTools } from "@/components/optcg-tools";
 export default async function CardsPage({
   searchParams,
 }: {
@@ -30,12 +29,6 @@ export default async function CardsPage({
         </div>
       )}
       <CardExplorer />
-      <details className="mt-8">
-        <summary className="min-h-12 cursor-pointer py-3 text-sm text-muted">
-          Importación avanzada
-        </summary>
-        <OptcgTools />
-      </details>
     </>
   );
 }

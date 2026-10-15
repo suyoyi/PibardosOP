@@ -452,23 +452,6 @@ export function CardExplorer() {
             {result.error}
           </p>
         )}
-        {data && data.issues.length > 0 && (
-          <details className="panel mb-4 p-4">
-            <summary className="min-h-11 cursor-pointer text-sm text-amber-100">
-              Catálogo parcial o con avisos ({data.issues.length})
-            </summary>
-            <p className="my-3 text-xs text-muted">
-              Se muestran las cartas disponibles y tus fichas guardadas. No se
-              garantiza la cobertura completa del proveedor. Los datos se
-              reutilizan temporalmente para reducir llamadas.
-            </p>
-            <ul className="grid gap-2 text-xs text-muted">
-              {data.issues.map((issue, index) => (
-                <li key={index}>{issue}</li>
-              ))}
-            </ul>
-          </details>
-        )}
         {!data && pending && (
           <div className="picker-grid" aria-label="Cargando catálogo">
             {Array.from({ length: 9 }, (_, i) => (

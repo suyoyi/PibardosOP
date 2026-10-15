@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import { connectLocalDatabase } from "../helpers/local-database";
-test("mobile OPTCG search, selected printing, artwork, quote reuse, collection sync and confirmed deck import", async ({
+test("mobile OPTCG search, selected printing, artwork, quote reuse and confirmed deck import", async ({
   page,
   request,
 }) => {
@@ -17,36 +17,26 @@ test("mobile OPTCG search, selected printing, artwork, quote reuse, collection s
       .getByRole("button", { name: "Crear cuenta", exact: true })
       .click();
     await expect(page).toHaveURL("/");
-    await page.goto("/cards");
-    await page.getByText("Importación avanzada", { exact: true }).click();
-    await page.getByLabel("Buscar en OPTCG API").fill("OP97-010");
-    await page.getByRole("button", { name: "Buscar en el proveedor" }).click();
-    await expect(
-      page.getByRole("heading", {
-        name: "Synthetic OPTCG character parallel",
+    // Save exact printings from the normal catalog rather than retired advanced tools.
+    for (const variant of ["OP97-010_p1", "OP97-010"]) {
+      await page.goto("/cards");
+      await expect(
+        page.getByText("Importación avanzada", { exact: true }),
+      ).toHaveCount(0);
+      await page.getByLabel("Buscar carta", { exact: true }).fill("OP97-010");
+      await page.getByRole("button", { name: /^Ver carta OP97-010 ·/ }).click();
+      const detail = page.getByRole("dialog", {
+        name: "Detalle de OP97-010",
         exact: true,
-      }),
-    ).toBeVisible();
-    // Select alternate first so canonical identity cannot stand in for base art.
-    await page
-      .getByRole("heading", {
-        name: "Synthetic OPTCG character parallel",
-        exact: true,
-      })
-      .locator("xpath=ancestor::form")
-      .getByRole("button", { name: "Añadir al catálogo" })
-      .click();
-    await expect(page).toHaveURL(/\/cards\/[a-f0-9-]+\?saved=1/);
-    await page.goto("/cards");
-    await page.getByText("Importación avanzada", { exact: true }).click();
-    await page.getByLabel("Buscar en OPTCG API").fill("OP97-010");
-    await page.getByRole("button", { name: "Buscar en el proveedor" }).click();
-    await page
-      .getByRole("heading", { name: "Synthetic OPTCG character", exact: true })
-      .locator("xpath=ancestor::form")
-      .getByRole("button", { name: "Añadir al catálogo" })
-      .click();
-    await expect(page).toHaveURL(/\/cards\/[a-f0-9-]+\?saved=1/);
+      });
+      await detail
+        .getByRole("button", { name: `Ver variante ${variant}`, exact: true })
+        .click();
+      await detail
+        .getByRole("button", { name: "Guardar esta impresión", exact: true })
+        .click();
+      await expect(page).toHaveURL(/\/cards\/[a-f0-9-]+\?saved=1/);
+    }
     const cardId = new URL(page.url()).pathname.split("/").at(-1)!;
     await expect(
       page.getByText("Colección y deseos", { exact: true }),
@@ -110,18 +100,6 @@ test("mobile OPTCG search, selected printing, artwork, quote reuse, collection s
         exact: true,
       }),
     ).toBeVisible();
-    await page.goto("/cards");
-    await page.getByText("Importación avanzada", { exact: true }).click();
-    await page
-      .getByText("Cargar una colección o mazo inicial", { exact: true })
-      .click();
-    await page.getByLabel("Código de colección OPTCG").fill("OP97");
-    await page
-      .getByRole("button", { name: "Cargar colección", exact: true })
-      .click();
-    await expect(
-      page.getByRole("status").filter({ hasText: "4 fichas" }),
-    ).toBeVisible();
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= window.innerWidth,
@@ -138,7 +116,7 @@ test("mobile OPTCG search, selected printing, artwork, quote reuse, collection s
           [user],
         )
       ).rows;
-      expect(cards).toHaveLength(4);
+      expect(cards).toHaveLength(3);
       expect(cards.every((c) => c.source === "optcgapi")).toBe(true);
       const entries = (
         await db.query(

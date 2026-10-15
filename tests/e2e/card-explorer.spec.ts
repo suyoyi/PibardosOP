@@ -30,6 +30,12 @@ test("mobile catalog loads without importing, filters all facts and opens exact-
     await expect(page).toHaveURL("/");
     await page.goto("/cards");
     await expect(
+      page.getByText("Importación avanzada", { exact: true }),
+    ).toHaveCount(0);
+    await expect(page.getByText(/Catálogo parcial o con avisos/)).toHaveCount(
+      0,
+    );
+    await expect(
       page.locator('a[href^="/collection"], a[href^="/wishlist"]'),
     ).toHaveCount(0);
     const results = page.getByRole("list", { name: "Resultados del catálogo" });

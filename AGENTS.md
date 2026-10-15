@@ -15,3 +15,5 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - `/collection` and `/wishlist` authenticate then redirect to `/cards` while hidden. This visibility switch does not replace authentication or RLS.
 
 - Avoid redundant language labels in user-facing text: do not add “inglés”, “solo inglés” or EN badges to catalog/builder/card descriptions. Internal language metadata and current provider-selection rules remain unchanged.
+
+- Keep “Catálogo parcial o con avisos” and “Importación avanzada” out of the Cartas screen. Normal catalog browsing, printing detail/save and decklist import remain available.
