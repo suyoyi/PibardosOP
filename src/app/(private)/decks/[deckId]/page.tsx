@@ -5,7 +5,10 @@ import { exportDecklist } from "@/domain/deck-import";
 import { PageHeading } from "@/components/ui";
 import { SavedNotice } from "@/components/forms";
 import { ValidationMessages } from "@/components/deck-builder";
-import { CardArtwork } from "@/components/card-catalog";
+import { DeckGallery } from "@/components/deck-gallery";
+import { buildDeckDisplay } from "@/domain/deck-prices";
+import { getDeckQuotes } from "@/lib/deck-quotes";
+import { requireUser } from "@/lib/supabase/server";
 import { DeckOperations } from "@/components/deck-operations";
 import { DeckExport } from "@/components/deck-export";
 export default async function DeckPage({
@@ -25,6 +28,17 @@ export default async function DeckPage({
       w.catalog,
       w.restrictions,
       standardRules(w.deck.format),
+    );
+  const { supabase } = await requireUser(),
+    pricing = await getDeckQuotes(supabase, [
+      w.deck.leader_card_id,
+      ...w.currentEntries.map((e) => e.card_id),
+    ]),
+    display = buildDeckDisplay(
+      w.deck.leader_card_id,
+      w.currentEntries,
+      w.catalog,
+      pricing.quotes,
     );
   return (
     <>
@@ -55,44 +69,13 @@ export default async function DeckPage({
         </Link>
       </div>
       <div className="grid gap-6">
-        {leader && (
-          <section className="panel flex items-center gap-4 p-5">
-            <CardArtwork card={leader} small />
-            <div>
-              <h2 className="font-semibold">{leader.name}</h2>
-              <p className="mt-2 text-sm text-muted">
-                {leader.card_number} · {w.deck.format} ·{" "}
-                {w.deck.status === "draft"
-                  ? "Borrador"
-                  : w.deck.status === "active"
-                    ? "Activo"
-                    : "Archivado"}
-              </p>
-            </div>
-          </section>
-        )}
+        <DeckGallery
+          display={display}
+          priceError={pricing.error}
+          format={w.deck.format}
+          status={w.deck.status}
+        />
         <ValidationMessages result={result} />
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {w.currentEntries.map((entry) => {
-            const card = w.catalog.find((c) => c.id === entry.card_id);
-            return (
-              card && (
-                <li key={card.id} className="panel flex items-center gap-3 p-4">
-                  <CardArtwork card={card} small />
-                  <div className="min-w-0">
-                    <p className="text-xs text-accent">
-                      {card.card_number} ·{" "}
-                      {entry.role === "don" ? "DON!! separado" : "Principal"}
-                    </p>
-                    <p className="mt-1 break-words font-semibold">
-                      {entry.quantity} × {card.name}
-                    </p>
-                  </div>
-                </li>
-              )
-            );
-          })}
-        </ul>
         {leader && (
           <DeckExport
             text={exportDecklist(leader, w.currentEntries, w.catalog)}

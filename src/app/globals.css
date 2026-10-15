@@ -554,3 +554,40 @@ body {
     width: 100%;
   }
 }
+
+.deck-art-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem 0.75rem;
+}
+.deck-price-badge {
+  position: absolute;
+  bottom: 0.4rem;
+  left: 0.3rem;
+  right: 0.3rem;
+  width: fit-content;
+  max-width: calc(100% - 0.6rem);
+  padding: 0.3rem 0.4rem;
+  border: 1px solid #364152;
+  border-radius: 0.35rem;
+  background: #10141cf5;
+  color: #f1f3f7;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+@media (min-width: 480px) {
+  .deck-art-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (min-width: 768px) {
+  .deck-art-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1280px) {
+  .deck-art-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}

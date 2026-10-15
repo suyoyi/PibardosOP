@@ -80,6 +80,14 @@ Server-side public metadata responses are reused for one hour by default to redu
 
 BerryWallet is retired from UI, import resolution and image requests. Existing BerryWallet facts, prices and deck references remain readable, with historical quotes labeled and refresh removed. Its key is unnecessary and unused by current app routes.
 
+## Visual deck detail and pricing
+
+Opening a saved deck shows its leader and main cards in an artwork grid, sorted by main-card cost, with the separate DON list below. Every selected printing has a unit market-price badge, saved quantity and line subtotal. Alternate arts stay separate even when their printed/canonical identity is the same. Tap any tile or the leader portrait for a large-image dialog with ability, traits, type, cost and other saved facts. Previous/next controls browse the exact deck printings without leaving the page; Escape/close restores focus. The dialog includes collection/wish controls and optional price history. Manual/missing images use the existing placeholders.
+
+**Total orientativo del mazo** sums market price × quantity for the exact saved printings, including leader and listed DON, with separate leader/main/DON subtotals. If any quote is missing, the heading becomes **Subtotal conocido del mazo** and shows priced copies/printings and the number of unpriced copies. A genuine zero quote stays zero; a missing quote is never inferred from another artwork, a canonical base, inventory price or historical BerryWallet data. Drafts retain their actual counts rather than assuming 50/10 cards.
+
+The valuation uses only saved **OPTCG API market quotes** and states their undeclared currency without EUR/USD symbols or conversions. The oldest consultation used is shown, while each printing's detail also retains the provider date. These are indicative stored quotes, without shipping or guaranteed real-time values. **Consultar precios de nuevo** in the popup reuses the existing explicit cached-price refresh (15-minute owner cache/public-provider TTL). Prices can change without editing immutable card facts or creating a deck version. Deck browsing performs no metadata refresh/import, physical ownership declaration or automatic history request; open the history section to request its existing bounded source flow. Private quotes are filtered to the deck's UUIDs through the authenticated client and RLS, with no public cache of account data. Price-read failure leaves the saved artwork/list usable and offers page reload.
+
 ## Physical collection, missing cards and wishlist
 
 Open **Mi colección** or **Lista de deseos** from Cartas or Ajustes. In the catalog dialog, choose the exact artwork and expand **Colección y deseos**. Browsing and opening these controls never imports the catalog or establishes physical ownership. Saving a wish or inventory lot privately caches only the selected printing when needed.
