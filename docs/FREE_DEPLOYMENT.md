@@ -4,6 +4,8 @@ Use **Vercel Hobby** for Next.js and **Supabase Free** for PostgreSQL/Auth. A pe
 
 This guide prepares a new cloud database. Local accounts, decks, matches and discoveries are not automatically uploaded. Keep the local installation intact; transferring its records is a separate, deliberate migration.
 
+Current personal beta: **https://pibardos-op.vercel.app**. On 2026-10-16, public HTTP checks verified the running web process, the configured login form, private-route redirects, manifest, service-worker script and icons. The owner confirmed the hosted schema has 17 tables with RLS and reported successful sign-in. Hosted save/reload behavior and multi-account isolation still require an authenticated production check; ordinary automated tests remain local.
+
 ## Cost and account boundaries
 
 Checked against official documentation on **2026-10-16**:
@@ -12,7 +14,7 @@ Checked against official documentation on **2026-10-16**:
 - [Supabase Free](https://supabase.com/pricing) currently includes a 500 MB database and two active free projects. Free projects may pause after one week of inactivity. Review the dashboard before enabling paid resources.
 - [Supabase's default email service](https://supabase.com/docs/guides/auth/auth-smtp) only delivers to organization team addresses. It is not a general-purpose email service for friends signing up. Use the manual private-beta account flow below or configure your own SMTP provider.
 
-Application users do not need membership in either platform's project team. Platform login/project creation must be completed by the account holder unless authenticated deployment access has explicitly been connected to the development environment. This repository contains no deployment tokens, production project reference or account passwords.
+Application users do not need membership in either platform's project team. Platform login/project creation must be completed by the account holder unless authenticated deployment access has explicitly been connected to the development environment. Platform access tokens, database passwords and account passwords do not belong in this repository. The public application URL can be documented without those credentials.
 
 ## 1. Create the database
 
@@ -70,6 +72,8 @@ In Supabase **Authentication → URL Configuration**:
 
 - Set **Site URL** to the actual Vercel production HTTPS origin.
 - Add that same origin and the specific return URLs needed by the app to **Redirect URLs**. Avoid broad wildcard allowlists. Email/password sign-in is the current app flow; OAuth providers are not required.
+
+If a confirmation email opens `localhost`, check the hosted project's Site URL first. For this beta use `https://pibardos-op.vercel.app`, with the corresponding root return URL in the allowlist, and save. Previously generated messages can retain the old redirect; changing settings does not rewrite a delivered email. If the account can already sign in, another account or confirmation request is unnecessary. If newly generated emails still contain a local redirect after fixing these settings, inspect the Auth email template for a hardcoded local URL and restore its appropriate Supabase confirmation-link template.
 
 ## 5. Verify the real deployment
 
