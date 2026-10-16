@@ -17,3 +17,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Avoid redundant language labels in user-facing text: do not add “inglés”, “solo inglés” or EN badges to catalog/builder/card descriptions. Internal language metadata and current provider-selection rules remain unchanged.
 
 - Keep “Catálogo parcial o con avisos” and “Importación avanzada” out of the Cartas screen. Normal catalog browsing, printing detail/save and decklist import remain available.
+
+## Curated fan artwork presentation
+
+- Group owner-supplied fan cards under **LEGENDARIA BANDA DE LOS DIOSES PIRATAS** in expansion selectors. This is a display collection; retain official set metadata and canonical identity internally for deck rules and historical games.
+- Enlarged fan artwork views show only the supplied image, without cost, effects, price, market history or a technical detail panel. Preserve full details for ordinary provider cards. Builder artwork preview and leader selection are separate controls.
+- Preserve original uploaded image bytes; register new supplied assets explicitly with provenance and additive migrations. Do not generate replacements or invent game facts/prices.

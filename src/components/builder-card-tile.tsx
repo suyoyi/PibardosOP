@@ -2,6 +2,10 @@
 import { Check, Minus, Plus } from "lucide-react";
 import type { CardCandidate } from "@/domain/card-variants";
 import { CardArtwork, CardPicture } from "./card-catalog";
+import { useState } from "react";
+import { isCustomArtwork } from "@/domain/custom-artworks";
+import { CustomArtworkView } from "./custom-artwork-view";
+import { Modal } from "./modal";
 
 export function CandidateArtwork({ candidate }: { candidate: CardCandidate }) {
   const card = candidate.card;
@@ -36,6 +40,8 @@ export function BuilderCardTile({
   canAdd: boolean;
   onChoose: (delta: number) => void;
 }) {
+  const [preview, setPreview] = useState(false);
+  const fan = candidate.kind === "saved" && isCustomArtwork(candidate.card);
   const card = candidate.card,
     isLeader = card.card_type === "leader",
     name = `${card.card_number} · ${card.name}`;
@@ -52,11 +58,15 @@ export function BuilderCardTile({
           type="button"
           className="absolute inset-0 h-full w-full"
           aria-label={
-            isLeader ? `Elegir líder ${name}` : `Añadir tocando imagen ${name}`
+            fan
+              ? `Ampliar carta fan ${name}`
+              : isLeader
+                ? `Elegir líder ${name}`
+                : `Añadir tocando imagen ${name}`
           }
           aria-pressed={isLeader ? selected : undefined}
-          disabled={busy || !canAdd}
-          onClick={() => onChoose(1)}
+          disabled={busy || (!fan && !canAdd)}
+          onClick={() => (fan ? setPreview(true) : onChoose(1))}
         >
           <CandidateArtwork candidate={candidate} />
         </button>
@@ -99,19 +109,31 @@ export function BuilderCardTile({
         <span>{card.card_number}</span>
       </div>
       <p className="mt-2 break-words text-xs font-semibold">{card.name}</p>
-      <p className="mt-1 break-words text-[10px] leading-4 text-muted">
-        {card.set_code ?? "Expansión sin dato"} · {printing}
-      </p>
+      {!fan && (
+        <p className="mt-1 break-words text-[10px] leading-4 text-muted">
+          {card.set_code ?? "Expansión sin dato"} · {printing}
+        </p>
+      )}
       {isLeader && (
         <button
           type="button"
           className="button-secondary mt-2 w-full px-2"
-          aria-label={`Seleccionar impresión ${printing}`}
+          aria-label={
+            fan ? `Elegir líder ${name}` : `Seleccionar impresión ${printing}`
+          }
           disabled={busy}
           onClick={() => onChoose(1)}
         >
           {selected ? "Líder seleccionado" : "Elegir esta variante"}
         </button>
+      )}
+      {preview && candidate.kind === "saved" && (
+        <Modal
+          title={`Detalle de ${card.card_number}`}
+          onClose={() => setPreview(false)}
+        >
+          <CustomArtworkView card={candidate.card} />
+        </Modal>
       )}
     </li>
   );

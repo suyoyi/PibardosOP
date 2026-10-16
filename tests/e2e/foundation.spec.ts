@@ -58,7 +58,7 @@ test("register, navigate real empty data, logout and log back in", async ({
           page
             .getByRole("list", { name: "Resultados del catálogo" })
             .getByRole("button", { name: /^Ver carta / }),
-        ).toHaveCount(4);
+        ).toHaveCount(5);
       if (label === "Estadísticas")
         for (const name of ["Al ir primero", "Al ir segundo"]) {
           const emptyOrder = page.getByRole("region", { name, exact: true });

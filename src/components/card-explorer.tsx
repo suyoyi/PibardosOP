@@ -20,6 +20,11 @@ import { CardOwnership } from "./card-ownership";
 import { referenceForCandidate } from "@/domain/card-reference";
 import { CardPriceHistory, type PriceHistoryCache } from "./card-price-history";
 import { historySelection } from "@/domain/price-history";
+import {
+  customArtworkExpansion,
+  isCustomArtwork,
+} from "@/domain/custom-artworks";
+import { CustomArtworkView } from "./custom-artwork-view";
 
 function ExplorerFiltersPanel({
   filters,
@@ -116,7 +121,9 @@ function ExplorerFiltersPanel({
               <option value="">Todas las expansiones</option>
               {options?.expansions.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {item.name ?? "Nombre no disponible"} · {item.id}
+                  {item.id === customArtworkExpansion.id
+                    ? item.name
+                    : `${item.name ?? "Nombre no disponible"} · ${item.id}`}
                 </option>
               ))}
               {filters.set &&
@@ -331,6 +338,16 @@ function ExplorerModal({
     [visible, setVisible] = useState(12);
   const [historyCache] = useState<PriceHistoryCache>(() => new Map());
   const printing = group.printings[selected];
+  if (
+    printing.candidate.kind === "saved" &&
+    isCustomArtwork(printing.candidate.card)
+  ) {
+    return (
+      <Modal title={`Detalle de ${group.number}`} onClose={onClose}>
+        <CustomArtworkView card={printing.candidate.card} />
+      </Modal>
+    );
+  }
   return (
     <Modal title={`Detalle de ${group.number}`} onClose={onClose}>
       <div className="explorer-detail">

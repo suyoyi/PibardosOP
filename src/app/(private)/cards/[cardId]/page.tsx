@@ -11,6 +11,8 @@ import { SavedNotice } from "@/components/forms";
 import { CardPriceHistory } from "@/components/card-price-history";
 import { CardOwnership } from "@/components/card-ownership";
 import { historySelection } from "@/domain/price-history";
+import { isCustomArtwork } from "@/domain/custom-artworks";
+import { CustomArtworkView } from "@/components/custom-artwork-view";
 export default async function CardPage({
   params,
   searchParams,
@@ -23,6 +25,7 @@ export default async function CardPage({
   const { supabase } = await requireUser(),
     card = await new ManualCatalogProvider(supabase).getCard(cardId);
   if (!card) notFound();
+  if (isCustomArtwork(card)) return <CustomArtworkView card={card} />;
   const { data: provider, error: providerError } = await supabase
     .from("card_provider_items")
     .select("*")

@@ -18,6 +18,7 @@ import {
   type Card,
 } from "@/domain/cards";
 import type { ActionState } from "@/domain/forms";
+import { customArtworkExpansion } from "@/domain/custom-artworks";
 function failure(error: unknown): ActionState {
   return {
     error:
@@ -232,7 +233,12 @@ export async function getBuilderVariants(number: unknown) {
 const builderSearchSchema = z.object({
   mode: z.enum(["leader", "cards", "don"]),
   search: z.string().trim().max(120).default(""),
-  expansion: z.union([optcgSetSchema, z.literal(""), z.literal("promos")]),
+  expansion: z.union([
+    optcgSetSchema,
+    z.literal(""),
+    z.literal("promos"),
+    z.literal(customArtworkExpansion.id),
+  ]),
   color: z.union([
     z.enum(["red", "green", "blue", "purple", "black", "yellow"]),
     z.literal(""),
@@ -251,6 +257,9 @@ export async function searchBuilderCards(input: unknown) {
     api = optcgClient(),
     cards: OptcgCard[] = [],
     issues: string[] = [];
+  // This curated collection is already in the authenticated shared catalog.
+  // Its local identifier must never become an upstream API set request.
+  if (p.expansion === customArtworkExpansion.id) return { cards, issues };
   try {
     if (p.mode === "don") return await api.cards("DON!!", "don");
     const query = normalizeCardSearch(p.search);

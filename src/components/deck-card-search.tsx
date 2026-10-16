@@ -34,6 +34,11 @@ import {
 } from "@/domain/card-variants";
 import { Field } from "./forms";
 import {
+  customArtworkExpansion,
+  isCustomArtwork,
+} from "@/domain/custom-artworks";
+import { CustomArtworkView } from "./custom-artwork-view";
+import {
   compatibleWithLeader,
   visibleBuilderMainCard,
   builderMaximumQuantity,
@@ -262,7 +267,12 @@ export function DeckCardSearch({
     setSelection({ number, type });
     setVariantPage(1);
     setMessage({});
-    void loadVariants(number);
+    if (expansion === customArtworkExpansion.id) {
+      setVariantResults((current) => ({
+        ...current,
+        [number]: { cards: [], issues: [] },
+      }));
+    } else void loadVariants(number);
   };
   const variantResult = selection
     ? variantResults[selection.number]
@@ -275,6 +285,8 @@ export function DeckCardSearch({
         (item) =>
           normalizeCardNumber(item.card.card_number) === selection.number &&
           item.card.card_type === selection.type &&
+          (expansion !== customArtworkExpansion.id ||
+            isCustomArtwork(item.card)) &&
           (selection.type === "leader" ||
             visibleBuilderMainCard(item.card, leader, entries)),
       )
@@ -408,6 +420,9 @@ export function DeckCardSearch({
                 }
               >
                 <option value="">Todas las expansiones</option>
+                <option value={customArtworkExpansion.id}>
+                  {customArtworkExpansion.name}
+                </option>
                 {expansions.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.name} · {item.id.replaceAll("-", "")}
@@ -436,6 +451,7 @@ export function DeckCardSearch({
                 <option value="promos">Promocionales</option>
                 {expansion &&
                   expansion !== "promos" &&
+                  expansion !== customArtworkExpansion.id &&
                   !expansions.some((item) => item.id === expansion) && (
                     <option value={expansion}>
                       {expansion} · nombre no disponible
@@ -652,13 +668,20 @@ export function DeckCardSearch({
           title={`Líder seleccionado · ${leader.card_number}`}
           onClose={() => setZoomLeader(false)}
         >
-          <div className="leader-zoom-art">
-            <CardArtwork key={leader.id} card={leader} full />
-          </div>
-          <p className="mt-4 text-center font-semibold">{leader.name}</p>
-          <p className="mt-2 text-center text-xs text-muted">
-            {leader.printing_code} · {leader.set_code ?? "Expansión sin dato"}
-          </p>
+          {isCustomArtwork(leader) ? (
+            <CustomArtworkView card={leader} />
+          ) : (
+            <>
+              <div className="leader-zoom-art">
+                <CardArtwork key={leader.id} card={leader} full />
+              </div>
+              <p className="mt-4 text-center font-semibold">{leader.name}</p>
+              <p className="mt-2 text-center text-xs text-muted">
+                {leader.printing_code} ·{" "}
+                {leader.set_code ?? "Expansión sin dato"}
+              </p>
+            </>
+          )}
         </Modal>
       )}
       {selection && (
@@ -671,7 +694,8 @@ export function DeckCardSearch({
             {selection.type === "leader"
               ? "Elige el arte o la reimpresión de tu líder."
               : "Añade la impresión que quieras. Las variantes comparten el límite de copias."}{" "}
-            También se muestran variantes de otras expansiones.
+            {expansion !== customArtworkExpansion.id &&
+              "También se muestran variantes de otras expansiones."}
           </p>
           {selection.type !== "leader" && (
             <p className="mb-4 text-sm text-accent" role="status">

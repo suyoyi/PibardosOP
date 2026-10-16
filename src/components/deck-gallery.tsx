@@ -13,6 +13,8 @@ import { DeckDelete } from "./deck-operations";
 import { OptcgPrices } from "./optcg-prices";
 import { CardOwnership } from "./card-ownership";
 import { CardPriceHistory, type PriceHistoryCache } from "./card-price-history";
+import { isCustomArtwork } from "@/domain/custom-artworks";
+import { CustomArtworkView } from "./custom-artwork-view";
 const roleLabels = {
   leader: "Líder",
   main: "Mazo principal",
@@ -30,6 +32,7 @@ function DeckPrintingDetail({
 }) {
   const [historyOpen, setHistoryOpen] = useState(false);
   const { card, quote } = row;
+  if (isCustomArtwork(card)) return <CustomArtworkView card={card} />;
   return (
     <div className="explorer-detail">
       <div className="explorer-art">

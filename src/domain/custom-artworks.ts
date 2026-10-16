@@ -1,4 +1,12 @@
 import type { Card } from "./cards";
+// A display/filter collection; official set codes and canonical rules stay intact.
+export const customArtworkExpansion = {
+  id: "fan-pirate-gods",
+  name: "LEGENDARIA BANDA DE LOS DIOSES PIRATAS",
+} as const;
+export function isCustomArtwork(card: object) {
+  return "source" in card && card.source === "custom-artwork";
+}
 // Original artwork supplied by the owner. IDs match the immutable catalog migration.
 export const customArtworks = [
   {
@@ -9,6 +17,15 @@ export const customArtworks = [
     name: "Roronoa Vinny",
     printingCode: "custom-roronoa-vinny",
     fileName: "roronoa-vinny.png",
+  },
+  {
+    id: "rocks-d-bermejo",
+    cardId: "db196a52-a889-4d04-8d93-34dddde3f7fc",
+    canonicalCardId: "e297b3be-ea1e-46c7-9850-7af237c09221",
+    cardNumber: "OP17-039",
+    name: "Rocks D. Bermejo",
+    printingCode: "custom-rocks-d-bermejo",
+    fileName: "rocks-d-bermejo.png",
   },
 ] as const;
 export function customArtworkForCard(

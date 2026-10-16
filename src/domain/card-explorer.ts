@@ -6,6 +6,7 @@ import {
   type CardCandidate,
 } from "./card-variants";
 import type { OptcgCard, OptcgQuote } from "./optcg";
+import { customArtworkExpansion, isCustomArtwork } from "./custom-artworks";
 
 export type ExplorerFilters = CardFilters & { rarity?: string; trait?: string };
 export type ExplorerPrinting = {
@@ -66,7 +67,9 @@ export function exploreCards(
         expansions.set(id, { id, name: card.set_name });
     }
   for (const card of saved)
-    if (card.language === "en" && card.set_code) {
+    if (card.language === "en" && isCustomArtwork(card)) {
+      expansions.set(customArtworkExpansion.id, customArtworkExpansion);
+    } else if (card.language === "en" && card.set_code) {
       const id = card.set_code.replaceAll("-", "").toUpperCase();
       if (!expansions.has(id)) expansions.set(id, { id, name: null });
     }
@@ -91,7 +94,10 @@ export function exploreCards(
       number: group.number,
       printings: [
         ...group.variants,
-        ...(allGroups.get(group.number) ?? []).filter(
+        ...(filters.set === customArtworkExpansion.id
+          ? []
+          : (allGroups.get(group.number) ?? [])
+        ).filter(
           (c) =>
             !group.variants.some((v) => candidateKey(v) === candidateKey(c)),
         ),
@@ -99,12 +105,14 @@ export function exploreCards(
         const source = metadata.get(candidateKey(candidate));
         return {
           candidate,
-          expansionName:
-            source?.set_name ??
-            expansions.get(
-              candidate.card.set_code?.replaceAll("-", "").toUpperCase() ?? "",
-            )?.name ??
-            null,
+          expansionName: isCustomArtwork(candidate.card)
+            ? customArtworkExpansion.name
+            : (source?.set_name ??
+              expansions.get(
+                candidate.card.set_code?.replaceAll("-", "").toUpperCase() ??
+                  "",
+              )?.name ??
+              null),
           quote: source
             ? {
                 prices: source.prices,
