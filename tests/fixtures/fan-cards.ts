@@ -60,6 +60,16 @@ export const joanFanCard: FanCard = {
 };
 export const joanFanImageHash =
   "f351f0575f7ff5d60d2d4171a01a337d56f6cbac14b55e3e293730a0b9a8b926";
+export const suFanCard: FanCard = {
+  id: "d515ca79-15ba-4f9f-b730-d5fba7f27a07",
+  name: "Su D. Yoyi, el Dios de Dioses",
+  display_number: "LDP-007",
+  edition_code: "fan-pirate-gods",
+  artwork_id: "su-d-yoyi",
+  created_at: "2026-10-16T00:00:00Z",
+};
+export const suFanImageHash =
+  "c7d29c881a6f6da1ba7ed67e508c21de57906ed4adb3fd24a45a9e09c88ea294";
 export const fanCardFixtures = [
   { card: vinFanCard, imageHash: vinFanImageHash, width: 916 },
   { card: marioFanCard, imageHash: marioFanImageHash, width: 912 },
@@ -67,4 +77,5 @@ export const fanCardFixtures = [
   { card: christianFanCard, imageHash: christianFanImageHash, width: 960 },
   { card: jaimeFanCard, imageHash: jaimeFanImageHash, width: 914 },
   { card: joanFanCard, imageHash: joanFanImageHash, width: 960 },
+  { card: suFanCard, imageHash: suFanImageHash, width: 914 },
 ] as const;

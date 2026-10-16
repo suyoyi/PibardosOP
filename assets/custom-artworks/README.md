@@ -74,4 +74,12 @@ Vinny and Bermejo remain variants of OP12-020 and OP17-039 under their original 
 - Registry: `src/domain/fan-cards.ts`; additive data-only migration: `20261016000700_joan_d_cuadras.sql`. Only name, printed display label, edition and registered artwork reference are stored. No gameplay facts, official canonical identity or price is assigned.
 - Authenticated image route: `/api/custom-artworks/joan-d-cuadras/image`, preserving JPEG MIME type and private/no-store/nosniff. The existing Cartas and builder/editor fan galleries provide name/code search and image-only enlargement; the original JPEG is included by the existing Next output-tracing glob.
 
+## Su D. Yoyi, el Dios de Dioses
+
+- Original leader of the fan crew, supplied directly as a JPEG attachment on 2026-10-16; bundled as `su-d-yoyi.jpg` (914 × 1280, 622,461 bytes). The supplied image, printed text, artwork and proportions are preserved byte-for-byte. No generation, retouching, conversion, cropping or recompression occurred.
+- SHA-256: `c7d29c881a6f6da1ba7ed67e508c21de57906ed4adb3fd24a45a9e09c88ea294`.
+- Edition: **LEGENDARIA BANDA DE LOS DIOSES PIRATAS**; display label **LDP-007**, visible on the supplied artwork. The owner identifies this original fan card as the crew's leader. It remains in the separate display-only catalog, without becoming an official playable leader or one of the existing artwork variants.
+- Registry: `src/domain/fan-cards.ts`; additive data-only migration: `20261016000800_su_d_yoyi.sql`. Only supplied name, display label, edition and artwork reference are stored. Printed power/life/effects are not transcribed into gameplay rules or market data.
+- Authenticated image route: `/api/custom-artworks/su-d-yoyi/image`, preserving JPEG MIME type and private/no-store/nosniff. Existing Cartas and builder/editor fan galleries offer name/code search and image-only enlargement; Next output tracing includes the original JPEG through the existing glob.
+
 This records owner-supplied provenance for this app; it does not imply official affiliation or general redistribution rights for provider/franchise assets. Further playable leader variants need their own supplied file and verified base identity; original fan cards need their own supplied file and separate display-catalog identity. Both require additive catalog migrations, explicit registry entries and relevant checks. No generic image-upload or manual-card creation interface is introduced.
