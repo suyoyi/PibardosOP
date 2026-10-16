@@ -4,11 +4,11 @@
 
 A Spanish mobile-first personal workspace for One Piece Card Game. The app includes secure authentication, provider-backed cards, OPTCG API card imports, confirmed deck imports, a deck builder with internal immutable match snapshots, match history, tournaments, physical collection, missing-card reservations, exact-art wishes and charts of saved results. Practice and offline synchronization are subsequent phases; see `PROJECT_STATUS.md` and `docs/ARCHITECTURE.md`.
 
-**Hosted release source:** Vercel's `pibardos-op` project uses [suyoyi/pibardos-op](https://github.com/suyoyi/pibardos-op), created separately during import. The original [suyoyi/PibardosOP](https://github.com/suyoyi/PibardosOP) remains synchronized for existing checkouts and this cloud workspace. Publish approved updates to both; see [release synchronization](docs/FREE_DEPLOYMENT.md#future-updates).
+**Primary repository:** All future development and Vercel releases use [suyoyi/pibardos-op](https://github.com/suyoyi/pibardos-op), branch `main`. The original [suyoyi/PibardosOP](https://github.com/suyoyi/PibardosOP) is retained for historical reference. See [release instructions](docs/FREE_DEPLOYMENT.md#future-updates).
 
 ## Try the app in your browser with GitHub Codespaces
 
-[Create a Codespace for Pibardos OP](https://codespaces.new/suyoyi/PibardosOP?ref=main)
+[Create a Codespace for Pibardos OP](https://codespaces.new/suyoyi/pibardos-op?ref=main)
 
 Sign in to GitHub, create a Codespace from `main`, and wait for its post-start command. The repository's devcontainer installs Node 24 and Docker-in-Docker, restores pinned dependencies, starts local Supabase, prepares public connection settings and runs a production preview. No Vercel deployment or external Supabase account is required for this development preview.
 
@@ -25,8 +25,8 @@ Next.js trusts only this Codespace's exact forwarded hostname for development as
 For Windows, install Node.js 24, Git and Docker Desktop with the WSL 2 / Linux-container engine. Open Docker Desktop before starting. Clone the repository into a user-owned folder and open it as a **local** project in your desktop coding app:
 
 ```powershell
-git clone https://github.com/suyoyi/PibardosOP.git
-cd PibardosOP
+git clone https://github.com/suyoyi/pibardos-op.git
+cd pibardos-op
 npm run local:start
 ```
 

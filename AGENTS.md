@@ -10,8 +10,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Git repositories and hosted releases
 
-- The cloud workspace originally targets `suyoyi/PibardosOP` (`origin`), but the owner confirmed that Vercel serves a separately created repository, `suyoyi/pibardos-op` (`deployment`), from `main`. GitHub repository names are distinct here because the latter includes a hyphen.
-- For an application update authorized for publication, inspect both remote branches for independent work, then publish the reviewed commit to both repositories without force-pushing. Preserve both histories. A push only to the original repository does not update the hosted app. Verify the remote hashes and the actual production behavior separately. See `docs/FREE_DEPLOYMENT.md` for the remote setup and commands.
+- The owner selected **`suyoyi/pibardos-op` as the primary repository for all future work**. Its `main` branch deploys to Vercel. In this workspace `origin` points to `https://github.com/suyoyi/pibardos-op.git`; `original` retains `https://github.com/suyoyi/PibardosOP.git` for historical reference. This supersedes the temporary dual-publication workflow.
+- For an application update authorized for publication, fetch/review the canonical `origin/main`, preserve independent work, and push the reviewed commit with `git push origin HEAD:main` without force-pushing. Verify the remote hash and actual production behavior separately. Do not require publishing future changes to the legacy repository. If a restored task attaches the old checkout/remote, preserve it as `original`, configure canonical `origin`, and inspect/fetch before editing. See `docs/FREE_DEPLOYMENT.md`.
 
 ## Owner preferences and hidden features
 

@@ -6,7 +6,7 @@ This guide prepares a new cloud database. Local accounts, decks, matches and dis
 
 Current personal beta: **https://pibardos-op.vercel.app**. On 2026-10-16, public HTTP checks verified the running web process, the configured login form, private-route redirects, manifest, service-worker script and icons. The owner confirmed the hosted schema has 17 tables with RLS and reported successful sign-in. Hosted save/reload behavior and multi-account isolation still require an authenticated production check; ordinary automated tests remain local.
 
-The existing Vercel project is connected to **`suyoyi/pibardos-op`**, created by Vercel from an earlier snapshot of **`suyoyi/PibardosOP`**. These are two Git repositories; Vercel's lowercase project-name requirement did not rename the original GitHub repository. The snapshots' Git histories have been joined without deleting either history. Keep both `main` branches synchronized using the release instructions below; publishing only to the original repository leaves this deployment unchanged.
+The existing Vercel project is connected to **`suyoyi/pibardos-op`**, created by Vercel from an earlier snapshot of **`suyoyi/PibardosOP`**. These are two Git repositories; Vercel's lowercase project-name requirement did not rename the original GitHub repository. The snapshots' Git histories have been joined without deleting either history. The owner has selected **`suyoyi/pibardos-op` as the primary repository for future development and releases**. The original is retained for historical reference; the temporary dual-publication workflow is superseded by the release instructions below.
 
 After the repository synchronization on 2026-10-16, Vercel reported a successful deployment of `a1a1255`. HTTPS checks confirmed that the hosted login now includes **Continuar con Google**, callback cancellation stays on the app with private/no-store and no-referrer headers, and private routes still redirect anonymous visitors. Real Google sign-in still requires the provider/client setup and an authenticated owner check; see [Google sign-in](GOOGLE_AUTH.md).
 
@@ -91,19 +91,17 @@ A local successful build or an existing GitHub commit is not a verified hosted d
 
 ## Future updates
 
-The cloud checkout has `origin` pointing to `https://github.com/suyoyi/PibardosOP.git` and an additional `deployment` remote pointing to `https://github.com/suyoyi/pibardos-op.git`. If missing in a fresh original-repository checkout, add the latter once with `git remote add deployment https://github.com/suyoyi/pibardos-op.git`. An installation cloned from the hosting repository can have different remote names; inspect `git remote -v` before using the commands below.
+The cloud checkout's primary remote is now `origin` → `https://github.com/suyoyi/pibardos-op.git`. The previous repository remains as `original` → `https://github.com/suyoyi/PibardosOP.git`, for historical reference. The existing workspace directory can still be named `PibardosOP`; its directory name does not determine the Git destination. New checkouts and Codespaces should use the primary repository.
 
-Before a release, fetch and inspect both `main` branches. Incorporate independent work before publishing; a non-fast-forward rejection must be resolved without force-pushing. From the reviewed commit in the cloud checkout, publish authorized updates and verify both references:
+Inspect `git remote -v` before publishing from an older checkout. Preserve the old remote as `original`, configure canonical `origin`, fetch its `main`, and reconcile any local work without resets or force-pushing. Before a release, inspect `origin/main` for independent work. Publish authorized updates and verify the canonical reference:
 
 ```sh
 git push origin HEAD:main
-git push deployment HEAD:main
 git rev-parse HEAD
 git ls-remote origin refs/heads/main
-git ls-remote deployment refs/heads/main
 ```
 
-Vercel watches the hosting repository's `main`, not the similarly named original repository. Git push success is separate from deployment success: inspect the Vercel result and request the production route affected by the release. If necessary, create a deployment from `https://github.com/suyoyi/pibardos-op/tree/main` in the existing Vercel project's Deployments view. Redeploying an old snapshot does not fetch unrelated newer commits.
+Vercel watches the primary repository's `main`. Future releases do not require updating the legacy repository. Git push success is separate from deployment success: inspect the Vercel result and request the production route affected by the release. If necessary, create a deployment from `https://github.com/suyoyi/pibardos-op/tree/main` in the existing Vercel project's Deployments view. Redeploying an old snapshot does not fetch unrelated newer commits.
 
 When SQL migrations are added, apply those pending migrations to the reviewed cloud project using Supabase CLI before expecting new database features to work. The bootstrap records the original versions so future `migration list`/`db push --dry-run` can identify new migrations. Do not run `db reset` or the initial bootstrap against the cloud project for routine updates.
 

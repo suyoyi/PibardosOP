@@ -2,6 +2,12 @@
 
 **Current owner preference:** Mi colección, Lista de deseos and Cartas que me faltan are intentionally hidden pending redesign. Preserve their code/data and include a Spanish reminder when responding to future application-change requests; see AGENTS.md.
 
+## Primary repository selected by the owner — 2026-10-16
+
+- Future development and releases target `suyoyi/pibardos-op`, branch `main`, which Vercel already watches. Renamed the local remotes so `origin` is the primary repository and `original` retains `suyoyi/PibardosOP`; the working branch tracks canonical `origin/main`. Both joined histories and the existing workspace/data remain intact.
+- Updated contributor instructions, README clone/Codespaces links and the deployment guide. This supersedes the temporary dual-publication arrangement below. This transition's documentation is published once to both repositories so an old checkout also identifies the primary destination; future releases target canonical `origin` only.
+- No application, database, dependency, artwork or test logic changed. Validation consists of documentation formatting/diff checks, unchanged application-tree comparison and Git reference verification; no new application-test result or Google-login success is claimed. Mi colección, Lista de deseos and Cartas que me faltan remain hidden.
+
 ## Hosting repository mismatch diagnosed and histories synchronized — 2026-10-16
 
 - The owner identified `suyoyi/pibardos-op` as Vercel's actual Git source. Its sole initial commit `9f73012` was created by Vercel from the earlier original-repository snapshot `115b52a`; a tree comparison found only the omitted CI workflow and no independent application changes. The original repository's `b56b70f` contains Google sign-in, but production still served the earlier form. GitHub's original-repository `verify` job completed successfully; that alone did not publish this separate hosting repository.
