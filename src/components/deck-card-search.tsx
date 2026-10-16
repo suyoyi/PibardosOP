@@ -471,9 +471,6 @@ export function DeckCardSearch({
                 }
               >
                 <option value="">Todas las expansiones</option>
-                {Boolean(fanCatalog.cards.length || fanCatalog.error) && (
-                  <option value={fanEdition.id}>{fanEdition.name}</option>
-                )}
                 {expansions.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.name} · {item.id.replaceAll("-", "")}
@@ -508,6 +505,9 @@ export function DeckCardSearch({
                       {expansion} · nombre no disponible
                     </option>
                   )}
+                {Boolean(fanCatalog.cards.length || fanCatalog.error) && (
+                  <option value={fanEdition.id}>{fanEdition.name}</option>
+                )}
               </select>
             </Field>
           </div>
