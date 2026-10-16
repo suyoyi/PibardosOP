@@ -50,10 +50,21 @@ export const jaimeFanCard: FanCard = {
 };
 export const jaimeFanImageHash =
   "954f6cfbecc41c167d449160e4760ee905c08ad50e531a4328d59475475e155a";
+export const joanFanCard: FanCard = {
+  id: "a254ffb8-c517-409e-872a-9f14a4388306",
+  name: "Joan D. Cuadras, el Oráculo de los Dioses",
+  display_number: "LDP-006",
+  edition_code: "fan-pirate-gods",
+  artwork_id: "joan-d-cuadras",
+  created_at: "2026-10-16T00:00:00Z",
+};
+export const joanFanImageHash =
+  "f351f0575f7ff5d60d2d4171a01a337d56f6cbac14b55e3e293730a0b9a8b926";
 export const fanCardFixtures = [
   { card: vinFanCard, imageHash: vinFanImageHash, width: 916 },
   { card: marioFanCard, imageHash: marioFanImageHash, width: 912 },
   { card: aarFanCard, imageHash: aarFanImageHash, width: 914 },
   { card: christianFanCard, imageHash: christianFanImageHash, width: 960 },
   { card: jaimeFanCard, imageHash: jaimeFanImageHash, width: 914 },
+  { card: joanFanCard, imageHash: joanFanImageHash, width: 960 },
 ] as const;

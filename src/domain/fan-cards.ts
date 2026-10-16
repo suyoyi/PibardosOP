@@ -37,6 +37,12 @@ export const fanArtworks = [
     fileName: "jaime-d-dragneel.jpg",
     contentType: "image/jpeg",
   },
+  {
+    id: "joan-d-cuadras",
+    cardId: "a254ffb8-c517-409e-872a-9f14a4388306",
+    fileName: "joan-d-cuadras.jpg",
+    contentType: "image/jpeg",
+  },
 ] as const;
 export function fanArtworkForCard(card: Pick<FanCard, "id" | "artwork_id">) {
   return fanArtworks.find(

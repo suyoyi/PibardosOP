@@ -66,4 +66,12 @@ Vinny and Bermejo remain variants of OP12-020 and OP17-039 under their original 
 - Registry: `src/domain/fan-cards.ts`; additive data-only migration: `20261016000600_jaime_d_dragneel.sql`. Only the supplied name, printed label, edition and artwork reference are persisted; no gameplay rules or market price is assigned.
 - Authenticated image route: `/api/custom-artworks/jaime-d-dragneel/image`, preserving original JPEG MIME type and private/no-store/nosniff. Existing Cartas and builder/editor galleries offer name/code search and image-only enlargement. The original JPEG is included by the existing Next output-tracing glob.
 
+## Joan D. Cuadras, el Oráculo de los Dioses
+
+- Original fan card supplied directly as a JPEG attachment on 2026-10-16; bundled as `joan-d-cuadras.jpg` (960 × 1280, 529,452 bytes). All supplied image bytes, background, printed text and proportions are preserved. No generation, retouching, conversion, cropping or recompression occurred.
+- SHA-256: `f351f0575f7ff5d60d2d4171a01a337d56f6cbac14b55e3e293730a0b9a8b926`.
+- Edition: **LEGENDARIA BANDA DE LOS DIOSES PIRATAS**; display label **LDP-006**, visible on the supplied image. This is an independent display-only original fan card, separate from official playable cards and leader variants.
+- Registry: `src/domain/fan-cards.ts`; additive data-only migration: `20261016000700_joan_d_cuadras.sql`. Only name, printed display label, edition and registered artwork reference are stored. No gameplay facts, official canonical identity or price is assigned.
+- Authenticated image route: `/api/custom-artworks/joan-d-cuadras/image`, preserving JPEG MIME type and private/no-store/nosniff. The existing Cartas and builder/editor fan galleries provide name/code search and image-only enlargement; the original JPEG is included by the existing Next output-tracing glob.
+
 This records owner-supplied provenance for this app; it does not imply official affiliation or general redistribution rights for provider/franchise assets. Further playable leader variants need their own supplied file and verified base identity; original fan cards need their own supplied file and separate display-catalog identity. Both require additive catalog migrations, explicit registry entries and relevant checks. No generic image-upload or manual-card creation interface is introduced.
