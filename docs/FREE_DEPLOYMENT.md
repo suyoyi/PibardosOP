@@ -8,6 +8,8 @@ Current personal beta: **https://pibardos-op.vercel.app**. On 2026-10-16, public
 
 The existing Vercel project is connected to **`suyoyi/pibardos-op`**, created by Vercel from an earlier snapshot of **`suyoyi/PibardosOP`**. These are two Git repositories; Vercel's lowercase project-name requirement did not rename the original GitHub repository. The snapshots' Git histories have been joined without deleting either history. Keep both `main` branches synchronized using the release instructions below; publishing only to the original repository leaves this deployment unchanged.
 
+After the repository synchronization on 2026-10-16, Vercel reported a successful deployment of `a1a1255`. HTTPS checks confirmed that the hosted login now includes **Continuar con Google**, callback cancellation stays on the app with private/no-store and no-referrer headers, and private routes still redirect anonymous visitors. Real Google sign-in still requires the provider/client setup and an authenticated owner check; see [Google sign-in](GOOGLE_AUTH.md).
+
 ## Cost and account boundaries
 
 Checked against official documentation on **2026-10-16**:
