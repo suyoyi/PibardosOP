@@ -1,0 +1,33 @@
+{
+  "name": "Pibardos OP",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:5.2.3-24-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:4.1.3": {
+      "dockerDashComposeVersion": "none",
+      "installDockerBuildx": false
+    }
+  },
+  "remoteUser": "node",
+  "containerEnv": {
+    "SUPABASE_HOME": "/tmp/pibardos-supabase-cli"
+  },
+  "hostRequirements": {
+    "cpus": 2,
+    "memory": "4gb",
+    "storage": "16gb"
+  },
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Pibardos OP",
+      "onAutoForward": "openBrowser",
+      "protocol": "http"
+    }
+  },
+  "otherPortsAttributes": {
+    "onAutoForward": "ignore"
+  },
+  "postCreateCommand": "npm ci --cache /tmp/pibardos-npm-cache",
+  "postStartCommand": "npm run preview:start",
+  "waitFor": "postCreateCommand"
+}
