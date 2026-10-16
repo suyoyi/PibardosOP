@@ -34,4 +34,12 @@ Vinny and Bermejo remain variants of OP12-020 and OP17-039 under their original 
 - Separate registry: `src/domain/fan-cards.ts`; Supabase display catalog seeded by `20261016000200_fan_cards.sql`. No official base identity, game facts or market data are assigned. Only the name, display number, explicit edition and artwork reference are persisted.
 - Served as `image/jpeg` via authenticated no-store `/api/custom-artworks/vin-d-ny/image`, using a fixed registry filename. Included in deployment output tracing. Accessible from the fan edition gallery in Cartas and builder/editor; the popup contains only the enlarged supplied image and close control. The builder does not add this display-only card to a standard deck.
 
+## Mario D. Bestia, el Destructor
+
+- Original fan card supplied directly as a JPEG attachment on 2026-10-16; bundled as `mario-d-bestia.jpg` (912 × 1280, 513,196 bytes). The supplied bytes are unchanged, including all artwork, printed text and display label. No generation, retouching, conversion or recompression occurred.
+- SHA-256: `ead25b5c18669c8bc3fb096178351f7912375a42e587795cbbd058a1ae05773f`.
+- Edition: **LEGENDARIA BANDA DE LOS DIOSES PIRATAS**; display label **LDP-002**, read from the supplied image. It remains independent of playable official cards and the two custom leader variants.
+- Registry: `src/domain/fan-cards.ts`; additive data-only migration: `20261016000300_mario_d_bestia.sql`. Only name, display number, edition and registered artwork reference are added. No gameplay facts or prices are assigned.
+- Served as `image/jpeg` through authenticated no-store `/api/custom-artworks/mario-d-bestia/image`. The existing gallery and image-only popup work in Cartas and the builder/editor; file tracing includes this JPEG through the existing asset glob.
+
 This records owner-supplied provenance for this app; it does not imply official affiliation or general redistribution rights for provider/franchise assets. Further playable leader variants need their own supplied file and verified base identity; original fan cards need their own supplied file and separate display-catalog identity. Both require additive catalog migrations, explicit registry entries and relevant checks. No generic image-upload or manual-card creation interface is introduced.

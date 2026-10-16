@@ -13,6 +13,12 @@ export const fanArtworks = [
     fileName: "vin-d-ny.jpg",
     contentType: "image/jpeg",
   },
+  {
+    id: "mario-d-bestia",
+    cardId: "36e3be70-e149-483c-806e-94e78edcf9dd",
+    fileName: "mario-d-bestia.jpg",
+    contentType: "image/jpeg",
+  },
 ] as const;
 export function fanArtworkForCard(card: Pick<FanCard, "id" | "artwork_id">) {
   return fanArtworks.find(

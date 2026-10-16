@@ -9,3 +9,18 @@ export const vinFanCard: FanCard = {
 };
 export const vinFanImageHash =
   "29077766c5a6acf8c36fd5ddbda71ff6bfc1ab1d2bfaa6a6a6a262d7245fa375";
+
+export const marioFanCard: FanCard = {
+  id: "36e3be70-e149-483c-806e-94e78edcf9dd",
+  name: "Mario D. Bestia, el Destructor",
+  display_number: "LDP-002",
+  edition_code: "fan-pirate-gods",
+  artwork_id: "mario-d-bestia",
+  created_at: "2026-10-16T00:00:00Z",
+};
+export const marioFanImageHash =
+  "ead25b5c18669c8bc3fb096178351f7912375a42e587795cbbd058a1ae05773f";
+export const fanCardFixtures = [
+  { card: vinFanCard, imageHash: vinFanImageHash, width: 916 },
+  { card: marioFanCard, imageHash: marioFanImageHash, width: 912 },
+] as const;
