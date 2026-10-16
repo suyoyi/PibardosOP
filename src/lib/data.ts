@@ -33,6 +33,11 @@ export async function getCatalog(db: AppClient) {
     db.from("cards").select("*").order("id").range(a, b),
   );
 }
+export async function getFanCatalog(db: AppClient) {
+  return readAll((a, b) =>
+    db.from("fan_cards").select("*").order("name").order("id").range(a, b),
+  );
+}
 export class ManualCatalogProvider implements CardProvider {
   constructor(private readonly db: AppClient) {}
   async search(filters: CardFilters) {

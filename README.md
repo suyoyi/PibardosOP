@@ -86,13 +86,19 @@ BerryWallet is retired from UI, import resolution and image requests. Existing B
 
 ## Custom leader artwork
 
-**Roronoa Vinny (OP12-020)** and **Rocks D. Bermejo (OP17-039)** are custom artwork variants of their original leaders, using the owner's original PNG files. Find them by name/code or under their original **OP12** and **OP17** expansions, then open the leader's variant grid. They do **not** belong to **LEGENDARIA BANDA DE LOS DIOSES PIRATAS**: that separate edition awaits the new cards the owner will supply and is not shown as an empty selector option.
+**Roronoa Vinny (OP12-020)** and **Rocks D. Bermejo (OP17-039)** are custom artwork variants of their original leaders, using the owner's original PNG files. Find them by name/code or under their original **OP12** and **OP17** expansions, then open the leader's variant grid. They do **not** belong to **LEGENDARIA BANDA DE LOS DIOSES PIRATAS**: that separate edition now contains the independently supplied **Vin D. Ny, el DJ del Caos**.
 
 Opening custom artwork shows only an enlarged image and the dialog's close control: no cost, effect, price or history panel. In builder variants, tap the image to enlarge it and use **Elegir esta variante** to select the playable leader. Standard provider cards retain their full detail views. Original official set codes, canonical rules and copy identity stay intact. A saved deck retains the selected art in its detail, library, home leader panel and exact-version match form. Opponent selection still presents one original base per printed code. All signed-in app accounts can access the curated shared variants; RLS keeps their decks and matches private.
 
 Additive data-only migrations register shared read-only canonical references and custom printings without rewriting private cards or played snapshots. Original uploaded PNGs remain byte-for-byte unchanged behind authenticated no-store routes, included in Next deployment file tracing. Custom artwork remains unpriced instead of borrowing official quotes. Provider art is referenced rather than copied. Adding further fan cards requires the supplied file and a new reviewed registry/migration entry; there is no generic upload or manual-card UI.
 
 On Windows, stop the old app with Ctrl+C, run `git pull --ff-only`, then `npm.cmd run local:start`; the launcher applies pending migrations without resetting data.
+
+## Original fan edition
+
+**LEGENDARIA BANDA DE LOS DIOSES PIRATAS** is available in the expansion selector in Cartas and the deck builder/editor. It currently contains **Vin D. Ny, el DJ del Caos**, using the supplied JPEG unchanged. Cartas also shows a separate fan gallery when browsing all expansions; name/display-number searches work. Selecting this edition switches to its own image gallery. Clicking the card opens a large image with a close control, without costs, abilities, prices or technical details. In the builder this is a preview gallery only; it does not add fictional cards to a standard deck.
+
+`fan_cards` is an authenticated, shared, read-only Supabase catalog with its own UUIDs, display numbers and edition/artwork keys. The printed `OP-001` is a fan display label, not an official card code. These rows have no canonical official-card link, playable rules, market quote or deck allocation. Original leader variants remain in OP12/OP17 and retain their playable canonical identity. The additive migration creates the first real fan-edition entry without rewriting existing cards or decks. Missing catalog access has an explicit retry state; no image or fact is generated as a substitute.
 
 ## Visual deck detail and pricing
 
@@ -162,4 +168,4 @@ All application tables have RLS. Private tables use owner checks; composite fore
 
 Inventory allocations use physical printing rows, row locks and quantity checks; virtual deck contents never establish ownership. Matches reference exact versions. Win rate uses W/(W+L), with total and decisive sample sizes shown and no percentage when W+L is zero.
 
-The owner-supplied Roronoa Vinny and Rocks D. Bermejo PNGs are bundled unchanged for this app and served only after authentication; see [custom artwork provenance](assets/custom-artworks/README.md). Provider/franchise source images are not copied into permanent storage. Icons are original vectors rendered by `scripts/generate-icons.mjs`; regenerate with the installed `sharp` transitive Next.js dependency. The application is independent and has no official affiliation.
+The owner-supplied Roronoa Vinny and Rocks D. Bermejo PNGs and Vin D. Ny JPEG are bundled unchanged for this app and served only after authentication; see [custom artwork provenance](assets/custom-artworks/README.md). Provider/franchise source images are not copied into permanent storage. Icons are original vectors rendered by `scripts/generate-icons.mjs`; regenerate with the installed `sharp` transitive Next.js dependency. The application is independent and has no official affiliation.

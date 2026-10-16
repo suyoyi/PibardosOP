@@ -440,6 +440,34 @@ export type Database = {
           },
         ];
       };
+      fan_cards: {
+        Row: {
+          artwork_id: string;
+          created_at: string;
+          display_number: string | null;
+          edition_code: string;
+          id: string;
+          name: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          artwork_id: string;
+          created_at?: string;
+          display_number?: string | null;
+          edition_code: string;
+          id: string;
+          name: string;
+        };
+        Update: {
+          artwork_id?: string;
+          created_at?: string;
+          display_number?: string | null;
+          edition_code?: string;
+          id?: string;
+          name?: string;
+        };
+        Relationships: [];
+      };
       import_jobs: {
         Row: {
           created_at: string;

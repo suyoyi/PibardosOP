@@ -22,8 +22,16 @@
 - OP17-039 base leader metadata verified from the documented OPTCG API `/api/sets/card/OP17-039/` endpoint on 2026-10-16; source dataset date 2026-10-16. Only public metadata was fetched. The official image is referenced by URL and not bundled. Leader counter is not applicable; the custom printing copies all facts from its canonical base.
 - Authenticated image route: `/api/custom-artworks/rocks-d-bermejo/image`, with the same no-store, allowlisted-path and shared-read/private-deck boundaries as Vinny. Custom artwork has no independent market quote/history.
 
-## Artwork variants and the upcoming fan edition
+## Artwork variants and the separate original fan edition
 
-Vinny and Bermejo remain variants of OP12-020 and OP17-039 under their original expansions. They are not members of **LEGENDARIA BANDA DE LOS DIOSES PIRATAS**; the owner will supply that separate edition’s cards later. Custom-detail views still show only the enlarged original artwork. Internal canonical facts remain available for deck validation; no costs, effects or prices are rendered alongside the enlarged custom card.
+Vinny and Bermejo remain variants of OP12-020 and OP17-039 under their original expansions. They are not members of **LEGENDARIA BANDA DE LOS DIOSES PIRATAS**; that edition contains separately supplied original fan creations, starting with Vin D. Ny. Custom-detail views still show only the enlarged original artwork. Internal canonical facts remain available for deck validation; no costs, effects or prices are rendered alongside the enlarged custom card.
 
-This records owner-supplied provenance for this app; it does not imply official affiliation or general redistribution rights for provider/franchise assets. Further custom artworks need their own supplied file, verified base identity, additive catalog migration, registry entry and relevant checks. No generic image-upload or manual-card creation interface is introduced.
+## Vin D. Ny, el DJ del Caos
+
+- Original fan card supplied directly as a JPEG attachment on 2026-10-16; bundled as `vin-d-ny.jpg` (916 × 1280, 623,200 bytes). The supplied bytes are unchanged, including printed text, display number and artwork. No generation, retouching, format conversion or recompression occurred.
+- SHA-256: `29077766c5a6acf8c36fd5ddbda71ff6bfc1ab1d2bfaa6a6a6a262d7245fa375`.
+- Edition: **LEGENDARIA BANDA DE LOS DIOSES PIRATAS**; display label **OP-001**, read from the supplied image. This is not an official playing code or a reprint of either custom leader.
+- Separate registry: `src/domain/fan-cards.ts`; Supabase display catalog seeded by `20261016000200_fan_cards.sql`. No official base identity, game facts or market data are assigned. Only the name, display number, explicit edition and artwork reference are persisted.
+- Served as `image/jpeg` via authenticated no-store `/api/custom-artworks/vin-d-ny/image`, using a fixed registry filename. Included in deployment output tracing. Accessible from the fan edition gallery in Cartas and builder/editor; the popup contains only the enlarged supplied image and close control. The builder does not add this display-only card to a standard deck.
+
+This records owner-supplied provenance for this app; it does not imply official affiliation or general redistribution rights for provider/franchise assets. Further playable leader variants need their own supplied file and verified base identity; original fan cards need their own supplied file and separate display-catalog identity. Both require additive catalog migrations, explicit registry entries and relevant checks. No generic image-upload or manual-card creation interface is introduced.

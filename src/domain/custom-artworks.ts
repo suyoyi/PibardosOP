@@ -12,6 +12,7 @@ export const customArtworks = [
     name: "Roronoa Vinny",
     printingCode: "custom-roronoa-vinny",
     fileName: "roronoa-vinny.png",
+    contentType: "image/png",
   },
   {
     id: "rocks-d-bermejo",
@@ -21,6 +22,7 @@ export const customArtworks = [
     name: "Rocks D. Bermejo",
     printingCode: "custom-rocks-d-bermejo",
     fileName: "rocks-d-bermejo.png",
+    contentType: "image/png",
   },
 ] as const;
 export function customArtworkForCard(

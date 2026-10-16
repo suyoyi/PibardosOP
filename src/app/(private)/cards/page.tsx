@@ -4,12 +4,22 @@ import { requireUser } from "@/lib/supabase/server";
 import { PageHeading } from "@/components/ui";
 import { CardExplorer } from "@/components/card-explorer";
 import { SavedNotice } from "@/components/forms";
+import { getFanCatalog } from "@/lib/data";
+import type { FanCard } from "@/domain/fan-cards";
 export default async function CardsPage({
   searchParams,
 }: {
   searchParams: Promise<{ saved?: string }>;
 }) {
-  await requireUser();
+  const { supabase } = await requireUser();
+  let fanCards: FanCard[] = [],
+    fanError: string | undefined;
+  try {
+    fanCards = await getFanCatalog(supabase);
+  } catch {
+    fanError =
+      "No se pudo cargar la edición personalizada. Comprueba la conexión y vuelve a intentarlo.";
+  }
   return (
     <>
       <PageHeading
@@ -28,7 +38,7 @@ export default async function CardsPage({
           </Link>
         </div>
       )}
-      <CardExplorer />
+      <CardExplorer fanCards={fanCards} fanError={fanError} />
     </>
   );
 }

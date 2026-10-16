@@ -35,6 +35,9 @@ import {
 import { Field } from "./forms";
 import { isCustomArtwork } from "@/domain/custom-artworks";
 import { CustomArtworkView } from "./custom-artwork-view";
+import { fanEdition, type FanCard } from "@/domain/fan-cards";
+import { getBuilderFanCatalog } from "@/app/(private)/cards/fan-actions";
+import { FanCardGallery } from "./fan-card-gallery";
 import {
   compatibleWithLeader,
   visibleBuilderMainCard,
@@ -71,6 +74,39 @@ export function DeckCardSearch({
   );
   const [expansions, setExpansions] = useState<OptcgExpansion[]>([]);
   const [expansionNotice, setExpansionNotice] = useState("");
+  const [fanCatalog, setFanCatalog] = useState<{
+    cards: FanCard[];
+    error?: string;
+  }>({ cards: [] });
+  const reloadFanCatalog = async () => {
+    try {
+      setFanCatalog(await getBuilderFanCatalog());
+    } catch {
+      setFanCatalog({
+        cards: [],
+        error:
+          "No se pudo cargar la edición personalizada. Comprueba la conexión y reintenta.",
+      });
+    }
+  };
+  useEffect(() => {
+    let active = true;
+    getBuilderFanCatalog()
+      .then((result) => {
+        if (active) setFanCatalog(result);
+      })
+      .catch(() => {
+        if (active)
+          setFanCatalog({
+            cards: [],
+            error:
+              "No se pudo cargar la edición personalizada. Comprueba la conexión y reintenta.",
+          });
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
   const [remote, setRemote] = useState<{ key: string; result: SearchResult }>();
   const [pending, startSearch] = useTransition();
   const [adding, startAdd] = useTransition();
@@ -96,6 +132,7 @@ export function DeckCardSearch({
     color = filters.color ?? "",
     cost = filters.cost ?? "";
   const searchMode = mode;
+  const fanMode = expansion === fanEdition.id;
   const key = JSON.stringify([
     query,
     searchMode,
@@ -124,6 +161,7 @@ export function DeckCardSearch({
     };
   }, []);
   useEffect(() => {
+    if (fanMode) return;
     let cancelled = false;
     const timer = setTimeout(
       () =>
@@ -157,7 +195,16 @@ export function DeckCardSearch({
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [query, searchMode, expansion, color, cost, leaderColorsKey, key]);
+  }, [
+    query,
+    searchMode,
+    expansion,
+    color,
+    cost,
+    leaderColorsKey,
+    key,
+    fanMode,
+  ]);
   const result = remote?.key === key ? remote.result : undefined,
     received = result?.cards ?? [];
   const english = catalog.filter((card) => card.language === "en");
@@ -327,7 +374,11 @@ export function DeckCardSearch({
           <div>
             <p className="eyebrow">CONSTRUCTOR</p>
             <h2 className="mt-1 text-xl font-bold">
-              {mode === "leader" ? "Elige tu líder" : "Busca tus cartas"}
+              {fanMode
+                ? "Edición personalizada"
+                : mode === "leader"
+                  ? "Elige tu líder"
+                  : "Busca tus cartas"}
             </h2>
           </div>
         </div>
@@ -410,6 +461,9 @@ export function DeckCardSearch({
                 }
               >
                 <option value="">Todas las expansiones</option>
+                {Boolean(fanCatalog.cards.length || fanCatalog.error) && (
+                  <option value={fanEdition.id}>{fanEdition.name}</option>
+                )}
                 {expansions.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.name} · {item.id.replaceAll("-", "")}
@@ -438,6 +492,7 @@ export function DeckCardSearch({
                 <option value="promos">Promocionales</option>
                 {expansion &&
                   expansion !== "promos" &&
+                  expansion !== fanEdition.id &&
                   !expansions.some((item) => item.id === expansion) && (
                     <option value={expansion}>
                       {expansion} · nombre no disponible
@@ -446,207 +501,238 @@ export function DeckCardSearch({
               </select>
             </Field>
           </div>
-          <Field label="Color">
-            <select
-              className="field"
-              value={color}
-              onChange={(event) =>
-                updateFilters({ ...filters, color: event.target.value })
-              }
-            >
-              <option value="">
-                {mode === "cards" ? "Colores del líder" : "Todos los colores"}
-              </option>
-              {(mode === "cards"
-                ? (leader?.colors ?? [])
-                : (Object.keys(colorLabels) as CardColor[])
-              ).map((value) => (
-                <option key={value} value={value}>
-                  {colorLabels[value]}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Coste">
-            <select
-              className="field"
-              value={cost}
-              disabled={mode === "leader"}
-              onChange={(event) =>
-                updateFilters({ ...filters, cost: event.target.value })
-              }
-            >
-              <option value="">Todos los costes</option>
-              {[
-                ...new Set([
-                  ...Array.from({ length: 21 }, (_, index) => String(index)),
-                  ...received.flatMap((card) =>
-                    card.cost === null ? [] : [String(card.cost)],
-                  ),
-                ]),
-              ]
-                .sort((a, b) => Number(a) - Number(b))
-                .map((value) => (
-                  <option key={value} value={value}>
-                    {value}
+          {!fanMode && (
+            <>
+              <Field label="Color">
+                <select
+                  className="field"
+                  value={color}
+                  onChange={(event) =>
+                    updateFilters({ ...filters, color: event.target.value })
+                  }
+                >
+                  <option value="">
+                    {mode === "cards"
+                      ? "Colores del líder"
+                      : "Todos los colores"}
                   </option>
-                ))}
-            </select>
-          </Field>
+                  {(mode === "cards"
+                    ? (leader?.colors ?? [])
+                    : (Object.keys(colorLabels) as CardColor[])
+                  ).map((value) => (
+                    <option key={value} value={value}>
+                      {colorLabels[value]}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Coste">
+                <select
+                  className="field"
+                  value={cost}
+                  disabled={mode === "leader"}
+                  onChange={(event) =>
+                    updateFilters({ ...filters, cost: event.target.value })
+                  }
+                >
+                  <option value="">Todos los costes</option>
+                  {[
+                    ...new Set([
+                      ...Array.from({ length: 21 }, (_, index) =>
+                        String(index),
+                      ),
+                      ...received.flatMap((card) =>
+                        card.cost === null ? [] : [String(card.cost)],
+                      ),
+                    ]),
+                  ]
+                    .sort((a, b) => Number(a) - Number(b))
+                    .map((value) => (
+                      <option key={value} value={value}>
+                        {value}
+                      </option>
+                    ))}
+                </select>
+              </Field>
+            </>
+          )}
         </div>
-        {expansionNotice && (
+        {!fanMode && expansionNotice && (
           <p role="status" className="mt-3 text-xs text-amber-100">
             {expansionNotice}
           </p>
         )}
         <div className="mt-3 flex items-center justify-between gap-2 text-xs text-muted">
-          {(pending || !result) && <span role="status">Buscando cartas…</span>}
+          {!fanMode && (pending || !result) && (
+            <span role="status">Buscando cartas…</span>
+          )}
         </div>
       </div>
       <div className="p-3 sm:p-4">
-        {result?.error && (
-          <p
-            role="alert"
-            className="mb-4 rounded-lg border border-red-400/30 bg-red-400/5 p-3 text-sm text-red-200"
-          >
-            {result.error} Tus cartas guardadas siguen disponibles.
-          </p>
-        )}
-        {message.error && (
-          <p role="alert" className="mb-3 text-sm text-red-200">
-            {message.error}
-          </p>
-        )}
-        {message.success && (
-          <p role="status" className="mb-3 text-sm text-accent">
-            {message.success}
-          </p>
-        )}
-        {Boolean(result?.issues?.length) && (
-          <details className="mb-4">
-            <summary className="min-h-11 cursor-pointer py-3 text-sm text-amber-100">
-              Avisos de cartas recibidas ({result!.issues!.length})
-            </summary>
-            <ul className="grid gap-2 text-sm">
-              {result!.issues!.map((issue, i) => (
-                <li key={i}>{issue}</li>
-              ))}
-            </ul>
-          </details>
-        )}
-        {(pending || !result) && !candidates.length && (
-          <div aria-hidden="true" className="picker-grid mb-4">
-            {Array.from({ length: 6 }, (_, i) => (
-              <div
-                key={i}
-                className="aspect-[5/7] animate-pulse rounded-xl border border-border bg-background"
-              />
-            ))}
-          </div>
-        )}
-        <ul className="picker-grid" aria-label="Cuadrícula de cartas">
-          {groups
-            .slice((showPage - 1) * pageSize, showPage * pageSize)
-            .map((group) => {
-              const item = group.representative,
-                card = item.card;
-              const selected =
-                mode === "leader" &&
-                leader &&
-                normalizeCardNumber(leader.card_number) === group.number;
-              const quantity = entries.reduce((sum, entry) => {
-                const savedCard = catalog.find(
-                  (saved) => saved.id === entry.card_id,
-                );
-                return savedCard &&
-                  normalizeCardNumber(savedCard.card_number) === group.number
-                  ? sum + entry.quantity
-                  : sum;
-              }, 0);
-              return (
-                <li key={group.number} className="min-w-0">
+        {fanMode ? (
+          <FanCardGallery
+            cards={fanCatalog.cards}
+            search={query}
+            error={fanCatalog.error}
+            editionOnly
+            onRetry={() => {
+              void reloadFanCatalog();
+            }}
+          />
+        ) : (
+          <>
+            {result?.error && (
+              <p
+                role="alert"
+                className="mb-4 rounded-lg border border-red-400/30 bg-red-400/5 p-3 text-sm text-red-200"
+              >
+                {result.error} Tus cartas guardadas siguen disponibles.
+              </p>
+            )}
+            {message.error && (
+              <p role="alert" className="mb-3 text-sm text-red-200">
+                {message.error}
+              </p>
+            )}
+            {message.success && (
+              <p role="status" className="mb-3 text-sm text-accent">
+                {message.success}
+              </p>
+            )}
+            {Boolean(result?.issues?.length) && (
+              <details className="mb-4">
+                <summary className="min-h-11 cursor-pointer py-3 text-sm text-amber-100">
+                  Avisos de cartas recibidas ({result!.issues!.length})
+                </summary>
+                <ul className="grid gap-2 text-sm">
+                  {result!.issues!.map((issue, i) => (
+                    <li key={i}>{issue}</li>
+                  ))}
+                </ul>
+              </details>
+            )}
+            {(pending || !result) && !candidates.length && (
+              <div aria-hidden="true" className="picker-grid mb-4">
+                {Array.from({ length: 6 }, (_, i) => (
                   <div
-                    className={`picker-card ${selected ? "picker-card-selected" : ""}`}
-                  >
-                    <button
-                      type="button"
-                      className="absolute inset-0 h-full w-full"
-                      aria-label={`Ver variantes ${group.number} · ${card.name}`}
-                      aria-haspopup="dialog"
-                      aria-pressed={
-                        mode === "leader" ? Boolean(selected) : undefined
-                      }
-                      onClick={() => openGroup(group.number, card.card_type)}
-                    >
-                      <CandidateArtwork candidate={item} />
-                    </button>
-                    {selected ? (
-                      <span
-                        className="picker-quantity"
-                        aria-label="Líder seleccionado"
+                    key={i}
+                    className="aspect-[5/7] animate-pulse rounded-xl border border-border bg-background"
+                  />
+                ))}
+              </div>
+            )}
+            <ul className="picker-grid" aria-label="Cuadrícula de cartas">
+              {groups
+                .slice((showPage - 1) * pageSize, showPage * pageSize)
+                .map((group) => {
+                  const item = group.representative,
+                    card = item.card;
+                  const selected =
+                    mode === "leader" &&
+                    leader &&
+                    normalizeCardNumber(leader.card_number) === group.number;
+                  const quantity = entries.reduce((sum, entry) => {
+                    const savedCard = catalog.find(
+                      (saved) => saved.id === entry.card_id,
+                    );
+                    return savedCard &&
+                      normalizeCardNumber(savedCard.card_number) ===
+                        group.number
+                      ? sum + entry.quantity
+                      : sum;
+                  }, 0);
+                  return (
+                    <li key={group.number} className="min-w-0">
+                      <div
+                        className={`picker-card ${selected ? "picker-card-selected" : ""}`}
                       >
-                        <Check size={16} aria-hidden="true" />
-                      </span>
-                    ) : (
-                      card.card_type !== "leader" && (
-                        <span
-                          className="picker-quantity"
-                          aria-label={`Copias ${group.number}: ${quantity}`}
+                        <button
+                          type="button"
+                          className="absolute inset-0 h-full w-full"
+                          aria-label={`Ver variantes ${group.number} · ${card.name}`}
+                          aria-haspopup="dialog"
+                          aria-pressed={
+                            mode === "leader" ? Boolean(selected) : undefined
+                          }
+                          onClick={() =>
+                            openGroup(group.number, card.card_type)
+                          }
                         >
-                          {quantity}
-                        </span>
-                      )
-                    )}
-                  </div>
-                  <div className="picker-caption">
-                    <span>{group.number}</span>
-                    <Layers size={12} aria-hidden="true" />
-                  </div>
-                  <p
-                    className="mt-1 line-clamp-2 px-1 text-[10px] leading-4 text-muted"
-                    title={card.name}
-                  >
-                    {card.name}
-                  </p>
-                  <button
-                    type="button"
-                    className="home-text-link w-full justify-center"
-                    aria-label={`Abrir variantes de ${group.number}`}
-                    onClick={() => openGroup(group.number, card.card_type)}
-                  >
-                    Ver variantes
-                  </button>
-                </li>
-              );
-            })}
-        </ul>
-        {!candidates.length && !pending && result && !result.error && (
-          <p className="py-8 text-center text-sm text-muted">
-            Sin coincidencias. Cambia los filtros o busca otra carta.
-          </p>
-        )}
-        {groups.length > pageSize && (
-          <div className="mt-4 flex items-center justify-between gap-2">
-            <button
-              type="button"
-              className="button-secondary"
-              disabled={showPage === 1}
-              onClick={() => setPageState({ key: pageKey, page: showPage - 1 })}
-            >
-              Anterior
-            </button>
-            <span className="text-xs text-muted">
-              {showPage} / {Math.ceil(groups.length / pageSize)}
-            </span>
-            <button
-              type="button"
-              className="button-secondary"
-              disabled={showPage * pageSize >= groups.length}
-              onClick={() => setPageState({ key: pageKey, page: showPage + 1 })}
-            >
-              Siguiente
-            </button>
-          </div>
+                          <CandidateArtwork candidate={item} />
+                        </button>
+                        {selected ? (
+                          <span
+                            className="picker-quantity"
+                            aria-label="Líder seleccionado"
+                          >
+                            <Check size={16} aria-hidden="true" />
+                          </span>
+                        ) : (
+                          card.card_type !== "leader" && (
+                            <span
+                              className="picker-quantity"
+                              aria-label={`Copias ${group.number}: ${quantity}`}
+                            >
+                              {quantity}
+                            </span>
+                          )
+                        )}
+                      </div>
+                      <div className="picker-caption">
+                        <span>{group.number}</span>
+                        <Layers size={12} aria-hidden="true" />
+                      </div>
+                      <p
+                        className="mt-1 line-clamp-2 px-1 text-[10px] leading-4 text-muted"
+                        title={card.name}
+                      >
+                        {card.name}
+                      </p>
+                      <button
+                        type="button"
+                        className="home-text-link w-full justify-center"
+                        aria-label={`Abrir variantes de ${group.number}`}
+                        onClick={() => openGroup(group.number, card.card_type)}
+                      >
+                        Ver variantes
+                      </button>
+                    </li>
+                  );
+                })}
+            </ul>
+            {!candidates.length && !pending && result && !result.error && (
+              <p className="py-8 text-center text-sm text-muted">
+                Sin coincidencias. Cambia los filtros o busca otra carta.
+              </p>
+            )}
+            {groups.length > pageSize && (
+              <div className="mt-4 flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  className="button-secondary"
+                  disabled={showPage === 1}
+                  onClick={() =>
+                    setPageState({ key: pageKey, page: showPage - 1 })
+                  }
+                >
+                  Anterior
+                </button>
+                <span className="text-xs text-muted">
+                  {showPage} / {Math.ceil(groups.length / pageSize)}
+                </span>
+                <button
+                  type="button"
+                  className="button-secondary"
+                  disabled={showPage * pageSize >= groups.length}
+                  onClick={() =>
+                    setPageState({ key: pageKey, page: showPage + 1 })
+                  }
+                >
+                  Siguiente
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
       {zoomLeader && leader && (

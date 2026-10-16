@@ -22,21 +22,30 @@ import { CardPriceHistory, type PriceHistoryCache } from "./card-price-history";
 import { historySelection } from "@/domain/price-history";
 import { isCustomArtwork } from "@/domain/custom-artworks";
 import { CustomArtworkView } from "./custom-artwork-view";
+import { fanEdition, type FanCard } from "@/domain/fan-cards";
+import { FanCardGallery } from "./fan-card-gallery";
 
 function ExplorerFiltersPanel({
   filters,
   options,
   onChange,
+  fanAvailable,
 }: {
   filters: ExplorerFilters;
   options?: ExplorerPage["options"];
   onChange: (filters: ExplorerFilters) => void;
+  fanAvailable: boolean;
 }) {
   const [advanced, setAdvanced] = useState(false),
     advancedId = useId(),
     searchId = useId();
+  const fanMode = filters.set === fanEdition.id;
   const update = (key: keyof ExplorerFilters, value: string) =>
-    onChange({ ...filters, [key]: value });
+    onChange(
+      key === "set" && value === fanEdition.id
+        ? { search: filters.search, set: value }
+        : { ...filters, [key]: value },
+    );
   const extraCount = [
     "type",
     "power",
@@ -116,12 +125,16 @@ function ExplorerFiltersPanel({
               onChange={(e) => update("set", e.target.value)}
             >
               <option value="">Todas las expansiones</option>
+              {fanAvailable && (
+                <option value={fanEdition.id}>{fanEdition.name}</option>
+              )}
               {options?.expansions.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.name ?? "Nombre no disponible"} · {item.id}
                 </option>
               ))}
               {filters.set &&
+                filters.set !== fanEdition.id &&
                 !options?.expansions.some(
                   (item) => item.id === filters.set,
                 ) && (
@@ -132,34 +145,40 @@ function ExplorerFiltersPanel({
             </select>
           </Field>
         </div>
-        <Field label="Color">
-          <select
-            className="field"
-            value={filters.color ?? ""}
-            onChange={(e) => update("color", e.target.value)}
-          >
-            <option value="">Todos los colores</option>
-            {Object.entries(colorLabels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </Field>
-        {select("cost", "Coste", "Todos los costes")}
+        {!fanMode && (
+          <>
+            <Field label="Color">
+              <select
+                className="field"
+                value={filters.color ?? ""}
+                onChange={(e) => update("color", e.target.value)}
+              >
+                <option value="">Todos los colores</option>
+                {Object.entries(colorLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            {select("cost", "Coste", "Todos los costes")}
+          </>
+        )}
       </div>
       <div className="flex flex-wrap gap-3">
-        <button
-          type="button"
-          className="button-secondary"
-          aria-expanded={advanced}
-          aria-controls={advancedId}
-          onClick={() => setAdvanced(!advanced)}
-        >
-          <SlidersHorizontal size={16} aria-hidden="true" />{" "}
-          {advanced ? "Menos filtros" : "Más filtros"}
-          {extraCount > 0 ? ` (${extraCount})` : ""}
-        </button>
+        {!fanMode && (
+          <button
+            type="button"
+            className="button-secondary"
+            aria-expanded={advanced}
+            aria-controls={advancedId}
+            onClick={() => setAdvanced(!advanced)}
+          >
+            <SlidersHorizontal size={16} aria-hidden="true" />{" "}
+            {advanced ? "Menos filtros" : "Más filtros"}
+            {extraCount > 0 ? ` (${extraCount})` : ""}
+          </button>
+        )}
         {Object.values(filters).some(Boolean) && (
           <button
             type="button"
@@ -170,7 +189,7 @@ function ExplorerFiltersPanel({
           </button>
         )}
       </div>
-      <div id={advancedId} hidden={!advanced}>
+      <div id={advancedId} hidden={fanMode || !advanced}>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Field label="Tipo">
             <select
@@ -396,7 +415,13 @@ function ExplorerModal({
 }
 
 type CatalogResponse = Awaited<ReturnType<typeof browseCardCatalog>>;
-export function CardExplorer() {
+export function CardExplorer({
+  fanCards,
+  fanError,
+}: {
+  fanCards: FanCard[];
+  fanError?: string;
+}) {
   const [filters, setFilters] = useState<ExplorerFilters>({}),
     [page, setPage] = useState(1),
     [retry, setRetry] = useState(0);
@@ -405,7 +430,12 @@ export function CardExplorer() {
     [selected, setSelected] = useState<ExplorerGroup | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const key = JSON.stringify({ filters, page, retry });
+  const fanMode = filters.set === fanEdition.id;
+  const showFan =
+    fanMode ||
+    Object.entries(filters).every(([key, value]) => key === "search" || !value);
   useEffect(() => {
+    if (fanMode) return;
     let active = true;
     const timer = setTimeout(async () => {
       setPending(true);
@@ -429,7 +459,7 @@ export function CardExplorer() {
       active = false;
       clearTimeout(timer);
     };
-  }, [key]);
+  }, [key, fanMode]);
   const data = result && "groups" in result ? result : undefined;
   function change(next: ExplorerFilters) {
     setFilters(next);
@@ -447,115 +477,127 @@ export function CardExplorer() {
         filters={filters}
         options={data?.options}
         onChange={change}
+        fanAvailable={Boolean(fanCards.length || fanError)}
       />
-      <div ref={resultsRef} className="scroll-mt-6" aria-busy={pending}>
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <p role="status" className="text-sm text-muted">
-            {pending
-              ? "Cargando cartas…"
-              : data
-                ? `${data.total} cartas · ${data.printings} impresiones coincidentes`
-                : "Catálogo no disponible"}
-          </p>
-          <button
-            className="button-secondary"
-            disabled={pending}
-            onClick={() => {
-              setPending(true);
-              setRetry(retry + 1);
-            }}
-          >
-            Volver a consultar
-          </button>
-        </div>
-        {result && "error" in result && (
-          <p role="alert" className="panel mb-4 p-4 text-sm text-red-200">
-            {result.error}
-          </p>
-        )}
-        {!data && pending && (
-          <div className="picker-grid" aria-label="Cargando catálogo">
-            {Array.from({ length: 9 }, (_, i) => (
-              <div
-                key={i}
-                className="aspect-[5/7] animate-pulse rounded-xl bg-border"
-              />
-            ))}
+      {showFan && (
+        <FanCardGallery
+          cards={fanCards}
+          search={filters.search ?? ""}
+          error={fanError}
+          editionOnly={fanMode}
+        />
+      )}
+      {!fanMode && (
+        <div ref={resultsRef} className="scroll-mt-6" aria-busy={pending}>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <p role="status" className="text-sm text-muted">
+              {pending
+                ? "Cargando cartas…"
+                : data
+                  ? `${data.total} cartas · ${data.printings} impresiones coincidentes`
+                  : "Catálogo no disponible"}
+            </p>
+            <button
+              className="button-secondary"
+              disabled={pending}
+              onClick={() => {
+                setPending(true);
+                setRetry(retry + 1);
+              }}
+            >
+              Volver a consultar
+            </button>
           </div>
-        )}
-        {data && (
-          <>
-            <ul
-              className={`picker-grid ${pending ? "opacity-50" : ""}`}
-              aria-label="Resultados del catálogo"
-            >
-              {data.groups.map((group) => {
-                const card = group.printings[0].candidate.card;
-                return (
-                  <li key={group.number} className="min-w-0">
-                    <button
-                      className="block w-full text-left"
-                      type="button"
-                      aria-label={`Ver carta ${group.number} · ${card.name}`}
-                      disabled={pending}
-                      onClick={() => setSelected(group)}
-                    >
-                      <div className="picker-card">
-                        <CandidateArtwork
-                          candidate={group.printings[0].candidate}
-                        />
-                        <span className="explorer-variant-count">
-                          {group.printings.length}{" "}
-                          {group.printings.length === 1 ? "arte" : "artes"}
-                        </span>
-                      </div>
-                      <div className="picker-caption">
-                        <span>{group.number}</span>
-                      </div>
-                      <p className="mt-2 break-words text-xs font-semibold">
-                        {card.name}
-                      </p>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-            {!pending && !data.total && (
-              <section className="panel grid gap-3 p-6">
-                <h2 className="font-semibold">
-                  No hay cartas con estos filtros
-                </h2>
-                <p className="text-sm text-muted">
-                  Prueba otro nombre, número o expansión, o limpia los filtros.
+          {result && "error" in result && (
+            <p role="alert" className="panel mb-4 p-4 text-sm text-red-200">
+              {result.error}
+            </p>
+          )}
+          {!data && pending && (
+            <div className="picker-grid" aria-label="Cargando catálogo">
+              {Array.from({ length: 9 }, (_, i) => (
+                <div
+                  key={i}
+                  className="aspect-[5/7] animate-pulse rounded-xl bg-border"
+                />
+              ))}
+            </div>
+          )}
+          {data && (
+            <>
+              <ul
+                className={`picker-grid ${pending ? "opacity-50" : ""}`}
+                aria-label="Resultados del catálogo"
+              >
+                {data.groups.map((group) => {
+                  const card = group.printings[0].candidate.card;
+                  return (
+                    <li key={group.number} className="min-w-0">
+                      <button
+                        className="block w-full text-left"
+                        type="button"
+                        aria-label={`Ver carta ${group.number} · ${card.name}`}
+                        disabled={pending}
+                        onClick={() => setSelected(group)}
+                      >
+                        <div className="picker-card">
+                          <CandidateArtwork
+                            candidate={group.printings[0].candidate}
+                          />
+                          <span className="explorer-variant-count">
+                            {group.printings.length}{" "}
+                            {group.printings.length === 1 ? "arte" : "artes"}
+                          </span>
+                        </div>
+                        <div className="picker-caption">
+                          <span>{group.number}</span>
+                        </div>
+                        <p className="mt-2 break-words text-xs font-semibold">
+                          {card.name}
+                        </p>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+              {!pending && !data.total && (
+                <section className="panel grid gap-3 p-6">
+                  <h2 className="font-semibold">
+                    No hay cartas con estos filtros
+                  </h2>
+                  <p className="text-sm text-muted">
+                    Prueba otro nombre, número o expansión, o limpia los
+                    filtros.
+                  </p>
+                </section>
+              )}
+              <nav
+                aria-label="Páginas del catálogo"
+                className="mt-6 flex flex-wrap items-center justify-between gap-3"
+              >
+                <button
+                  className="button-secondary"
+                  disabled={pending || data.page <= 1}
+                  onClick={() => paginate(data.page - 1)}
+                >
+                  Página anterior
+                </button>
+                <p className="text-xs text-muted">
+                  {data.page} / {data.pages}
                 </p>
-              </section>
-            )}
-            <nav
-              aria-label="Páginas del catálogo"
-              className="mt-6 flex flex-wrap items-center justify-between gap-3"
-            >
-              <button
-                className="button-secondary"
-                disabled={pending || data.page <= 1}
-                onClick={() => paginate(data.page - 1)}
-              >
-                Página anterior
-              </button>
-              <p className="text-xs text-muted">
-                {data.page} / {data.pages}
-              </p>
-              <button
-                className="button-secondary"
-                disabled={pending || data.page >= data.pages}
-                onClick={() => paginate(data.page + 1)}
-              >
-                Página siguiente
-              </button>
-            </nav>
-          </>
-        )}
-      </div>
-      {selected && (
+                <button
+                  className="button-secondary"
+                  disabled={pending || data.page >= data.pages}
+                  onClick={() => paginate(data.page + 1)}
+                >
+                  Página siguiente
+                </button>
+              </nav>
+            </>
+          )}
+        </div>
+      )}
+      {!fanMode && selected && (
         <ExplorerModal
           key={selected.number}
           group={selected}

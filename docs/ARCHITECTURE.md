@@ -32,20 +32,21 @@ flowchart LR
 
 ## Proposed database schema
 
-| Entity                 | Ownership / integrity                                                                                                                           |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| cards                  | Shared rows read-only; manual rows owner-only and immutable; internal UUID, printed number, canonical identity, nullable details and provenance |
-| card_restrictions      | Canonical identity, format, effective interval and provenance; read-only to users                                                               |
-| decks                  | Owner, leader, tags, format/status; current version must belong to the same deck                                                                |
-| deck_versions          | Parent-owned immutable leader/format snapshots; unique sequence per deck                                                                        |
-| deck_cards             | Composite version/card key, positive quantity, separate main/DON roles; snapshot insertion through RPC                                          |
-| matches                | Owner; exact owned version and leader opponent; win/loss and play order; historical unsupported values retained                                 |
-| tournaments            | Owner, selected deck version, dates and optional manual placement; archival preserves results                                                   |
-| tournament_rounds      | Parent-owned, unique round; match and event owners must agree                                                                                   |
-| collection_items       | Owner and physical printing; tradeable <= owned; language, finish and location                                                                  |
-| collection_allocations | Parent-owned inventory reservation; total allocation <= owned minus tradeable; cannot allocate across owners                                    |
-| wishlist_items         | Owner and exact printing; unique owner/card; total English-copy goal, priority, notes; optimistic timestamp updates                             |
-| import_jobs            | Owner, source, raw input, status and structured errors; no discarded unknown lines                                                              |
+| Entity                 | Ownership / integrity                                                                                                                               |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| fan_cards              | Shared authenticated read-only display catalog; independent UUID, name, display number, edition key and registered artwork; no gameplay/price facts |
+| cards                  | Shared rows read-only; manual rows owner-only and immutable; internal UUID, printed number, canonical identity, nullable details and provenance     |
+| card_restrictions      | Canonical identity, format, effective interval and provenance; read-only to users                                                                   |
+| decks                  | Owner, leader, tags, format/status; current version must belong to the same deck                                                                    |
+| deck_versions          | Parent-owned immutable leader/format snapshots; unique sequence per deck                                                                            |
+| deck_cards             | Composite version/card key, positive quantity, separate main/DON roles; snapshot insertion through RPC                                              |
+| matches                | Owner; exact owned version and leader opponent; win/loss and play order; historical unsupported values retained                                     |
+| tournaments            | Owner, selected deck version, dates and optional manual placement; archival preserves results                                                       |
+| tournament_rounds      | Parent-owned, unique round; match and event owners must agree                                                                                       |
+| collection_items       | Owner and physical printing; tradeable <= owned; language, finish and location                                                                      |
+| collection_allocations | Parent-owned inventory reservation; total allocation <= owned minus tradeable; cannot allocate across owners                                        |
+| wishlist_items         | Owner and exact printing; unique owner/card; total English-copy goal, priority, notes; optimistic timestamp updates                                 |
+| import_jobs            | Owner, source, raw input, status and structured errors; no discarded unknown lines                                                                  |
 
 RLS protects every private table. Composite ownership foreign keys protect cross-entity relationships. Explicit privileges protect the catalog and snapshots. Deck-version saving uses one transaction and a row lock to serialize version numbers.
 
@@ -204,5 +205,12 @@ The owner removed **Catálogo parcial o con avisos** and **Importación avanzada
 - CardArtwork is reused across catalog/variant dialogs, builder, deck/library/home and exact-version match entry. Canonical reference rows act as fallbacks; an available provider or owned printing takes priority without duplicating the official base. The explorer/builder retain the custom variant beside official arts. Matchup selection prefers the original base and keeps one row per leader code.
 - The custom printing has no source market quote or independent price history. Source-specific quote guards leave it unpriced and price-history components are not mounted for it, preventing a same-code official quote/history from being misrepresented. Actual original-printing quote refresh remains separate; original facts and played artwork snapshots are not rewritten.
 - Tests verify the exact supplied bytes, registry boundaries, canonical grouping/base replacement, price non-substitution, real RLS/shared read-only facts, snapshot preservation, migration replay and the authenticated browser flow. Ordinary tests use controlled provider transport rather than live source requests; only the initial metadata verification used the live API.
-- Custom artwork does not imply membership in a separate edition. Vinny (OP12-020) and Bermejo (OP17-039) remain under their official original expansions and code-based variant groups. **LEGENDARIA BANDA DE LOS DIOSES PIRATAS** awaits separately supplied cards; no empty edition option, inferred source-based membership or fabricated catalog entries are shown.
+- Custom artwork does not imply membership in a separate edition. Vinny (OP12-020) and Bermejo (OP17-039) remain under their official original expansions and code-based variant groups. **LEGENDARIA BANDA DE LOS DIOSES PIRATAS** contains original fan creations in a separate `fan_cards` table, beginning with the actual supplied Vin D. Ny image. Membership is explicit rather than inferred from the custom-artwork source.
 - `CustomArtworkView` provides an image-only presentation for catalog dialogs, saved-card pages, deck detail and selected leader zoom. Builder custom-variant images open an image-only preview while a separate selection button retains the playable leader flow. Official detail/quote/history panels are not mounted for fan artwork. Tests cover each registered artwork across original-expansion filtering and authenticated mobile deck/match workflows.
+
+## Independent original fan cards
+
+- `fan_cards` is authoritative for curated original fan-edition metadata, separate from `cards` and all gameplay/version/quote relationships. The migration creates RLS and SELECT-only authenticated access. Anonymous reads and ordinary inserts/updates/deletes are denied. Display labels (e.g. OP-001 on the supplied image) are not parsed as official card identities. No cost, ability, power or price is transcribed/invented.
+- A separate asset registry binds each known fan UUID/artwork key to an unchanged owner-supplied file. The shared authenticated image route uses only registered filenames and MIME types, with no-store/nosniff. Next output tracing includes JPEG and PNG originals. Neither original fan cards nor original leader variants imply membership in the other catalog.
+- Cartas reads fan rows under the signed-in account's RLS. It shows a distinct gallery alongside unfiltered normal results, or exclusively when the fan edition is selected. The builder loads the same read-only catalog separately and exposes only its gallery/zoom. Local fan edition selection bypasses provider searches and inapplicable numeric filters; the edition key is never sent to OPTCG API. UI errors can retry without hiding normal card browsing.
+- `FanCardGallery` renders supplied images/name captions and an image-only modal. No deck-add control, card-details panel, market fetch or statistics sample is introduced. Registry/hash/search, real SQL privileges/RLS, fresh migration replay and authenticated mobile browsing/zoom tests cover the boundary. Further fan cards require actual supplied images and explicit new registered catalog entries.

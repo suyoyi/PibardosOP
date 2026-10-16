@@ -40,12 +40,6 @@ for (const art of customArtworks) {
           .digest("hex"),
       ).toBe(customArtworkExpectations[art.id].sha256);
       await page.goto("/cards");
-      await expect(
-        page
-          .getByLabel("Expansión", { exact: true })
-          .locator("option")
-          .filter({ hasText: "LEGENDARIA BANDA DE LOS DIOSES PIRATAS" }),
-      ).toHaveCount(0);
       await page
         .getByLabel("Expansión", { exact: true })
         .selectOption(art.cardNumber.split("-")[0]);

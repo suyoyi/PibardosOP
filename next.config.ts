@@ -15,7 +15,10 @@ const codespaceHost =
 const config: NextConfig = {
   poweredByHeader: false,
   outputFileTracingIncludes: {
-    "/api/custom-artworks/*/image": ["./assets/custom-artworks/*.png"],
+    "/api/custom-artworks/*/image": [
+      "./assets/custom-artworks/*.png",
+      "./assets/custom-artworks/*.jpg",
+    ],
   },
   allowedDevOrigins: codespaceHost ? [codespaceHost] : undefined,
   experimental: codespaceHost
