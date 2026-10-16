@@ -58,4 +58,12 @@ Vinny and Bermejo remain variants of OP12-020 and OP17-039 under their original 
 - Registry: `src/domain/fan-cards.ts`; additive data-only migration: `20261016000500_christian_d_bermejo.sql`. Persists only name, printed display label, edition and registered artwork reference; no gameplay facts, official canonical identity or prices are assigned.
 - Authenticated image route: `/api/custom-artworks/christian-d-bermejo/image`, with original JPEG MIME type and private/no-store/nosniff. Available in the Cartas and builder/editor fan galleries with image-only enlargement. The existing Next tracing glob includes the original JPEG in production output.
 
+## Jaime D. Dragneel, el Guardián de las Llamas
+
+- Original fan card supplied directly as a JPEG attachment on 2026-10-16; bundled as `jaime-d-dragneel.jpg` (914 × 1280, 568,894 bytes). The supplied image, text and proportions are unchanged. No generation, retouching, conversion, cropping or recompression occurred.
+- SHA-256: `954f6cfbecc41c167d449160e4760ee905c08ad50e531a4328d59475475e155a`.
+- Edition: **LEGENDARIA BANDA DE LOS DIOSES PIRATAS**; display label **LDP-005**, visible on the supplied artwork. It is an independent display-only original fan card, separate from official playable cards and leader variants.
+- Registry: `src/domain/fan-cards.ts`; additive data-only migration: `20261016000600_jaime_d_dragneel.sql`. Only the supplied name, printed label, edition and artwork reference are persisted; no gameplay rules or market price is assigned.
+- Authenticated image route: `/api/custom-artworks/jaime-d-dragneel/image`, preserving original JPEG MIME type and private/no-store/nosniff. Existing Cartas and builder/editor galleries offer name/code search and image-only enlargement. The original JPEG is included by the existing Next output-tracing glob.
+
 This records owner-supplied provenance for this app; it does not imply official affiliation or general redistribution rights for provider/franchise assets. Further playable leader variants need their own supplied file and verified base identity; original fan cards need their own supplied file and separate display-catalog identity. Both require additive catalog migrations, explicit registry entries and relevant checks. No generic image-upload or manual-card creation interface is introduced.

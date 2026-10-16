@@ -40,9 +40,20 @@ export const christianFanCard: FanCard = {
 };
 export const christianFanImageHash =
   "bbbf2b8aec4434eb7dad1e93d11f28c1ea0eefb53eaf53fe182d65faad4ac9be";
+export const jaimeFanCard: FanCard = {
+  id: "d26d3b48-7e0c-4c72-b274-9c99e3ab7a05",
+  name: "Jaime D. Dragneel, el Guardián de las Llamas",
+  display_number: "LDP-005",
+  edition_code: "fan-pirate-gods",
+  artwork_id: "jaime-d-dragneel",
+  created_at: "2026-10-16T00:00:00Z",
+};
+export const jaimeFanImageHash =
+  "954f6cfbecc41c167d449160e4760ee905c08ad50e531a4328d59475475e155a";
 export const fanCardFixtures = [
   { card: vinFanCard, imageHash: vinFanImageHash, width: 916 },
   { card: marioFanCard, imageHash: marioFanImageHash, width: 912 },
   { card: aarFanCard, imageHash: aarFanImageHash, width: 914 },
   { card: christianFanCard, imageHash: christianFanImageHash, width: 960 },
+  { card: jaimeFanCard, imageHash: jaimeFanImageHash, width: 914 },
 ] as const;
