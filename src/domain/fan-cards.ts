@@ -25,6 +25,12 @@ export const fanArtworks = [
     fileName: "aar-d-on.jpg",
     contentType: "image/jpeg",
   },
+  {
+    id: "christian-d-bermejo",
+    cardId: "eaf31cf6-f972-4b9e-a8df-c6d7c3db0904",
+    fileName: "christian-d-bermejo.jpg",
+    contentType: "image/jpeg",
+  },
 ] as const;
 export function fanArtworkForCard(card: Pick<FanCard, "id" | "artwork_id">) {
   return fanArtworks.find(

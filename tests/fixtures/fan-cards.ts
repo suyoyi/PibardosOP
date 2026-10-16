@@ -30,8 +30,19 @@ export const aarFanCard: FanCard = {
 };
 export const aarFanImageHash =
   "76afefb98640beac8de80bf9625c30f392a458b78dda257edc7a9e783713a752";
+export const christianFanCard: FanCard = {
+  id: "eaf31cf6-f972-4b9e-a8df-c6d7c3db0904",
+  name: "Christian D. Bermejo, el Verdugo del Eclipse",
+  display_number: "LDP-004",
+  edition_code: "fan-pirate-gods",
+  artwork_id: "christian-d-bermejo",
+  created_at: "2026-10-16T00:00:00Z",
+};
+export const christianFanImageHash =
+  "bbbf2b8aec4434eb7dad1e93d11f28c1ea0eefb53eaf53fe182d65faad4ac9be";
 export const fanCardFixtures = [
   { card: vinFanCard, imageHash: vinFanImageHash, width: 916 },
   { card: marioFanCard, imageHash: marioFanImageHash, width: 912 },
   { card: aarFanCard, imageHash: aarFanImageHash, width: 914 },
+  { card: christianFanCard, imageHash: christianFanImageHash, width: 960 },
 ] as const;

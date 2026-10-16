@@ -50,4 +50,12 @@ Vinny and Bermejo remain variants of OP12-020 and OP17-039 under their original 
 - Registry: `src/domain/fan-cards.ts`; additive data-only migration: `20261016000400_aar_d_on.sql`. Persists only the supplied name, printed display label, edition and registered artwork reference. No gameplay facts or prices are assigned.
 - Authenticated image route: `/api/custom-artworks/aar-d-on/image`, preserving JPEG content type and private/no-store/nosniff. The existing gallery provides search and image-only enlargement in Cartas and builder/editor; Next file tracing includes the original JPEG through the existing glob.
 
+## Christian D. Bermejo, el Verdugo del Eclipse
+
+- Original fan card supplied directly as a JPEG attachment on 2026-10-16; bundled as `christian-d-bermejo.jpg` (960 × 1280, 554,223 bytes). All supplied bytes, printed text and image proportions are preserved. No generation, retouching, conversion or recompression occurred.
+- SHA-256: `bbbf2b8aec4434eb7dad1e93d11f28c1ea0eefb53eaf53fe182d65faad4ac9be`.
+- Edition: **LEGENDARIA BANDA DE LOS DIOSES PIRATAS**; display label **LDP-004**, visible on the supplied artwork. This independent original fan card is separate from the **Rocks D. Bermejo (OP17-039)** playable leader artwork variant.
+- Registry: `src/domain/fan-cards.ts`; additive data-only migration: `20261016000500_christian_d_bermejo.sql`. Persists only name, printed display label, edition and registered artwork reference; no gameplay facts, official canonical identity or prices are assigned.
+- Authenticated image route: `/api/custom-artworks/christian-d-bermejo/image`, with original JPEG MIME type and private/no-store/nosniff. Available in the Cartas and builder/editor fan galleries with image-only enlargement. The existing Next tracing glob includes the original JPEG in production output.
+
 This records owner-supplied provenance for this app; it does not imply official affiliation or general redistribution rights for provider/franchise assets. Further playable leader variants need their own supplied file and verified base identity; original fan cards need their own supplied file and separate display-catalog identity. Both require additive catalog migrations, explicit registry entries and relevant checks. No generic image-upload or manual-card creation interface is introduced.
