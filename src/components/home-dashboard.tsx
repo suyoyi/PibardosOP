@@ -250,6 +250,12 @@ function LeaderPanel({ leader }: { leader: DashboardLeader }) {
           ))}
         </ul>
       </section>
+      {leader.summary.totalGames > 0 && (
+        <PlayOrderResults
+          title="Resultados por orden de salida"
+          rows={leader.byOrder}
+        />
+      )}
       <div className="grid min-w-0 gap-5 xl:grid-cols-2">
         <RecentGames games={leader.recent} />
         {leader.summary.totalGames ? (
@@ -274,12 +280,6 @@ function LeaderPanel({ leader }: { leader: DashboardLeader }) {
           </section>
         )}
       </div>
-      {leader.summary.totalGames > 0 && (
-        <PlayOrderResults
-          title="Resultados por orden de salida"
-          rows={leader.byOrder}
-        />
-      )}
     </div>
   );
 }
