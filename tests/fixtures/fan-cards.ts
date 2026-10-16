@@ -20,7 +20,18 @@ export const marioFanCard: FanCard = {
 };
 export const marioFanImageHash =
   "ead25b5c18669c8bc3fb096178351f7912375a42e587795cbbd058a1ae05773f";
+export const aarFanCard: FanCard = {
+  id: "a8e7d1f8-62d5-48f6-9a39-1f7f6cf91d42",
+  name: "Aar D. On, el Dios de la Guerra",
+  display_number: "LDP-003",
+  edition_code: "fan-pirate-gods",
+  artwork_id: "aar-d-on",
+  created_at: "2026-10-16T00:00:00Z",
+};
+export const aarFanImageHash =
+  "76afefb98640beac8de80bf9625c30f392a458b78dda257edc7a9e783713a752";
 export const fanCardFixtures = [
   { card: vinFanCard, imageHash: vinFanImageHash, width: 916 },
   { card: marioFanCard, imageHash: marioFanImageHash, width: 912 },
+  { card: aarFanCard, imageHash: aarFanImageHash, width: 914 },
 ] as const;

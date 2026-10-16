@@ -42,4 +42,12 @@ Vinny and Bermejo remain variants of OP12-020 and OP17-039 under their original 
 - Registry: `src/domain/fan-cards.ts`; additive data-only migration: `20261016000300_mario_d_bestia.sql`. Only name, display number, edition and registered artwork reference are added. No gameplay facts or prices are assigned.
 - Served as `image/jpeg` through authenticated no-store `/api/custom-artworks/mario-d-bestia/image`. The existing gallery and image-only popup work in Cartas and the builder/editor; file tracing includes this JPEG through the existing asset glob.
 
+## Aar D. On, el Dios de la Guerra
+
+- Original fan card supplied directly as a JPEG attachment on 2026-10-16; bundled as `aar-d-on.jpg` (914 × 1280, 512,860 bytes). The supplied bytes are unchanged; no generation, retouching, conversion or recompression occurred.
+- SHA-256: `76afefb98640beac8de80bf9625c30f392a458b78dda257edc7a9e783713a752`.
+- Edition: **LEGENDARIA BANDA DE LOS DIOSES PIRATAS**; display label **LDP-003**, visible on the supplied artwork. This is an independent display-only fan card, not an official card or a playable leader variant.
+- Registry: `src/domain/fan-cards.ts`; additive data-only migration: `20261016000400_aar_d_on.sql`. Persists only the supplied name, printed display label, edition and registered artwork reference. No gameplay facts or prices are assigned.
+- Authenticated image route: `/api/custom-artworks/aar-d-on/image`, preserving JPEG content type and private/no-store/nosniff. The existing gallery provides search and image-only enlargement in Cartas and builder/editor; Next file tracing includes the original JPEG through the existing glob.
+
 This records owner-supplied provenance for this app; it does not imply official affiliation or general redistribution rights for provider/franchise assets. Further playable leader variants need their own supplied file and verified base identity; original fan cards need their own supplied file and separate display-catalog identity. Both require additive catalog migrations, explicit registry entries and relevant checks. No generic image-upload or manual-card creation interface is introduced.
