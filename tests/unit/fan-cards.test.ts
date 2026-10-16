@@ -1,8 +1,19 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { fanArtworkForCard, filterFanCards } from "../../src/domain/fan-cards";
-import { fanCardFixtures } from "../fixtures/fan-cards";
+import {
+  fanArtworkForCard,
+  filterFanCards,
+  fanArtworkOptions,
+} from "../../src/domain/fan-cards";
+import {
+  fanCardFixtures,
+  fanVariantFixtures,
+  suFanCard,
+  marioFanCard,
+  suAlternateVariant,
+  suAlternateImageHash,
+} from "../fixtures/fan-cards";
 
 describe.each(fanCardFixtures)("$card.name", ({ card, imageHash }) => {
   it("preserves the original owner JPEG and binds artwork to its independent fan identity", () => {
@@ -36,4 +47,34 @@ describe.each(fanCardFixtures)("$card.name", ({ card, imageHash }) => {
     ])
       expect(filterFanCards([card], query)).toEqual([]);
   });
+});
+
+it("binds the unchanged alternate JPEG to Su D. Yoyi while keeping the original illustration first", () => {
+  const options = fanArtworkOptions(suFanCard, fanVariantFixtures);
+  expect(options.map((o) => [o.id, o.label])).toEqual([
+    ["su-d-yoyi", "Original"],
+    ["su-d-yoyi-awakening", "Arte alternativo"],
+  ]);
+  const bytes = readFileSync(`assets/custom-artworks/${options[1].fileName}`);
+  expect(createHash("sha256").update(bytes).digest("hex")).toBe(
+    suAlternateImageHash,
+  );
+  expect(options[1].cardId).toBe(suFanCard.id);
+});
+it("does not mix artwork from other cards or unregistered or duplicate variant references", () => {
+  const references = [
+    ...fanVariantFixtures,
+    { ...suAlternateVariant, label: "Duplicate" },
+    { ...suAlternateVariant, artwork_id: suFanCard.artwork_id },
+    { ...suAlternateVariant, artwork_id: "unregistered" },
+    { ...suAlternateVariant, artwork_id: "mario-d-bestia" },
+    { ...suAlternateVariant, fan_card_id: "other-card" },
+  ];
+  expect(fanArtworkOptions(suFanCard, references)).toHaveLength(2);
+  expect(fanArtworkOptions(marioFanCard, references).map((o) => o.id)).toEqual([
+    marioFanCard.artwork_id,
+  ]);
+  expect(fanArtworkOptions(suFanCard, []).map((o) => o.id)).toEqual([
+    suFanCard.artwork_id,
+  ]);
 });

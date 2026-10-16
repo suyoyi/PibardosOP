@@ -22,7 +22,11 @@ import { CardPriceHistory, type PriceHistoryCache } from "./card-price-history";
 import { historySelection } from "@/domain/price-history";
 import { isCustomArtwork } from "@/domain/custom-artworks";
 import { CustomArtworkView } from "./custom-artwork-view";
-import { fanEdition, type FanCard } from "@/domain/fan-cards";
+import {
+  fanEdition,
+  type FanCard,
+  type FanCardVariant,
+} from "@/domain/fan-cards";
 import { FanCardGallery } from "./fan-card-gallery";
 
 function ExplorerFiltersPanel({
@@ -417,9 +421,11 @@ function ExplorerModal({
 type CatalogResponse = Awaited<ReturnType<typeof browseCardCatalog>>;
 export function CardExplorer({
   fanCards,
+  fanVariants,
   fanError,
 }: {
   fanCards: FanCard[];
+  fanVariants: FanCardVariant[];
   fanError?: string;
 }) {
   const [filters, setFilters] = useState<ExplorerFilters>({}),
@@ -482,6 +488,7 @@ export function CardExplorer({
       {showFan && (
         <FanCardGallery
           cards={fanCards}
+          variants={fanVariants}
           search={filters.search ?? ""}
           error={fanError}
           editionOnly={fanMode}

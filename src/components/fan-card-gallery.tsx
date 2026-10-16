@@ -3,17 +3,26 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   type FanCard,
+  type FanCardVariant,
   fanArtworkForCard,
+  fanArtworkOptions,
   fanEdition,
   filterFanCards,
 } from "@/domain/fan-cards";
 import { CardPicture } from "./card-catalog";
 import { Modal } from "./modal";
 
-function FanArtwork({ card }: { card: FanCard }) {
-  const artwork = fanArtworkForCard(card);
+function FanArtwork({
+  card,
+  artworkId = card.artwork_id,
+}: {
+  card: FanCard;
+  artworkId?: string;
+}) {
+  const artwork = fanArtworkForCard({ id: card.id, artwork_id: artworkId });
   return (
     <CardPicture
+      key={artworkId}
       src={artwork ? `/api/custom-artworks/${artwork.id}/image` : null}
       name={card.name}
       number={card.display_number ?? ""}
@@ -21,14 +30,64 @@ function FanArtwork({ card }: { card: FanCard }) {
     />
   );
 }
+function FanCardModal({
+  card,
+  variants,
+  onClose,
+}: {
+  card: FanCard;
+  variants: FanCardVariant[];
+  onClose: () => void;
+}) {
+  const options = fanArtworkOptions(card, variants);
+  const [selectedId, setSelectedId] = useState(card.artwork_id);
+  const current = options.find((art) => art.id === selectedId) ?? options[0];
+  return (
+    <Modal title={card.name} onClose={onClose}>
+      <div
+        role="group"
+        aria-label="Carta ampliada"
+        className="leader-zoom-art"
+        style={options.length > 1 ? { maxHeight: "52dvh" } : undefined}
+      >
+        <FanArtwork card={card} artworkId={current?.id} />
+      </div>
+      {options.length > 1 && (
+        <div
+          role="group"
+          aria-label="Variantes de la carta"
+          className="mt-4 flex flex-wrap justify-center gap-3"
+        >
+          {options.map((art) => (
+            <button
+              key={art.id}
+              type="button"
+              className={`min-w-28 max-w-40 rounded-xl border-2 p-2 ${current?.id === art.id ? "border-accent" : "border-border"}`}
+              aria-label={`Ver variante ${art.label}`}
+              aria-pressed={current?.id === art.id}
+              onClick={() => setSelectedId(art.id)}
+            >
+              <span className="mx-auto block aspect-[5/7] w-14">
+                <FanArtwork card={card} artworkId={art.id} />
+              </span>
+              <span className="mt-2 block text-xs">{art.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </Modal>
+  );
+}
 export function FanCardGallery({
   cards,
+  variants,
   search,
   error,
   editionOnly,
   onRetry,
 }: {
   cards: FanCard[];
+  variants: FanCardVariant[];
   search: string;
   error?: string;
   editionOnly: boolean;
@@ -89,11 +148,12 @@ export function FanCardGallery({
         </>
       )}
       {selected && (
-        <Modal title={selected.name} onClose={() => setSelected(null)}>
-          <div className="leader-zoom-art">
-            <FanArtwork card={selected} />
-          </div>
-        </Modal>
+        <FanCardModal
+          key={selected.id}
+          card={selected}
+          variants={variants}
+          onClose={() => setSelected(null)}
+        />
       )}
     </section>
   );

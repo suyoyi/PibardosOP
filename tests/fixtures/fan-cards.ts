@@ -79,3 +79,13 @@ export const fanCardFixtures = [
   { card: joanFanCard, imageHash: joanFanImageHash, width: 960 },
   { card: suFanCard, imageHash: suFanImageHash, width: 914 },
 ] as const;
+
+export const suAlternateVariant = {
+  fan_card_id: suFanCard.id,
+  artwork_id: "su-d-yoyi-awakening",
+  label: "Arte alternativo",
+  created_at: "2026-10-16T00:00:00Z",
+} satisfies import("../../src/domain/fan-cards").FanCardVariant;
+export const suAlternateImageHash =
+  "95b92652008ff89f0c9ed47c88edd475108bc7b19797ee7cccdd4e42c6dab822";
+export const fanVariantFixtures = [suAlternateVariant];

@@ -38,6 +38,20 @@ export async function getFanCatalog(db: AppClient) {
     db.from("fan_cards").select("*").order("name").order("id").range(a, b),
   );
 }
+export async function getFanWorkspace(db: AppClient) {
+  const [cards, variants] = await Promise.all([
+    getFanCatalog(db),
+    readAll((a, b) =>
+      db
+        .from("fan_card_variants")
+        .select("*")
+        .order("created_at")
+        .order("artwork_id")
+        .range(a, b),
+    ),
+  ]);
+  return { cards, variants };
+}
 export class ManualCatalogProvider implements CardProvider {
   constructor(private readonly db: AppClient) {}
   async search(filters: CardFilters) {

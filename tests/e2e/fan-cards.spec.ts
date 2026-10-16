@@ -1,7 +1,11 @@
 import { test, expect } from "@playwright/test";
 import { createHash, randomUUID } from "node:crypto";
 import { fanEdition } from "../../src/domain/fan-cards";
-import { fanCardFixtures } from "../fixtures/fan-cards";
+import {
+  fanCardFixtures,
+  fanVariantFixtures,
+  suAlternateImageHash,
+} from "../fixtures/fan-cards";
 import { connectLocalDatabase } from "../helpers/local-database";
 
 for (const { card, imageHash, width } of fanCardFixtures) {
@@ -12,6 +16,13 @@ for (const { card, imageHash, width } of fanCardFixtures) {
     test.setTimeout(90000);
     const email = `fan-edition-${randomUUID()}@example.com`;
     const imagePath = `/api/custom-artworks/${card.artwork_id}/image`;
+    const variant = fanVariantFixtures.find((v) => v.fan_card_id === card.id);
+    if (variant)
+      expect(
+        (
+          await request.get(`/api/custom-artworks/${variant.artwork_id}/image`)
+        ).status(),
+      ).toBe(401);
     expect((await request.get(imagePath)).status()).toBe(401);
     try {
       await page.goto("/login");
@@ -84,16 +95,18 @@ for (const { card, imageHash, width } of fanCardFixtures) {
         exact: true,
       });
       await expect(modal).toBeVisible();
-      await expect(modal.getByRole("img")).toHaveCount(1);
-      await expect(modal.getByRole("button")).toHaveCount(1);
+      await expect(modal.getByRole("img")).toHaveCount(variant ? 3 : 1);
+      await expect(modal.getByRole("button")).toHaveCount(variant ? 3 : 1);
       await expect(modal.locator("dl, section, a")).toHaveCount(0);
       await expect(modal).not.toContainText(
         /Coste|Habilidad|Precio|Counter|Poder|Histórico/,
       );
-      const image = modal.getByRole("img", {
-        name: `Ilustración de ${card.name}`,
-        exact: true,
-      });
+      const image = modal
+        .getByRole("group", { name: "Carta ampliada", exact: true })
+        .getByRole("img", {
+          name: `Ilustración de ${card.name}`,
+          exact: true,
+        });
       await expect
         .poll(() => image.evaluate((e) => (e as HTMLImageElement).naturalWidth))
         .toBe(width);
@@ -106,6 +119,67 @@ for (const { card, imageHash, width } of fanCardFixtures) {
           .update(await response.body())
           .digest("hex"),
       ).toBe(imageHash);
+      const checkVariants = async () => {
+        const picker = modal.getByRole("group", {
+          name: "Variantes de la carta",
+          exact: true,
+        });
+        if (!variant) {
+          await expect(picker).toHaveCount(0);
+          return;
+        }
+        await expect(picker.getByRole("button")).toHaveCount(2);
+        const original = picker.getByRole("button", {
+          name: "Ver variante Original",
+          exact: true,
+        });
+        const alternate = picker.getByRole("button", {
+          name: `Ver variante ${variant.label}`,
+          exact: true,
+        });
+        await expect(original).toHaveAttribute("aria-pressed", "true");
+        await expect(alternate).toHaveAttribute("aria-pressed", "false");
+        await alternate.click();
+        await expect(alternate).toHaveAttribute("aria-pressed", "true");
+        await expect(original).toHaveAttribute("aria-pressed", "false");
+        const alternatePath = `/api/custom-artworks/${variant.artwork_id}/image`;
+        await expect(image).toHaveAttribute(
+          "src",
+          new RegExp(`${alternatePath}$`),
+        );
+        await expect
+          .poll(() =>
+            image.evaluate((e) => (e as HTMLImageElement).naturalWidth),
+          )
+          .toBe(960);
+        const alternateResponse = await page.request.get(alternatePath);
+        expect(alternateResponse.status()).toBe(200);
+        expect(alternateResponse.headers()["content-type"]).toBe("image/jpeg");
+        expect(alternateResponse.headers()["cache-control"]).toBe(
+          "private, no-store",
+        );
+        expect(
+          createHash("sha256")
+            .update(await alternateResponse.body())
+            .digest("hex"),
+        ).toBe(suAlternateImageHash);
+        await original.click();
+        await expect(original).toHaveAttribute("aria-pressed", "true");
+        await expect(image).toHaveAttribute("src", new RegExp(`${imagePath}$`));
+        await expect
+          .poll(() =>
+            image.evaluate((e) => (e as HTMLImageElement).naturalWidth),
+          )
+          .toBe(width);
+        await alternate.focus();
+        await page.keyboard.press("Enter");
+        await expect(alternate).toHaveAttribute("aria-pressed", "true");
+        await expect(image).toHaveAttribute(
+          "src",
+          new RegExp(`${alternatePath}$`),
+        );
+      };
+      await checkVariants();
       for (const width of [320, 390, 1280]) {
         await page.setViewportSize({ width, height: 844 });
         expect(
@@ -154,11 +228,12 @@ for (const { card, imageHash, width } of fanCardFixtures) {
           exact: true,
         })
         .click();
-      await expect(modal.getByRole("img")).toHaveCount(1);
-      await expect(modal.getByRole("button")).toHaveCount(1);
+      await expect(modal.getByRole("img")).toHaveCount(variant ? 3 : 1);
+      await expect(modal.getByRole("button")).toHaveCount(variant ? 3 : 1);
       await expect(modal).not.toContainText(
         /Coste|Habilidad|Precio|Counter|Poder|Histórico/,
       );
+      await checkVariants();
       await page.keyboard.press("Escape");
       await expect(modal).toHaveCount(0);
       await page.getByLabel("Expansión", { exact: true }).selectOption("OP12");

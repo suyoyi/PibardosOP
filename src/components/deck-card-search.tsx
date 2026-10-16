@@ -35,7 +35,11 @@ import {
 import { Field } from "./forms";
 import { isCustomArtwork } from "@/domain/custom-artworks";
 import { CustomArtworkView } from "./custom-artwork-view";
-import { fanEdition, type FanCard } from "@/domain/fan-cards";
+import {
+  fanEdition,
+  type FanCard,
+  type FanCardVariant,
+} from "@/domain/fan-cards";
 import { getBuilderFanCatalog } from "@/app/(private)/cards/fan-actions";
 import { FanCardGallery } from "./fan-card-gallery";
 import {
@@ -76,14 +80,16 @@ export function DeckCardSearch({
   const [expansionNotice, setExpansionNotice] = useState("");
   const [fanCatalog, setFanCatalog] = useState<{
     cards: FanCard[];
+    variants: FanCardVariant[];
     error?: string;
-  }>({ cards: [] });
+  }>({ cards: [], variants: [] });
   const reloadFanCatalog = async () => {
     try {
       setFanCatalog(await getBuilderFanCatalog());
     } catch {
       setFanCatalog({
         cards: [],
+        variants: [],
         error:
           "No se pudo cargar la edición personalizada. Comprueba la conexión y reintenta.",
       });
@@ -99,6 +105,7 @@ export function DeckCardSearch({
         if (active)
           setFanCatalog({
             cards: [],
+            variants: [],
             error:
               "No se pudo cargar la edición personalizada. Comprueba la conexión y reintenta.",
           });
@@ -572,6 +579,7 @@ export function DeckCardSearch({
         {fanMode ? (
           <FanCardGallery
             cards={fanCatalog.cards}
+            variants={fanCatalog.variants}
             search={query}
             error={fanCatalog.error}
             editionOnly

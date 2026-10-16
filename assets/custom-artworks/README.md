@@ -82,4 +82,12 @@ Vinny and Bermejo remain variants of OP12-020 and OP17-039 under their original 
 - Registry: `src/domain/fan-cards.ts`; additive data-only migration: `20261016000800_su_d_yoyi.sql`. Only supplied name, display label, edition and artwork reference are stored. Printed power/life/effects are not transcribed into gameplay rules or market data.
 - Authenticated image route: `/api/custom-artworks/su-d-yoyi/image`, preserving JPEG MIME type and private/no-store/nosniff. Existing Cartas and builder/editor fan galleries offer name/code search and image-only enlargement; Next output tracing includes the original JPEG through the existing glob.
 
+## Su D. Yoyi — alternate illustration
+
+- Additional artwork for the existing **Su D. Yoyi, el Dios de Dioses (LDP-007)** fan card, supplied directly as a JPEG on 2026-10-16. Bundled as `su-d-yoyi-awakening.jpg` (960 × 1280, 622,084 bytes). All supplied bytes, printed content and proportions remain unchanged; no image generation, editing, cropping, conversion or recompression occurred.
+- SHA-256: `95b92652008ff89f0c9ed47c88edd475108bc7b19797ee7cccdd4e42c6dab822`.
+- Registry slug: `su-d-yoyi-awakening`, using the same fan-card UUID as the original. Migration `20261016000900_fan_card_variants.sql` creates a read-only child illustration record labeled **Arte alternativo**, without inserting a duplicate parent card. The original image remains the default **Original** artwork.
+- Image route: `/api/custom-artworks/su-d-yoyi-awakening/image`, with original JPEG MIME type and authenticated private/no-store/nosniff access. Next deployment tracing includes both original and alternate JPEG files. No official provider lookup, gameplay metadata or market quote was introduced.
+- Cartas and builder/editor display one LDP-007 tile; its popup offers Original/Arte alternativo thumbnail choices and the selected enlarged image. Selection is local to the popup and resets to the original after reopening; ordinary single-art cards retain their image-only popup.
+
 This records owner-supplied provenance for this app; it does not imply official affiliation or general redistribution rights for provider/franchise assets. Further playable leader variants need their own supplied file and verified base identity; original fan cards need their own supplied file and separate display-catalog identity. Both require additive catalog migrations, explicit registry entries and relevant checks. No generic image-upload or manual-card creation interface is introduced.

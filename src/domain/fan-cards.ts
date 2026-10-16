@@ -2,6 +2,8 @@ import type { Database } from "@/lib/supabase/database.types";
 
 // Display-only original fan cards, independent from playable leader variants.
 export type FanCard = Database["public"]["Tables"]["fan_cards"]["Row"];
+export type FanCardVariant =
+  Database["public"]["Tables"]["fan_card_variants"]["Row"];
 export const fanEdition = {
   id: "fan-pirate-gods",
   name: "LEGENDARIA BANDA DE LOS DIOSES PIRATAS",
@@ -49,6 +51,12 @@ export const fanArtworks = [
     fileName: "su-d-yoyi.jpg",
     contentType: "image/jpeg",
   },
+  {
+    id: "su-d-yoyi-awakening",
+    cardId: "d515ca79-15ba-4f9f-b730-d5fba7f27a07",
+    fileName: "su-d-yoyi-awakening.jpg",
+    contentType: "image/jpeg",
+  },
 ] as const;
 export function fanArtworkForCard(card: Pick<FanCard, "id" | "artwork_id">) {
   return fanArtworks.find(
@@ -63,4 +71,25 @@ export function filterFanCards(cards: readonly FanCard[], search: string) {
       .toLocaleLowerCase("es")
       .includes(query),
   );
+}
+export function fanArtworkOptions(
+  card: FanCard,
+  variants: readonly FanCardVariant[],
+) {
+  const original = fanArtworkForCard(card);
+  const options = original ? [{ ...original, label: "Original" }] : [];
+  for (const variant of variants) {
+    if (
+      variant.fan_card_id !== card.id ||
+      variant.artwork_id === card.artwork_id
+    )
+      continue;
+    const art = fanArtworkForCard({
+      id: card.id,
+      artwork_id: variant.artwork_id,
+    });
+    if (art && !options.some((option) => option.id === art.id))
+      options.push({ ...art, label: variant.label });
+  }
+  return options;
 }
