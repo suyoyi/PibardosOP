@@ -71,7 +71,7 @@ Next's `NEXT_PUBLIC_*` values are embedded at build time. If changed later, rede
 In Supabase **Authentication → URL Configuration**:
 
 - Set **Site URL** to the actual Vercel production HTTPS origin.
-- Add that same origin and the specific return URLs needed by the app to **Redirect URLs**. Avoid broad wildcard allowlists. Email/password sign-in is the current app flow; OAuth providers are not required.
+- Add that same origin and the specific return URLs needed by the app to **Redirect URLs**. Avoid broad wildcard allowlists. Email/password works independently; optional Google access requires the provider setup in [Google sign-in](GOOGLE_AUTH.md), including the app's `/auth/callback` return URL. Google credentials are stored only in Supabase.
 
 If a confirmation email opens `localhost`, check the hosted project's Site URL first. For this beta use `https://pibardos-op.vercel.app`, with the corresponding root return URL in the allowlist, and save. Previously generated messages can retain the old redirect; changing settings does not rewrite a delivered email. If the account can already sign in, another account or confirmation request is unnecessary. If newly generated emails still contain a local redirect after fixing these settings, inspect the Auth email template for a hardcoded local URL and restore its appropriate Supabase confirmation-link template.
 

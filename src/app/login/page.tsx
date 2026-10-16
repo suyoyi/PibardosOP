@@ -1,15 +1,21 @@
 import { Compass, ShieldCheck, Layers3 } from "lucide-react";
 import { AuthForm } from "@/components/auth-form";
+import { GoogleSignIn } from "@/components/google-sign-in";
 import { getSupabaseConfig } from "@/lib/config";
-import { safeReturnPath } from "@/domain/auth";
+import { safeReturnPath, googleSignInError } from "@/domain/auth";
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{
+    next?: string | string[];
+    oauth_error?: string | string[];
+  }>;
 }) {
   const params = await searchParams;
   const configured = Boolean(getSupabaseConfig());
+  const returnPath = safeReturnPath(params.next);
+  const oauthError = googleSignInError(params.oauth_error);
   return (
     <main
       id="main-content"
@@ -52,7 +58,23 @@ export default async function LoginPage({
           Accede a tu cuenta para abrir tu espacio personal.
         </p>
         {configured ? (
-          <AuthForm returnPath={safeReturnPath(params.next)} />
+          <>
+            {oauthError && (
+              <p
+                role="alert"
+                className="mb-5 rounded-lg border border-red-400/30 bg-red-400/10 p-3 text-sm text-red-200"
+              >
+                {oauthError}
+              </p>
+            )}
+            <GoogleSignIn returnPath={returnPath} />
+            <div className="my-6 flex items-center gap-3 text-xs text-muted">
+              <span className="h-px flex-1 bg-border" aria-hidden="true" />
+              <span>o con tu correo</span>
+              <span className="h-px flex-1 bg-border" aria-hidden="true" />
+            </div>
+            <AuthForm returnPath={returnPath} />
+          </>
         ) : (
           <div
             role="status"
