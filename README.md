@@ -157,6 +157,8 @@ The comparison shows wins/losses, both percentages, actual game counts, a count 
 
 ## Production / Vercel
 
+For the personal free beta, follow [Free deployment](docs/FREE_DEPLOYMENT.md). It includes a guarded one-file SQL installation for a new Supabase project, an initial account flow without relying on Supabase's restricted default mailer, the two Vercel runtime variables and verification of the actual public URL. Regenerate the committed SQL bundle with `npm run db:cloud:bundle` when versioned migrations change. The bundle refuses an existing application database and never resets local or hosted data.
+
 1. Create a Supabase project and apply the versioned migrations in `supabase/migrations` to a reviewed target. Configure email confirmation, a production SMTP provider, strong-password policy and Auth rate limits.
 2. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in deployment settings (legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` also works). `.env.example` contains placeholders only. The application uses no service-role key.
 3. Configure Supabase Auth site URL and redirect allowlist for the actual HTTPS origin. Email confirmation returns users to the app; users then log in with their confirmed account.
