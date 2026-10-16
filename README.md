@@ -4,6 +4,8 @@
 
 A Spanish mobile-first personal workspace for One Piece Card Game. The app includes secure authentication, provider-backed cards, OPTCG API card imports, confirmed deck imports, a deck builder with internal immutable match snapshots, match history, tournaments, physical collection, missing-card reservations, exact-art wishes and charts of saved results. Practice and offline synchronization are subsequent phases; see `PROJECT_STATUS.md` and `docs/ARCHITECTURE.md`.
 
+**Hosted release source:** Vercel's `pibardos-op` project uses [suyoyi/pibardos-op](https://github.com/suyoyi/pibardos-op), created separately during import. The original [suyoyi/PibardosOP](https://github.com/suyoyi/PibardosOP) remains synchronized for existing checkouts and this cloud workspace. Publish approved updates to both; see [release synchronization](docs/FREE_DEPLOYMENT.md#future-updates).
+
 ## Try the app in your browser with GitHub Codespaces
 
 [Create a Codespace for Pibardos OP](https://codespaces.new/suyoyi/PibardosOP?ref=main)

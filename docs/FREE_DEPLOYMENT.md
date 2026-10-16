@@ -6,6 +6,8 @@ This guide prepares a new cloud database. Local accounts, decks, matches and dis
 
 Current personal beta: **https://pibardos-op.vercel.app**. On 2026-10-16, public HTTP checks verified the running web process, the configured login form, private-route redirects, manifest, service-worker script and icons. The owner confirmed the hosted schema has 17 tables with RLS and reported successful sign-in. Hosted save/reload behavior and multi-account isolation still require an authenticated production check; ordinary automated tests remain local.
 
+The existing Vercel project is connected to **`suyoyi/pibardos-op`**, created by Vercel from an earlier snapshot of **`suyoyi/PibardosOP`**. These are two Git repositories; Vercel's lowercase project-name requirement did not rename the original GitHub repository. The snapshots' Git histories have been joined without deleting either history. Keep both `main` branches synchronized using the release instructions below; publishing only to the original repository leaves this deployment unchanged.
+
 ## Cost and account boundaries
 
 Checked against official documentation on **2026-10-16**:
@@ -49,7 +51,7 @@ Do not post database passwords, account passwords, secret API keys or service-ro
 
 ## 3. Import the app into Vercel
 
-1. Open [Vercel New Project](https://vercel.com/new), use the personal **Hobby** plan and connect GitHub. Import `suyoyi/PibardosOP` from branch `main`.
+1. Open [Vercel New Project](https://vercel.com/new), use the personal **Hobby** plan and connect GitHub. For the existing beta use `suyoyi/pibardos-op` from branch `main`; do not create another repository or project to deliver routine updates. A new deployment can import an existing GitHub repository directly even when its GitHub name contains uppercase characters; choose a lowercase Vercel project name such as `pibardos-op` separately.
 2. Use the repository root (`./`) and the detected **Next.js** framework. Keep the default Next.js output directory. Use **Node.js 24.x**, install command **`npm ci`**, and build command **`npm run build`**. This app needs its Node server/functions; do not configure a static export, Docker startup or `local:start` as the cloud build.
 3. In Supabase **Connect** or **Settings → API / Data API / API Keys**, find the project's HTTPS URL and **publishable** key. Older projects may provide the legacy `anon` key instead.
 4. Add these Vercel environment variables before deploying, at least for **Production**:
@@ -87,6 +89,20 @@ A local successful build or an existing GitHub commit is not a verified hosted d
 
 ## Future updates
 
-Normal pushes to `main` trigger Vercel's linked production deployment. When SQL migrations are added, apply those pending migrations to the reviewed cloud project using Supabase CLI before expecting new database features to work. The bootstrap records the original versions so future `migration list`/`db push --dry-run` can identify new migrations. Do not run `db reset` or the initial bootstrap against the cloud project for routine updates.
+The cloud checkout has `origin` pointing to `https://github.com/suyoyi/PibardosOP.git` and an additional `deployment` remote pointing to `https://github.com/suyoyi/pibardos-op.git`. If missing in a fresh original-repository checkout, add the latter once with `git remote add deployment https://github.com/suyoyi/pibardos-op.git`. An installation cloned from the hosting repository can have different remote names; inspect `git remote -v` before using the commands below.
+
+Before a release, fetch and inspect both `main` branches. Incorporate independent work before publishing; a non-fast-forward rejection must be resolved without force-pushing. From the reviewed commit in the cloud checkout, publish authorized updates and verify both references:
+
+```sh
+git push origin HEAD:main
+git push deployment HEAD:main
+git rev-parse HEAD
+git ls-remote origin refs/heads/main
+git ls-remote deployment refs/heads/main
+```
+
+Vercel watches the hosting repository's `main`, not the similarly named original repository. Git push success is separate from deployment success: inspect the Vercel result and request the production route affected by the release. If necessary, create a deployment from `https://github.com/suyoyi/pibardos-op/tree/main` in the existing Vercel project's Deployments view. Redeploying an old snapshot does not fetch unrelated newer commits.
+
+When SQL migrations are added, apply those pending migrations to the reviewed cloud project using Supabase CLI before expecting new database features to work. The bootstrap records the original versions so future `migration list`/`db push --dry-run` can identify new migrations. Do not run `db reset` or the initial bootstrap against the cloud project for routine updates.
 
 Local RLS/integration tests use the disposable local Supabase fixture. Do not point ordinary unit/integration/e2e test commands at a user's production database. Automatic cloud migration credentials are deliberately not added to CI by this guide.

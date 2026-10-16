@@ -2,6 +2,13 @@
 
 **Current owner preference:** Mi colección, Lista de deseos and Cartas que me faltan are intentionally hidden pending redesign. Preserve their code/data and include a Spanish reminder when responding to future application-change requests; see AGENTS.md.
 
+## Hosting repository mismatch diagnosed and histories synchronized — 2026-10-16
+
+- The owner identified `suyoyi/pibardos-op` as Vercel's actual Git source. Its sole initial commit `9f73012` was created by Vercel from the earlier original-repository snapshot `115b52a`; a tree comparison found only the omitted CI workflow and no independent application changes. The original repository's `b56b70f` contains Google sign-in, but production still served the earlier form. GitHub's original-repository `verify` job completed successfully; that alone did not publish this separate hosting repository.
+- Added the `deployment` remote and joined both previously unrelated histories with the original tested application tree retained. No history was deleted or force-pushed. Updated README, contributor guidance and the deployment guide to identify the hosting repository and require approved releases to synchronize both `main` references. A lowercase Vercel project name and a GitHub repository name are separate settings.
+- No application, dependency, database, artwork or test logic changed in this synchronization. Prior executed Google validation remains applicable: lint/types/build, 307 unit/PostgreSQL tests and the seven distinct mobile checks recorded below. Only documentation formatting, diff checks, source-tree equivalence and remote/hash checks are required for this documentation/history operation; no new application-test execution is claimed.
+- Production publication and real Google identity sign-in remain separate verification steps. Google/Supabase provider configuration still requires the owner's dashboard session. Mi colección, Lista de deseos and Cartas que me faltan remain hidden.
+
 ## Google sign-in — implementation verified locally; hosted provider setup pending (2026-10-16)
 
 - Added an independent **Continuar con Google** action/form alongside email/password. It checks public Supabase provider availability only on click, handles timeout/provider failures with a Spanish fallback, and starts SSR PKCE OAuth with basic identity scopes. No Google secrets, additional Vercel variables, dependencies or schema changes are required in the application.

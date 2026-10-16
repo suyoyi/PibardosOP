@@ -8,6 +8,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
+## Git repositories and hosted releases
+
+- The cloud workspace originally targets `suyoyi/PibardosOP` (`origin`), but the owner confirmed that Vercel serves a separately created repository, `suyoyi/pibardos-op` (`deployment`), from `main`. GitHub repository names are distinct here because the latter includes a hyphen.
+- For an application update authorized for publication, inspect both remote branches for independent work, then publish the reviewed commit to both repositories without force-pushing. Preserve both histories. A push only to the original repository does not update the hosted app. Verify the remote hashes and the actual production behavior separately. See `docs/FREE_DEPLOYMENT.md` for the remote setup and commands.
+
 ## Owner preferences and hidden features
 
 - Respond in Spanish. On every request for application changes, remind the owner in the response that **Mi colección**, **Lista de deseos** and **Cartas que me faltan** remain hidden, until they explicitly ask to restore or replace them.
