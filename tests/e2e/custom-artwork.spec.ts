@@ -1,14 +1,11 @@
 import { test, expect } from "@playwright/test";
 import { randomUUID, createHash } from "node:crypto";
-import {
-  customArtworks,
-  customArtworkExpansion,
-} from "../../src/domain/custom-artworks";
+import { customArtworks } from "../../src/domain/custom-artworks";
 import { customArtworkExpectations } from "../fixtures/custom-artworks";
 import { connectLocalDatabase } from "../helpers/local-database";
 
 for (const art of customArtworks) {
-  test(`${art.name} belongs to the fan expansion, opens image-only and retains exact canonical deck/game identity`, async ({
+  test(`${art.name} stays in its original expansion, opens image-only and retains exact canonical deck/game identity`, async ({
     page,
     request,
   }) => {
@@ -43,17 +40,15 @@ for (const art of customArtworks) {
           .digest("hex"),
       ).toBe(customArtworkExpectations[art.id].sha256);
       await page.goto("/cards");
+      await expect(
+        page
+          .getByLabel("Expansión", { exact: true })
+          .locator("option")
+          .filter({ hasText: "LEGENDARIA BANDA DE LOS DIOSES PIRATAS" }),
+      ).toHaveCount(0);
       await page
         .getByLabel("Expansión", { exact: true })
-        .selectOption({ label: customArtworkExpansion.name });
-      const results = page.getByRole("list", {
-        name: "Resultados del catálogo",
-      });
-      await expect(
-        results.getByRole("button", { name: /^Ver carta / }),
-      ).toHaveCount(customArtworks.length);
-      for (const other of customArtworks)
-        await expect(results).toContainText(other.name);
+        .selectOption(art.cardNumber.split("-")[0]);
       await page.getByLabel("Buscar carta", { exact: true }).fill(art.name);
       await page
         .getByRole("button", {
@@ -94,7 +89,7 @@ for (const art of customArtworks) {
       await page.goto("/decks/new");
       await page
         .getByLabel("Expansión", { exact: true })
-        .selectOption({ label: customArtworkExpansion.name });
+        .selectOption(art.cardNumber.split("-")[0]);
       await page
         .getByLabel("Buscar carta", { exact: true })
         .fill(art.cardNumber);

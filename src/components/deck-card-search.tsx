@@ -33,10 +33,7 @@ import {
   type CardCandidate,
 } from "@/domain/card-variants";
 import { Field } from "./forms";
-import {
-  customArtworkExpansion,
-  isCustomArtwork,
-} from "@/domain/custom-artworks";
+import { isCustomArtwork } from "@/domain/custom-artworks";
 import { CustomArtworkView } from "./custom-artwork-view";
 import {
   compatibleWithLeader,
@@ -267,12 +264,7 @@ export function DeckCardSearch({
     setSelection({ number, type });
     setVariantPage(1);
     setMessage({});
-    if (expansion === customArtworkExpansion.id) {
-      setVariantResults((current) => ({
-        ...current,
-        [number]: { cards: [], issues: [] },
-      }));
-    } else void loadVariants(number);
+    void loadVariants(number);
   };
   const variantResult = selection
     ? variantResults[selection.number]
@@ -285,8 +277,6 @@ export function DeckCardSearch({
         (item) =>
           normalizeCardNumber(item.card.card_number) === selection.number &&
           item.card.card_type === selection.type &&
-          (expansion !== customArtworkExpansion.id ||
-            isCustomArtwork(item.card)) &&
           (selection.type === "leader" ||
             visibleBuilderMainCard(item.card, leader, entries)),
       )
@@ -420,9 +410,6 @@ export function DeckCardSearch({
                 }
               >
                 <option value="">Todas las expansiones</option>
-                <option value={customArtworkExpansion.id}>
-                  {customArtworkExpansion.name}
-                </option>
                 {expansions.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.name} · {item.id.replaceAll("-", "")}
@@ -451,7 +438,6 @@ export function DeckCardSearch({
                 <option value="promos">Promocionales</option>
                 {expansion &&
                   expansion !== "promos" &&
-                  expansion !== customArtworkExpansion.id &&
                   !expansions.some((item) => item.id === expansion) && (
                     <option value={expansion}>
                       {expansion} · nombre no disponible
@@ -694,8 +680,7 @@ export function DeckCardSearch({
             {selection.type === "leader"
               ? "Elige el arte o la reimpresión de tu líder."
               : "Añade la impresión que quieras. Las variantes comparten el límite de copias."}{" "}
-            {expansion !== customArtworkExpansion.id &&
-              "También se muestran variantes de otras expansiones."}
+            También se muestran variantes de otras expansiones.
           </p>
           {selection.type !== "leader" && (
             <p className="mb-4 text-sm text-accent" role="status">

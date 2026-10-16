@@ -22,8 +22,8 @@
 - OP17-039 base leader metadata verified from the documented OPTCG API `/api/sets/card/OP17-039/` endpoint on 2026-10-16; source dataset date 2026-10-16. Only public metadata was fetched. The official image is referenced by URL and not bundled. Leader counter is not applicable; the custom printing copies all facts from its canonical base.
 - Authenticated image route: `/api/custom-artworks/rocks-d-bermejo/image`, with the same no-store, allowlisted-path and shared-read/private-deck boundaries as Vinny. Custom artwork has no independent market quote/history.
 
-## Fan display collection
+## Artwork variants and the upcoming fan edition
 
-Both supplied cards appear in **LEGENDARIA BANDA DE LOS DIOSES PIRATAS**. This is a curated UI expansion/filter, separate from their original set metadata. Fan-detail views show only the enlarged original artwork. Internal canonical facts remain available for playing/deck validation; no costs, effects or prices are rendered alongside the enlarged fan card.
+Vinny and Bermejo remain variants of OP12-020 and OP17-039 under their original expansions. They are not members of **LEGENDARIA BANDA DE LOS DIOSES PIRATAS**; the owner will supply that separate edition’s cards later. Custom-detail views still show only the enlarged original artwork. Internal canonical facts remain available for deck validation; no costs, effects or prices are rendered alongside the enlarged custom card.
 
 This records owner-supplied provenance for this app; it does not imply official affiliation or general redistribution rights for provider/franchise assets. Further custom artworks need their own supplied file, verified base identity, additive catalog migration, registry entry and relevant checks. No generic image-upload or manual-card creation interface is introduced.

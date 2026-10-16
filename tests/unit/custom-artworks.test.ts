@@ -14,7 +14,6 @@ import { normalizeOptcgCard } from "../../src/domain/optcg";
 import { optcgRecord } from "../fixtures/optcg";
 import { buildDeckDisplay } from "../../src/domain/deck-prices";
 import { canonicalGroups, filterCards } from "../../src/domain/cards";
-import { customArtworkExpansion } from "../../src/domain/custom-artworks";
 import { customArtworkExpectations } from "../fixtures/custom-artworks";
 import { exploreCards } from "../../src/domain/card-explorer";
 describe.each(customArtworks)("$name", (art) => {
@@ -98,31 +97,35 @@ describe.each(customArtworks)("$name", (art) => {
     expect(result.total.complete).toBe(false);
   });
 
-  it("filters the fan expansion independently from official set metadata without returning official variants", () => {
+  it("keeps leader variants in their original expansion and out of the upcoming fan edition", () => {
     const result = exploreCards(
       [base, custom],
       [],
-      { set: customArtworkExpansion.id },
+      { set: base.set_code! },
       1,
       "2026-10-16T12:00:00Z",
     );
     expect(result.total).toBe(1);
-    expect(result.groups[0].printings).toHaveLength(1);
-    expect(result.groups[0].printings[0]).toMatchObject({
-      candidate: { card: { id: art.cardId } },
-      expansionName: customArtworkExpansion.name,
-      quote: null,
-    });
-    expect(result.options.expansions).toContainEqual(customArtworkExpansion);
+    expect(result.groups[0].printings).toHaveLength(2);
+    expect(
+      result.groups[0].printings.map((p) => p.candidate.card.card_number),
+    ).toEqual([art.cardNumber, art.cardNumber]);
+    expect(result.options.expansions).toEqual([
+      { id: base.set_code!, name: null },
+    ]);
     expect(filterCards([base, custom], { set: base.set_code! })).toEqual([
       base,
+      custom,
     ]);
     expect(
-      filterCards([base, custom], {
-        set: customArtworkExpansion.id,
-        color: "yellow",
-      }),
-    ).toEqual([]);
+      exploreCards(
+        [base, custom],
+        [],
+        { set: "fan-pirate-gods" },
+        1,
+        "2026-10-16T12:00:00Z",
+      ).total,
+    ).toBe(0);
     expect(custom.set_code).toBe(base.set_code);
   });
 });

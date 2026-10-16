@@ -20,10 +20,7 @@ import { CardOwnership } from "./card-ownership";
 import { referenceForCandidate } from "@/domain/card-reference";
 import { CardPriceHistory, type PriceHistoryCache } from "./card-price-history";
 import { historySelection } from "@/domain/price-history";
-import {
-  customArtworkExpansion,
-  isCustomArtwork,
-} from "@/domain/custom-artworks";
+import { isCustomArtwork } from "@/domain/custom-artworks";
 import { CustomArtworkView } from "./custom-artwork-view";
 
 function ExplorerFiltersPanel({
@@ -121,9 +118,7 @@ function ExplorerFiltersPanel({
               <option value="">Todas las expansiones</option>
               {options?.expansions.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {item.id === customArtworkExpansion.id
-                    ? item.name
-                    : `${item.name ?? "Nombre no disponible"} · ${item.id}`}
+                  {item.name ?? "Nombre no disponible"} · {item.id}
                 </option>
               ))}
               {filters.set &&

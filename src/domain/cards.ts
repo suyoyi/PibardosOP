@@ -1,5 +1,4 @@
 import type { Database } from "@/lib/supabase/database.types";
-import { customArtworkExpansion, isCustomArtwork } from "./custom-artworks";
 
 export type Card = Database["public"]["Tables"]["cards"]["Row"];
 export type CardColor = Database["public"]["Enums"]["card_color"];
@@ -39,7 +38,7 @@ export type CatalogFilterCard = Pick<
   | "power"
   | "counter"
   | "attribute"
-> & { source?: string };
+>;
 export function filterCards<T extends CatalogFilterCard>(
   cards: readonly T[],
   filters: CardFilters,
@@ -56,11 +55,8 @@ export function filterCards<T extends CatalogFilterCard>(
       (!filters.color || card.colors.includes(filters.color as CardColor)) &&
       (!filters.type || card.card_type === filters.type) &&
       (!filters.set ||
-        (filters.set === customArtworkExpansion.id
-          ? isCustomArtwork(card)
-          : !isCustomArtwork(card) &&
-            card.set_code?.replaceAll("-", "").toUpperCase() ===
-              filters.set.replaceAll("-", "").toUpperCase())) &&
+        card.set_code?.replaceAll("-", "").toUpperCase() ===
+          filters.set.replaceAll("-", "").toUpperCase()) &&
       (!filters.cost || card.cost === Number(filters.cost)) &&
       (!filters.power || card.power === Number(filters.power)) &&
       (!filters.counter || card.counter === Number(filters.counter)) &&

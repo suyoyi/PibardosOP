@@ -1,9 +1,4 @@
 import type { Card } from "./cards";
-// A display/filter collection; official set codes and canonical rules stay intact.
-export const customArtworkExpansion = {
-  id: "fan-pirate-gods",
-  name: "LEGENDARIA BANDA DE LOS DIOSES PIRATAS",
-} as const;
 export function isCustomArtwork(card: object) {
   return "source" in card && card.source === "custom-artwork";
 }

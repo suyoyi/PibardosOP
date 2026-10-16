@@ -20,6 +20,6 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Curated fan artwork presentation
 
-- Group owner-supplied fan cards under **LEGENDARIA BANDA DE LOS DIOSES PIRATAS** in expansion selectors. This is a display collection; retain official set metadata and canonical identity internally for deck rules and historical games.
+- **Roronoa Vinny (OP12-020)** and **Rocks D. Bermejo (OP17-039)** are artwork variants of their original leaders and belong to their original expansions. They must not be assigned to **LEGENDARIA BANDA DE LOS DIOSES PIRATAS**. That edition is reserved for new cards the owner will supply separately; do not publish an empty/invented edition.
 - Enlarged fan artwork views show only the supplied image, without cost, effects, price, market history or a technical detail panel. Preserve full details for ordinary provider cards. Builder artwork preview and leader selection are separate controls.
 - Preserve original uploaded image bytes; register new supplied assets explicitly with provenance and additive migrations. Do not generate replacements or invent game facts/prices.
