@@ -5,6 +5,7 @@ import {
   fanArtworkForCard,
   filterFanCards,
   fanArtworkOptions,
+  fanGalleryEntries,
 } from "../../src/domain/fan-cards";
 import {
   fanCardFixtures,
@@ -47,6 +48,37 @@ describe.each(fanCardFixtures)("$card.name", ({ card, imageHash }) => {
     ])
       expect(filterFanCards([card], query)).toEqual([]);
   });
+});
+
+it("orders the crew by the owner's roles and hides undiscovered identities from search", () => {
+  const cards = fanCardFixtures.map(({ card }) => card).reverse();
+  const locked = fanGalleryEntries(cards, [], "");
+  expect(
+    locked.map(({ card, role, revealed }) => [card.artwork_id, role, revealed]),
+  ).toEqual([
+    ["vin-d-ny", "Músico de la tripulación", false],
+    ["aar-d-on", "Tirador de la tripulación", false],
+    ["mario-d-bestia", "Luchador de la tripulación", false],
+    ["christian-d-bermejo", "Espadachín de la tripulación", false],
+    ["jaime-d-dragneel", "Navegante de la tripulación", false],
+    ["joan-d-cuadras", "Médico de la tripulación", false],
+    ["su-d-yoyi", "Capitán de la tripulación", false],
+  ]);
+  for (const { card } of fanCardFixtures) {
+    expect(fanGalleryEntries(cards, [], card.name)).toEqual([]);
+    expect(fanGalleryEntries(cards, [], card.display_number!)).toEqual([]);
+    expect(fanGalleryEntries(cards, [card.id], card.name)).toMatchObject([
+      { card, revealed: true },
+    ]);
+  }
+  expect(fanGalleryEntries(cards, [suFanCard.id], "  CAPITÁN ")).toMatchObject([
+    { card: suFanCard, revealed: true },
+  ]);
+  expect(
+    fanGalleryEntries(cards, ["unregistered"], "").every(
+      (entry) => !entry.revealed,
+    ),
+  ).toBe(true);
 });
 
 it("binds the unchanged alternate JPEG to Su D. Yoyi while keeping the original illustration first", () => {

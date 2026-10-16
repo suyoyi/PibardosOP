@@ -39,7 +39,7 @@ export async function getFanCatalog(db: AppClient) {
   );
 }
 export async function getFanWorkspace(db: AppClient) {
-  const [cards, variants] = await Promise.all([
+  const [cards, variants, unlocks] = await Promise.all([
     getFanCatalog(db),
     readAll((a, b) =>
       db
@@ -49,8 +49,19 @@ export async function getFanWorkspace(db: AppClient) {
         .order("artwork_id")
         .range(a, b),
     ),
+    readAll((a, b) =>
+      db
+        .from("fan_card_unlocks")
+        .select("fan_card_id")
+        .order("fan_card_id")
+        .range(a, b),
+    ),
   ]);
-  return { cards, variants };
+  return {
+    cards,
+    variants,
+    revealedCardIds: unlocks.map((row) => row.fan_card_id),
+  };
 }
 export class ManualCatalogProvider implements CardProvider {
   constructor(private readonly db: AppClient) {}

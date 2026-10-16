@@ -44,7 +44,12 @@ test("mobile OPTCG search, selected printing, artwork, quote reuse and confirmed
     await expect(
       page.getByText(/Moneda no especificada por la API/),
     ).toBeVisible();
-    await expect(page.getByText("2,5", { exact: true })).toBeVisible();
+    await expect(
+      page
+        .getByRole("listitem")
+        .filter({ has: page.getByText("Precio de mercado", { exact: true }) })
+        .getByText("2,5", { exact: true }),
+    ).toBeVisible();
     const artwork = page.getByRole("img", {
       name: "Ilustración de Synthetic OPTCG character",
     });

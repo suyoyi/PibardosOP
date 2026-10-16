@@ -440,6 +440,33 @@ export type Database = {
           },
         ];
       };
+      fan_card_unlocks: {
+        Row: {
+          fan_card_id: string;
+          unlocked_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          fan_card_id: string;
+          unlocked_at?: string;
+          user_id?: string;
+        };
+        Update: {
+          fan_card_id?: string;
+          unlocked_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "fan_card_unlocks_fan_card_id_fkey";
+            columns: ["fan_card_id"];
+            isOneToOne: false;
+            referencedRelation: "fan_cards";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       fan_card_variants: {
         Row: {
           artwork_id: string;

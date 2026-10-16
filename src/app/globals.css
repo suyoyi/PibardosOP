@@ -189,6 +189,35 @@ body {
   border-color: #f5b66b;
   box-shadow: 0 0 0 2px #f5b66b66;
 }
+.fan-card-locked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-color: #f5b66b55;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 12px, #f5b66b06 12px 13px),
+    radial-gradient(circle at center, #333047, #10141c 75%);
+}
+.fan-card-locked::before {
+  position: absolute;
+  inset: 8px;
+  content: "";
+  border: 1px solid #f5b66b33;
+  border-radius: 6px;
+}
+.fan-card-seal {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border: 1px solid #f5b66b77;
+  border-radius: 50%;
+  color: #f5b66b;
+  background: #10141c;
+  box-shadow: 0 0 0 7px #f5b66b08;
+}
 .picker-quantity {
   position: absolute;
   top: -7px;

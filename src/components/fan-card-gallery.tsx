@@ -1,13 +1,15 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { LockKeyhole } from "lucide-react";
+import { revealFanCard } from "@/app/(private)/cards/fan-actions";
 import {
   type FanCard,
   type FanCardVariant,
   fanArtworkForCard,
   fanArtworkOptions,
   fanEdition,
-  filterFanCards,
+  fanGalleryEntries,
 } from "@/domain/fan-cards";
 import { CardPicture } from "./card-catalog";
 import { Modal } from "./modal";
@@ -81,22 +83,51 @@ function FanCardModal({
 export function FanCardGallery({
   cards,
   variants,
+  revealedCardIds,
+  onRevealed,
   search,
   error,
-  editionOnly,
   onRetry,
 }: {
   cards: FanCard[];
   variants: FanCardVariant[];
+  revealedCardIds: string[];
+  onRevealed: (cardId: string) => void;
   search: string;
   error?: string;
-  editionOnly: boolean;
   onRetry?: () => void;
 }) {
   const [selected, setSelected] = useState<FanCard | null>(null);
+  const [revealing, setRevealing] = useState<string | null>(null);
+  const [revealError, setRevealError] = useState("");
+  const [notice, setNotice] = useState("");
+  const cardsRef = useRef<HTMLUListElement>(null);
   const router = useRouter();
-  const matches = filterFanCards(cards, search);
-  if (!editionOnly && !matches.length && !error) return null;
+  const matches = fanGalleryEntries(cards, revealedCardIds, search);
+  async function reveal(card: FanCard) {
+    if (revealing) return;
+    setRevealing(card.id);
+    setRevealError("");
+    setNotice("");
+    try {
+      const result = await revealFanCard(card.id);
+      if ("error" in result) {
+        setRevealError(result.error);
+        return;
+      }
+      onRevealed(card.id);
+      setNotice(
+        `${card.name} revelada. El desbloqueo está guardado en tu cuenta.`,
+      );
+      setSelected(card);
+    } catch {
+      setRevealError(
+        "No se pudo guardar el desbloqueo. Comprueba la conexión y vuelve a pulsar el botón.",
+      );
+    } finally {
+      setRevealing(null);
+    }
+  }
   return (
     <section className="grid gap-4" aria-label={fanEdition.name}>
       <div>
@@ -106,6 +137,16 @@ export function FanCardGallery({
           {matches.length} {matches.length === 1 ? "carta" : "cartas"}
         </p>
       </div>
+      {revealError && (
+        <p role="alert" className="panel p-4 text-sm text-red-200">
+          {revealError}
+        </p>
+      )}
+      {notice && (
+        <p role="status" className="text-sm text-accent">
+          {notice}
+        </p>
+      )}
       {error ? (
         <div className="panel grid gap-3 p-5">
           <p role="alert">{error}</p>
@@ -119,24 +160,53 @@ export function FanCardGallery({
       ) : (
         <>
           <ul
+            ref={cardsRef}
             className="picker-grid"
             aria-label="Cartas de la edición personalizada"
           >
-            {matches.map((card) => (
+            {matches.map(({ card, role, revealed }) => (
               <li key={card.id} className="min-w-0">
-                <button
-                  type="button"
-                  className="block w-full text-left"
-                  aria-label={`Ver carta fan ${card.name}`}
-                  onClick={() => setSelected(card)}
-                >
-                  <div className="picker-card">
-                    <FanArtwork card={card} />
+                {revealed ? (
+                  <button
+                    type="button"
+                    className="block w-full text-left"
+                    aria-label={`Ver carta fan ${card.name}`}
+                    data-fan-card-id={card.id}
+                    onClick={() => setSelected(card)}
+                  >
+                    <div className="picker-card">
+                      <FanArtwork card={card} />
+                    </div>
+                    <p className="mt-2 break-words text-xs font-semibold">
+                      {card.name}
+                    </p>
+                  </button>
+                ) : (
+                  <div>
+                    <div
+                      className="picker-card fan-card-locked"
+                      aria-hidden="true"
+                    >
+                      <div className="fan-card-seal">
+                        <LockKeyhole size={28} strokeWidth={1.5} />
+                      </div>
+                      <span className="mt-5 text-center text-[10px] tracking-[0.18em] text-accent/70">
+                        POR DESCUBRIR
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      className="button-secondary mt-2 w-full px-2 text-center text-xs leading-5"
+                      aria-label={role}
+                      disabled={revealing !== null}
+                      onClick={() => {
+                        void reveal(card);
+                      }}
+                    >
+                      {revealing === card.id ? "Revelando…" : role}
+                    </button>
                   </div>
-                  <p className="mt-2 break-words text-xs font-semibold">
-                    {card.name}
-                  </p>
-                </button>
+                )}
               </li>
             ))}
           </ul>
@@ -152,7 +222,18 @@ export function FanCardGallery({
           key={selected.id}
           card={selected}
           variants={variants}
-          onClose={() => setSelected(null)}
+          onClose={() => {
+            const cardId = selected.id;
+            setSelected(null);
+            // A successful reveal replaced the original locked trigger button.
+            requestAnimationFrame(() =>
+              cardsRef.current
+                ?.querySelector<HTMLButtonElement>(
+                  `[data-fan-card-id="${cardId}"]`,
+                )
+                ?.focus({ preventScroll: true }),
+            );
+          }}
         />
       )}
     </section>

@@ -14,11 +14,13 @@ export default async function CardsPage({
   const { supabase } = await requireUser();
   let fanCards: FanCard[] = [],
     fanVariants: FanCardVariant[] = [],
+    revealedCardIds: string[] = [],
     fanError: string | undefined;
   try {
     const workspace = await getFanWorkspace(supabase);
     fanCards = workspace.cards;
     fanVariants = workspace.variants;
+    revealedCardIds = workspace.revealedCardIds;
   } catch {
     fanError =
       "No se pudo cargar la edición personalizada. Comprueba la conexión y vuelve a intentarlo.";
@@ -44,6 +46,7 @@ export default async function CardsPage({
       <CardExplorer
         fanCards={fanCards}
         fanVariants={fanVariants}
+        revealedCardIds={revealedCardIds}
         fanError={fanError}
       />
     </>

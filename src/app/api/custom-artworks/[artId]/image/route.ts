@@ -23,6 +23,17 @@ export async function GET(
     auth = await db.auth.getUser();
   if (auth.error || !auth.data.user)
     return new Response(null, { status: 401, headers });
+  const fanArtwork = fanArtworks.find((art) => art.id === artId);
+  if (fanArtwork) {
+    const { data, error } = await db
+      .from("fan_card_unlocks")
+      .select("fan_card_id")
+      .eq("user_id", auth.data.user.id)
+      .eq("fan_card_id", fanArtwork.cardId)
+      .maybeSingle();
+    if (error) return new Response(null, { status: 503, headers });
+    if (!data) return new Response(null, { status: 403, headers });
+  }
   try {
     const bytes = await readFile(
       path.join(process.cwd(), "assets/custom-artworks", artwork.fileName),

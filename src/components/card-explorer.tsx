@@ -422,24 +422,24 @@ type CatalogResponse = Awaited<ReturnType<typeof browseCardCatalog>>;
 export function CardExplorer({
   fanCards,
   fanVariants,
+  revealedCardIds,
   fanError,
 }: {
   fanCards: FanCard[];
   fanVariants: FanCardVariant[];
+  revealedCardIds: string[];
   fanError?: string;
 }) {
   const [filters, setFilters] = useState<ExplorerFilters>({}),
     [page, setPage] = useState(1),
     [retry, setRetry] = useState(0);
+  const [revealed, setRevealed] = useState<string[]>([]);
   const [result, setResult] = useState<CatalogResponse>(),
     [pending, setPending] = useState(true),
     [selected, setSelected] = useState<ExplorerGroup | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const key = JSON.stringify({ filters, page, retry });
   const fanMode = filters.set === fanEdition.id;
-  const showFan =
-    fanMode ||
-    Object.entries(filters).every(([key, value]) => key === "search" || !value);
   useEffect(() => {
     if (fanMode) return;
     let active = true;
@@ -485,13 +485,14 @@ export function CardExplorer({
         onChange={change}
         fanAvailable={Boolean(fanCards.length || fanError)}
       />
-      {showFan && (
+      {fanMode && (
         <FanCardGallery
           cards={fanCards}
           variants={fanVariants}
+          revealedCardIds={[...revealedCardIds, ...revealed]}
+          onRevealed={(id) => setRevealed((ids) => [...new Set([...ids, id])])}
           search={filters.search ?? ""}
           error={fanError}
-          editionOnly={fanMode}
         />
       )}
       {!fanMode && (

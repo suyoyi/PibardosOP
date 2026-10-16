@@ -81,8 +81,9 @@ export function DeckCardSearch({
   const [fanCatalog, setFanCatalog] = useState<{
     cards: FanCard[];
     variants: FanCardVariant[];
+    revealedCardIds: string[];
     error?: string;
-  }>({ cards: [], variants: [] });
+  }>({ cards: [], variants: [], revealedCardIds: [] });
   const reloadFanCatalog = async () => {
     try {
       setFanCatalog(await getBuilderFanCatalog());
@@ -90,6 +91,7 @@ export function DeckCardSearch({
       setFanCatalog({
         cards: [],
         variants: [],
+        revealedCardIds: [],
         error:
           "No se pudo cargar la edición personalizada. Comprueba la conexión y reintenta.",
       });
@@ -106,6 +108,7 @@ export function DeckCardSearch({
           setFanCatalog({
             cards: [],
             variants: [],
+            revealedCardIds: [],
             error:
               "No se pudo cargar la edición personalizada. Comprueba la conexión y reintenta.",
           });
@@ -580,9 +583,15 @@ export function DeckCardSearch({
           <FanCardGallery
             cards={fanCatalog.cards}
             variants={fanCatalog.variants}
+            revealedCardIds={fanCatalog.revealedCardIds}
+            onRevealed={(id) =>
+              setFanCatalog((current) => ({
+                ...current,
+                revealedCardIds: [...new Set([...current.revealedCardIds, id])],
+              }))
+            }
             search={query}
             error={fanCatalog.error}
-            editionOnly
             onRetry={() => {
               void reloadFanCatalog();
             }}
