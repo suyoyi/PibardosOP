@@ -65,6 +65,8 @@ test("register, navigate real empty data, logout and log back in", async ({
           await expect(emptyOrder).toContainText("Victorias—");
           await expect(emptyOrder).toContainText("Derrotas—");
           await expect(emptyOrder).toContainText("n=0");
+          await expect(emptyOrder.locator(".recharts-surface")).toHaveCount(0);
+          await expect(emptyOrder).not.toContainText("NaN");
         }
       expect(
         await page.evaluate(

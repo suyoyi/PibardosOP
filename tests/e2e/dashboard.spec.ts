@@ -199,6 +199,28 @@ test("home switches saved leaders, preserves snapshot history and shows exact cu
     await expect(results).toContainText("4 partidas guardadas");
     await expect(results).toContainText("50%");
     await expect(results).toContainText("n = 4");
+    const playOrder = page.getByRole("region", {
+      name: "Resultados por orden de salida",
+      exact: true,
+    });
+    const firstOrder = playOrder.getByRole("region", {
+      name: "Al ir primero",
+      exact: true,
+    });
+    const secondOrder = playOrder.getByRole("region", {
+      name: "Al ir segundo",
+      exact: true,
+    });
+    await expect(firstOrder).toContainText("Victorias100%");
+    await expect(firstOrder).toContainText("n=2");
+    await expect(
+      firstOrder.locator('.recharts-sector[fill="#4ade80"]'),
+    ).toHaveCount(1);
+    await expect(secondOrder).toContainText("Derrotas100%");
+    await expect(secondOrder).toContainText("n=2");
+    await expect(
+      secondOrder.locator('.recharts-sector[fill="#f87171"]'),
+    ).toHaveCount(1);
     await page
       .getByLabel("Mazo para la curva")
       .selectOption({ label: "Synthetic home Alpha deck · v2" });
@@ -240,6 +262,10 @@ test("home switches saved leaders, preserves snapshot history and shows exact cu
     await expect(results).toContainText("1 partida guardada");
     await expect(results).toContainText("n = 1");
     await expect(results).toContainText("0%");
+    await expect(firstOrder).toContainText("n=0");
+    await expect(firstOrder.locator(".recharts-surface")).toHaveCount(0);
+    await expect(secondOrder).toContainText("n=1");
+    await expect(secondOrder).toContainText("Derrotas100%");
     await expect(
       page.getByRole("region", { name: "Últimas partidas", exact: true }),
     ).not.toContainText("Synthetic changed leader deck · v1");

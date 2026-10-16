@@ -104,6 +104,12 @@ test("mobile fifty-card import, exact-version match history, tournament rounds a
     await expect(firstOnly).toContainText("Victorias100%");
     await expect(firstOnly).toContainText("Derrotas0%");
     await expect(firstOnly).toContainText("n=1");
+    await expect(
+      firstOnly.locator('.recharts-sector[fill="#4ade80"]'),
+    ).toHaveCount(1);
+    await expect(
+      firstOnly.locator('.recharts-sector[fill="#f87171"]'),
+    ).toHaveCount(0);
     const noSecond = page.getByRole("region", {
       name: "Al ir segundo",
       exact: true,
@@ -111,6 +117,7 @@ test("mobile fifty-card import, exact-version match history, tournament rounds a
     await expect(noSecond).toContainText("Victorias—");
     await expect(noSecond).toContainText("Derrotas—");
     await expect(noSecond).toContainText("n=0");
+    await expect(noSecond.locator(".recharts-surface")).toHaveCount(0);
     await page.goto(`${deckUrl}/edit`);
     await page.getByLabel("Buscar carta", { exact: true }).fill("OP95-010");
     await page
@@ -222,11 +229,9 @@ test("mobile fifty-card import, exact-version match history, tournament rounds a
       exact: true,
     });
     await expect(
-      order.getByRole("row").filter({ hasText: "Primero" }),
-    ).toContainText("100%");
-    await expect(
-      order.getByRole("row").filter({ hasText: "Segundo" }),
-    ).toContainText("0%");
+      order.getByRole("region", { name: "Al ir primero", exact: true }),
+    ).toContainText("Victorias100%");
+    await expect(order.locator(".recharts-bar")).toHaveCount(0);
     const second = order.getByRole("region", {
       name: "Al ir segundo",
       exact: true,
@@ -234,6 +239,12 @@ test("mobile fifty-card import, exact-version match history, tournament rounds a
     await expect(second).toContainText("Victorias0%");
     await expect(second).toContainText("Derrotas100%");
     await expect(second).toContainText("n=2");
+    await expect(
+      second.locator('.recharts-sector[fill="#f87171"]'),
+    ).toHaveCount(1);
+    await expect(
+      second.locator('.recharts-sector[fill="#4ade80"]'),
+    ).toHaveCount(0);
     for (const width of [320, 390, 1280]) {
       await page.setViewportSize({ width, height: 844 });
       await expect(second).toContainText("Derrotas100%");
@@ -314,6 +325,15 @@ test("mobile fifty-card import, exact-version match history, tournament rounds a
     await expect(updatedSecond).toContainText("Victorias50%");
     await expect(updatedSecond).toContainText("Derrotas50%");
     await expect(updatedSecond).toContainText("n=2");
+    await expect(
+      updatedSecond.locator('.recharts-sector[fill="#4ade80"]'),
+    ).toHaveCount(1);
+    await expect(
+      updatedSecond.locator('.recharts-sector[fill="#f87171"]'),
+    ).toHaveCount(1);
+    await page
+      .getByRole("region", { name: "Primero frente a segundo", exact: true })
+      .screenshot({ path: "/tmp/pibardos-play-order-donuts.png" });
     await page.goto("/matches");
     const loss = page
       .getByRole("listitem")

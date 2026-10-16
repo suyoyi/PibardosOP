@@ -1,4 +1,3 @@
-import Link from "next/link";
 export default function OfflinePage() {
   return (
     <main
@@ -11,9 +10,11 @@ export default function OfflinePage() {
         Tus datos privados requieren conexión. Cuando vuelvas a estar en línea,
         abre de nuevo tu espacio. Esta versión no guarda cambios sin conexión.
       </p>
-      <Link href="/" className="button-primary">
+      {/* Offline recovery needs full navigation without Link's client bundle. */}
+      {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+      <a href="/" className="button-primary">
         Volver a intentar
-      </Link>
+      </a>
     </main>
   );
 }
